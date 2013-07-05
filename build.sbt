@@ -1,6 +1,6 @@
 import net.virtualvoid.sbt.graph.Plugin
 import org.scalastyle.sbt.ScalastylePlugin
-import MegCommonReleaseSteps._
+import MegBuildMonkeyReleaseSteps._
 import sbtrelease._
 import ReleaseStateTransformations._
 import ReleasePlugin._
@@ -32,7 +32,7 @@ resolvers  +=  "Sonatype OSS Snapshots"  at  "https://oss.sonatype.org/content/r
 
 resolvers  += "Scala-Tools Maven2 Snapshots Repository" at "http://scala-tools.org/repo-snapshots"
 
-resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases"
+resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases"  
 
 resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/public"
       
@@ -44,6 +44,8 @@ libraryDependencies ++= {
   val liftJsonVersion = "2.5"
   val scalaCheckVersion = "1.10.1"
   val specs2Version = "1.14"  
+  val zkVersion = "6.3.6"
+  val sbtVersion = "0.13.0-snapshot"
   Seq(
     "org.scalaz" %% "scalaz-core" % scalazVersion,
     "org.scalaz" %% "scalaz-effect" % scalazVersion,
@@ -52,7 +54,24 @@ libraryDependencies ++= {
     "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test",
     "org.specs2" %% "specs2" % specs2Version % "test",   
     "org.pegdown" % "pegdown" % "1.3.0" % "test", 
-    "org.slf4j" % "slf4j-api" % "1.7.5")
+    "org.slf4j" % "slf4j-api" % "1.7.5",
+    "com.twitter" % "util-logging_2.10" % zkVersion,
+    "com.twitter" % "util-core_2.10" % zkVersion,
+    "org.scala-sbt" %% "api" % sbtVersion,
+    "org.scala-sbt" %% "logging" % sbtVersion,
+    "org.scala-sbt" % "classpath" % sbtVersion,
+    "org.scala-sbt" % "io" % sbtVersion,
+    "org.scala-sbt" % "control" % sbtVersion,
+    "org.scala-sbt" % "process" % sbtVersion,
+    "org.scala-sbt" % "relation" % sbtVersion,
+    "org.scala-sbt" % "interface" % sbtVersion,
+    "org.scala-sbt" % "persist" % sbtVersion,
+    "org.scala-sbt" % "compiler-integration" % sbtVersion,
+    "org.scala-sbt" % "incremental-compiler" % sbtVersion,
+    "org.scala-sbt" % "compile" % sbtVersion,
+    "org.scala-sbt" % "compiler-interface" % sbtVersion,
+    "org.scala-tools.sbinary" % "sbinary_2.10" % sbtVersion,
+    "org.scala-ide" % "plugin-profiles" % "1.0.0")
 }
 
 
@@ -98,7 +117,7 @@ testOptions in Test += Tests.Argument("html", "console")
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>https://github.com/indykish/megam_common</url>
+  <url>https://github.com/indykish/megam_buildmonkey</url>
   <licenses>
     <license>
       <name>Apache 2</name>
@@ -107,8 +126,8 @@ pomExtra := (
     </license>
   </licenses>
   <scm>
-    <url>git@github.com:indykish/megam_common.git</url>
-    <connection>scm:git:git@github.com:indykish/megam_common.git</connection>
+    <url>git@github.com:indykish/megam_buildmonkey.git</url>
+    <connection>scm:git:git@github.com:indykish/megam_buildmonkey.git</connection>
   </scm>
   <developers>
     <developer>

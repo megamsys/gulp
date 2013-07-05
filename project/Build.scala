@@ -21,7 +21,7 @@ import ReleasePlugin._
 import ReleaseKeys._
 import sbt._
 
-object MegCommonReleaseSteps {
+object MegBuildMonkeyReleaseSteps {
 
   val readme = "README.md"
 
