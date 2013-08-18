@@ -26,10 +26,7 @@ import xsbti.Logger
 import xsbti.F0
 import sbt.Process
 import sbt.ClasspathOptions
-import scala.tools.eclipse.util.EclipseResource
-import scala.tools.eclipse.util.FileUtils
-import scala.tools.eclipse.properties.ScalaPluginSettings
-import scala.tools.eclipse.logging.HasLogger
+
 import sbt.inc.AnalysisStore
 import sbt.inc.Analysis
 import sbt.inc.FileBasedStore
@@ -38,7 +35,8 @@ import sbt.compiler.IC
 import sbt.compiler.CompileFailed
 import java.lang.ref.SoftReference
 import java.util.concurrent.atomic.AtomicReference
-import com.twitter.logging.Logger
+import org.slf4j.LoggerFactory
+
 /**
  * @author rajthilak
  *
