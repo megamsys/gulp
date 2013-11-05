@@ -1,0 +1,246 @@
+#!/bin/sh
+#Copyright (c) 2012 Megam Systems.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+###############################################################################
+# A simple script for build http://www.megam.co
+###############################################################################
+black='\033[30m'
+red='\033[31m'
+green='\033[32m'
+yellow='\033[33m'
+blue='\033[34m'
+magenta='\033[35m'
+cyan='\033[36m'
+white='\033[37m'
+
+alias Reset="tput sgr0"      #  Reset text attributes to normal
+                             #  without clearing screen.
+                             
+BDMY_PACKAGE=github.com/indykish/megam_buildmonkey
+export GOPATH="${PWD}"
+SRC_DIR="$GOPATH/src"
+BDMY_DIR="$SRC_DIR/$BDMY_PACKAGE"
+BDMY_BASE=$(dirname "${BDMY_DIR}")                             
+
+#--------------------------------------------------------------------------
+#colored echo
+#--------------------------------------------------------------------------
+cecho ()                     # Color-echo.
+                             # Argument $1 = message
+                             # Argument $2 = color
+{
+local default_msg="No message passed."
+                             # Doesn't really need to be a local variable.
+
+message=${1:-$default_msg}   # Defaults to default message.
+color=${2:-$black}        github.com/globocom/config   # Defaults to black, if not specified.
+
+  echo "$color$message"
+  Reset                      # Reset to normal.
+
+  return
+}
+#
+#
+#
+#--------------------------------------------------------------------------
+#parse the input parameters. 
+# Pattern in case statement is explained below.
+# a*)  The letter a followed by zero or more of any
+# *a)  The letter a preceded by zero or more of any 
+#--------------------------------------------------------------------------
+parseParameters()   {
+
+if [ $# -lt 1 ]
+	then
+		helpgithub.com/globocom/config
+        	exitScript 1
+fi
+
+
+for item in "$@"
+do
+    case $item in
+        [hH][eE][lL][pP])
+            help
+            ;;
+		('/?')
+            help
+            ;;
+        [cC][hH][eE][kK])
+            chek
+            ;;
+        [bB][uU][iI][lL][dD])
+            build
+            ;;  
+	    [dD][eE][pP][sS])
+            deps
+            ;;   
+	    *)
+	    echo "Unknown option : $item - refer help."
+            help	
+            ;;
+esac
+done
+}
+#
+#
+#--------------------------------------------------------------------------
+#prints the help to out figithub.com/globocom/configle.
+#--------------------------------------------------------------------------
+help() {
+    cecho "Usage : build [Options]" $green
+    cecho  "help    : prints the help message." $cyan
+    cecho  "chek    : does a check to see if GO is installed 1.1.2 > " $cyan
+    cecho  "deps    : does a download of dependencies (auto dependency downloader : Nah !)." $cyan
+    cecho  "build   : does a build of your src." $cyan  
+}
+#
+#
+#
+#--------------------------------------------------------------------------
+#check if GOROOT and GOPATH are set
+#--------------------------------------------------------------------------
+chek() {
+cecho "Checking ..." $green
+
+	if [ -e $GOROOT ]; 
+	then
+	cecho "=========================================================" $magenta	
+	cecho "FOUND: ROOT " $green
+	cecho "$GOROOT" $white
+	cecho "=========================================================" $magenta	
+	else        
+	cecho "FATAL: you must declare GOPATH environment variable, for more" $red
+	cecho "       details, please check INSTALL.md file and/or" $white
+	cecho "       http://golang.org/cmd/go/#GOPATH_environment_variable" $white
+    fi
+  
+	if [ -e $GOPATH ]; 
+	then
+	cecho "FOUND: GOPATH " $green
+	cecho "$GOPATH" $white
+	cecho "=========================================================" $magenta	
+	else        
+	cecho "FATAL: you must declare GOPATH environment variable, for more" $red
+	cecho "       details, please check INSTALL.md file and/or" $white
+	cecho "       http://golang.org/cmd/go/#GOPATH_environment_variable" $white	
+	fi
+  exitScript 1
+}
+#--------------------------------------------------------------------------
+#dependencies download
+#--------------------------------------------------------------------------
+deps() {
+cecho "=========================================================" $magenta
+cecho "GOROOT      =>$GOROOT" $white
+cecho "GOPATH      =>$GOPATH" $white
+cecho "BDMY_PACKAGE=>$BDMY_PACKAGE" $white
+cecho "BDMY_DIR    =>$BDMY_DIR" $white
+cecho "BDMY_BASE   =>$BDMY_BASE" $white
+cecho "=========================================================" $magenta
+
+packages="
+	github.com/steadway/amqp
+	github.com/globocom/config
+	github.com/globocom/commandmocker	
+	github.com/tpjg/goriakpbc
+	launchpad.net/gocheck	
+	launchpad.net/goamz/aws	
+	launchpad.net/gnuflag
+"
+
+cecho "Press [Enter] to Install Deps." $green
+read download
+
+echo
+
+export GOPATH=${PWD}
+
+for p in $packages; do
+	# this is the target directory
+	mkdir -p $p
+	cecho "Downloading $p" $yellow
+	
+	# This will checkout the project into src
+	go get -u -d $p
+
+	# The go get path
+	gp=src/$p
+
+	# Attempt to find the commit hash of the repo
+	HEAD=
+	if [ -d $gp/.git ]; then
+		# Grab the head if it is git
+		HEAD=$(git --git-dir=$gp/.git rev-parse HEAD)
+	fi
+
+	# Grab the head if it is mercurial
+	if [ -d $gp/.hg ]; then
+		cd $gp
+		HEAD=$(hg id -i)
+		cd -
+	fi
+
+	# Copy the code into the final directory
+	rsync -a -z -r --exclude '.git/' --exclude '.hg/' src/$p/ $p
+
+	# Make a nice commit about what everything bumped to
+	git add $p
+	git commit -m "bump($p): $HEAD"
+done
+}
+#--------------------------------------------------------------------------
+#build
+#--------------------------------------------------------------------------
+build() {
+cecho "=========================================================" $magenta
+cecho "GOROOT      =>$GOROOT" $white
+cecho "GOPATH      =>$GOPATH" $white
+cecho "BDMY_PACKAGE=>$BDMY_PACKAGE" $white
+cecho "BDMY_DIR    =>$BDMY_DIR" $white
+cecho "BDMY_BASE   =>$BDMY_BASE" $white
+cecho "=========================================================" $magenta
+cecho "Building $BDMY_PACKAGE." $green
+
+if [ ! -d "${BDMY_BASE}" ]; then
+	mkdir -p "${BDMY_BASE}"
+fi
+
+if [ ! -h "${BDMY_DIR}" ]; then
+	ln -s ../../../ "${BDMY_DIR}"
+fi
+
+for i in third_party/*; do
+	if [ "$i" = "third_party/src" ]; then
+		continue
+	fi
+	cp -R "$i" src/
+done
+
+#./scripts/release-version > release_version.go
+go build "${BDMY_PACKAGE}"
+}
+#--------------------------------------------------------------------------
+#This command will exit out of the script.
+#--------------------------------------------------------------------------
+exitScript(){
+exit $@
+}
+
+#parse parameters
+parseParameters "$@"
+
+cecho ".^. tata .^." $yellow
+exitScript 0
