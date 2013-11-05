@@ -76,27 +76,18 @@ func main() {
 		if *timeoutOpt != 0 {
 			timeout = *timeoutOpt * 1e9
 		}
-		grep(timeout, lineRx, commandLineFiles(files))
+		grep(timeout, lineRx)
 	}
 }
 
-func grep(timeout int64, lineRx *regexp.Regexp, filenames []string) {
+func grep(timeout int64, lineRx *regexp.Regexp) {
 	jobs := make(chan Job, workers)
-	results := make(chan Result, minimum(1000, len(filenames)))
 	done := make(chan struct{}, workers)
 
-	go addJobs(jobs, filenames, results)
 	for i := 0; i < workers; i++ {
 		go doJobs(done, lineRx, jobs)
 	}
-	waitAndProcessResults(timeout, done, results)
-}
-
-func addJobs(jobs chan<- Job, filenames []string, results chan<- Result) {
-	for _, filename := range filenames {
-		jobs <- Job{filename, results}
-	}
-	close(jobs)
+	waitAndProcessResults(timeout, done)
 }
 
 func doJobs(done chan<- struct{}, lineRx *regexp.Regexp, jobs <-chan Job) {
@@ -106,14 +97,10 @@ func doJobs(done chan<- struct{}, lineRx *regexp.Regexp, jobs <-chan Job) {
 	done <- struct{}{}
 }
 
-func waitAndProcessResults(timeout int64, done <-chan struct{},
-	results <-chan Result) {
+func waitAndProcessResults(timeout int64, done <-chan struct{}) {
 	finish := time.After(time.Duration(timeout))
 	for working := workers; working > 0; {
 		select { // Blocking
-		case result := <-results:
-			fmt.Printf("%s:%d:%s\n", result.filename, result.lino,
-				result.line)
 		case <-finish:
 			fmt.Println("timed out")
 			return // Time's up so finish with what results there were
@@ -123,9 +110,6 @@ func waitAndProcessResults(timeout int64, done <-chan struct{},
 	}
 	for {
 		select { // Nonblocking
-		case result := <-results:
-			fmt.Printf("%s:%d:%s\n", result.filename, result.lino,
-				result.line)
 		case <-finish:
 			fmt.Println("timed out")
 			return // Time's up so finish with what results there were
