@@ -13,7 +13,7 @@ import (
 
 type AppCreate struct{}
 
-func (AppCreate) Run(context *cmd.Context, client *cmd.Client) error {
+func (AppCreate) Run(context *cmd.Context) error {
 	appName := context.Args[0]
 	platform := context.Args[1]
 	b := bytes.NewBufferString(fmt.Sprintf(`{"name":"%s","platform":"%s"}`, appName, platform))
@@ -21,7 +21,7 @@ func (AppCreate) Run(context *cmd.Context, client *cmd.Client) error {
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequest("POST", url, b)
+	/*request, err := http.NewRequest("POST", url, b)
 	if err != nil {
 		return err
 	}
@@ -43,6 +43,7 @@ func (AppCreate) Run(context *cmd.Context, client *cmd.Client) error {
 	fmt.Fprintf(context.Stdout, "App %q is being created!\n", appName)
 	fmt.Fprintln(context.Stdout, "Use app-info to check the status of the app and its units.")
 	fmt.Fprintf(context.Stdout, "Your repository for %q project is %q\n", appName, out["repository_url"])
+	*/
 	return nil
 }
 
@@ -71,7 +72,7 @@ If you don't provide the app name, megam will try to guess it.`,
 	}
 }
 
-func (c *AppRemove) Run(context *cmd.Context, client *cmd.Client) error {
+func (c *AppRemove) Run(context *cmd.Context) error {
 	appName, err := c.Guess()
 	if err != nil {
 		return err
@@ -85,7 +86,7 @@ func (c *AppRemove) Run(context *cmd.Context, client *cmd.Client) error {
 			return nil
 		}
 	}
-	url, err := cmd.GetURL(fmt.Sprintf("/apps/%s", appName))
+	/*url, err := cmd.GetURL(fmt.Sprintf("/apps/%s", appName))
 	if err != nil {
 		return err
 	}
@@ -98,6 +99,7 @@ func (c *AppRemove) Run(context *cmd.Context, client *cmd.Client) error {
 		return err
 	}
 	fmt.Fprintf(context.Stdout, `App "%s" successfully removed!`+"\n", appName)
+	*/
 	return nil
 }
 

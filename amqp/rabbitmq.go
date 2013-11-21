@@ -1,65 +1,145 @@
+/*
+** Copyright [2012-2013] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+ */
 package amqp
 
-// This example declares a durable Exchange, an ephemeral (auto-delete) Queue,
-// binds the Queue to the Exchange with a binding key, and consumes every
-// message published to that Exchange with that routing key.
-//
-
 import (
-	"flag"
+	"bytes"
+	"errors"
 	"fmt"
+	"github.com/globocom/config"
 	"github.com/streadway/amqp"
-	"log"
+	"io"
+	"net"
+	"regexp"
+	"sync"
 	"time"
 )
-
-//this is for test, we need to move it to configurable key.
-var (
-	uri          = flag.String("uri", "amqp://guest:guest@localhost:5672/", "AMQP URI")
-	exchange     = flag.String("exchange", "test-exchange", "Durable, non-auto-deleted AMQP exchange name")
-	exchangeType = flag.String("exchange-type", "direct", "Exchange type - direct|fanout|topic|x-custom")
-	queue        = flag.String("queue", "test-queue", "Ephemeral AMQP queue name")
-	bindingKey   = flag.String("key", "test-key", "AMQP binding key")
-	consumerTag  = flag.String("consumer-tag", "simple-consumer", "AMQP consumer tag (should not be blank)")
-	lifetime     = flag.Duration("lifetime", 5*time.Second, "lifetime of process before shutdown (0s=infinite)")
-)
-
-func init() {
-	flag.Parse()
-}
-
-// Start to listen and response to rabbitmq subscriptions
-func ListenAndServe() {
-	c, err := NewConsumer(*uri, *exchange, *exchangeType, *queue, *bindingKey, *consumerTag)
-	if err != nil {
-		log.Fatalf("%s", err)
-	}
-
-	if *lifetime > 0 {
-		log.Printf("running for %s", *lifetime)
-		time.Sleep(*lifetime)
-	} else {
-		log.Printf("running forever")
-		select {}
-	}
-
-	log.Printf("shutting down")
-
-	if err := c.Shutdown(); err != nil {
-		log.Fatalf("error during shutdown: %s", err)
-	}
-}
-
-
 
 type Consumer struct {
 	conn    *amqp.Connection
 	channel *amqp.Channel
+	queue   *amqp.Queue
 	tag     string
 	done    chan error
 }
 
-func NewConsumer(amqpURI, exchange, exchangeType, queueName, key, ctag string) (*Consumer, error) {
+type rabbitmqQ struct {
+	name string
+}
+
+var (
+	mut            sync.Mutex // for conn access
+	timeoutRegexp  = regexp.MustCompile(`(TIMED_OUT|timeout)$`)
+	notFoundRegexp = regexp.MustCompile(`not found$`)
+)
+
+func (b *rabbitmqQ) Get(timeout time.Duration) (*Message, error) {
+	return errors.New("Get: Not supported, Handler.start(), subscribe for RabbitMQ.")
+
+}
+
+func (b *rabbitmqQ) Put(m *Message, delay time.Duration) error {
+	cons, err := connection()
+	if err != nil {
+		return err
+	}
+
+	//convert Message to "body" bytes
+	var body = m.Args[0]
+
+	log.Printf("declared Exchange, publishing %dB body (%q)", len(body), body)
+	if err = cons.channel.Publish(
+		//buddy you don't capture an err here.
+		config.GetString("amqp:exchange"), // publish to an exchange
+		//buddy you don't capture an err here.
+		config.GetString("amqp:routingKey"), // routing to 0 or more queues
+		false, // mandatory
+		false, // immediate
+		amqp.Publishing{
+			Headers:         amqp.Table{},
+			ContentType:     "text/plain",
+			ContentEncoding: "",
+			Body:            []byte(body),
+			DeliveryMode:    amqp.Transient, // 1=non-persistent, 2=persistent
+			Priority:        0,              // 0-9
+			// a bunch of application/implementation-specific fields
+		},
+	); err != nil {
+		return fmt.Errorf("Exchange Publish: %s", err)
+	}
+	return err
+}
+
+func (b *rabbitmqQ) Delete(m *Message) error {
+	return errors.New("Delete: Not supported for RabbitMQ.")
+
+}
+
+func (b *rabbitmqQ) Release(m *Message, delay time.Duration) error {
+	return errors.New("Release: Not supported for RabbitMQ.")
+}
+
+type rabbitmqFactory struct{}
+
+func (b rabbitmqFactory) Get(name string) (Q, error) {
+	return &rabbitmqQ{name: name}, nil
+}
+
+func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, error) {
+	return &executor{
+		inner: func() {
+			if consumer, err := consume(5e9); err == nil {
+				deliveries := <-consumer
+
+				for d := range deliveries {
+					log.Printf("got %dB delivery: [%v] %q", len(d.Body), d.DeliveryTag, d.Body)
+					//We have the message here, what do you want to do ?
+					//Associate it with a command, and pass it in a go routine ?
+					//				log.Printf("Dispatching %q message to handler function.", message.Action)
+					go func(m *Message) {
+						f(m)
+						q := rabbitmqQ{}
+						if m.delete {
+							q.Delete(m)
+						} else {
+							q.Release(m, 0)
+						}
+					}(message)
+				}
+				log.Printf("handle: deliveries channel closed")
+				done <- nil
+			} else {
+				log.Printf("Failed to get message from the queue: %s. Trying again...", err)
+				if e, ok := err.(*net.OpError); ok && e.Op == "dial" {
+					time.Sleep(5e9)
+				}
+
+			}
+		},
+	}, nil
+}
+
+func connection() (*Consumer, error) {
+	var (
+		addr string
+		err  error
+	)
+
+	mut.Lock()
+
 	c := &Consumer{
 		conn:    nil,
 		channel: nil,
@@ -67,82 +147,95 @@ func NewConsumer(amqpURI, exchange, exchangeType, queueName, key, ctag string) (
 		done:    make(chan error),
 	}
 
-	var err error
-
-	log.Printf("dialing %q", amqpURI)
-	c.conn, err = amqp.Dial(amqpURI)
-	if err != nil {
-		return nil, fmt.Errorf("Dial: %s", err)
+	if c.conn == nil {
+		mut.Unlock()
+		addr, err = config.GetString("amqp:url")
+		if err != nil {
+			addr = "localhost:5672"
+		}
+		mut.Lock()
+		if c.conn, err = amqp.Dial(addr); err != nil {
+			mut.Unlock()
+			return nil, err
+		}
 	}
 
-	go func() {
-		fmt.Printf("closing: %s", <-c.conn.NotifyClose(make(chan *amqp.Error)))
-	}()
-
-	log.Printf("got Connection, getting Channel")
-	c.channel, err = c.conn.Channel()
-	if err != nil {
-		return nil, fmt.Errorf("Channel: %s", err)
+	if c.channel, err = c.conn.Channel(); err != nil {
+		mut.Unlock()
+		return nil, err
 	}
 
-	log.Printf("got Channel, declaring Exchange (%q)", exchange)
-	if err = c.channel.ExchangeDeclare(
-		exchange,     // name of the exchange
-		exchangeType, // type
-		true,         // durable
-		false,        // delete when complete
-		false,        // internal
-		false,        // noWait
-		nil,          // arguments
+	if c.channel, err = c.channel.ExchangeDeclare(
+		//buddy you don't capture an err here.
+		config.GetString("amqp:exchange"), // name of the exchange
+		"fanout", // exchange Type
+		true,     // durable
+		false,    // delete when complete
+		false,    // internal
+		false,    // noWait
+		nil,      // arguments
 	); err != nil {
-		return nil, fmt.Errorf("Exchange Declare: %s", err)
+		mut.Unlock()
+		return nil, err
 	}
 
-	log.Printf("declared Exchange, declaring Queue %q", queueName)
-	queue, err := c.channel.QueueDeclare(
-		queueName, // name of the queue
-		true,      // durable
-		false,     // delete when usused
-		false,     // exclusive
-		false,     // noWait
-		nil,       // arguments
-	)
-	if err != nil {
-		return nil, fmt.Errorf("Queue Declare: %s", err)
-	}
-
-	log.Printf("declared Queue (%q %d messages, %d consumers), binding to Exchange (key %q)",
-		queue.Name, queue.Messages, queue.Consumers, key)
-
-	if err = c.channel.QueueBind(
-		queue.Name, // name of the queue
-		key,        // bindingKey
-		exchange,   // sourceExchange
-		false,      // noWait
-		nil,        // arguments
-	); err != nil {
-		return nil, fmt.Errorf("Queue Bind: %s", err)
-	}
-
-	log.Printf("Queue bound to Exchange, starting Consume (consumer tag %q)", c.tag)
-	deliveries, err := c.channel.Consume(
-		queue.Name, // name
-		c.tag,      // consumerTag,
-		false,      // noAck
-		false,      // exclusive
-		false,      // noLocal
-		false,      // noWait
-		nil,        // arguments
-	)
-	if err != nil {
-		return nil, fmt.Errorf("Queue Consume: %s", err)
-	}
-   // rewrite using channels  
-	go handle(deliveries, c.done)
-
-	return c, nil
+	mut.Unlock()
+	return c, err
 }
 
+func rconnection() (*Consumer, error) {
+	cons, err := connection()
+	mut.Lock()
+	if cons.queue, err = cons.channel.QueueDeclare(
+		//buddy you don't capture an err here.
+		config.GetString("amqp:queue"), // name of the queue
+		true,  // durable
+		false, // delete when usused
+		false, // exclusive
+		false, // noWait
+		nil,   // arguments
+	); err != nil {
+		mut.Unlock()
+		return nil, err
+	}
+
+	if err = cons.channel.QueueBind(
+		cons.queue.Name, // name of the queue
+		//buddy you don't capture an err here.
+		config.GetString("amqp:routingKey"), // name of bindingKey
+		//buddy you don't capture an err here.
+		config.GetString("amqp:exchange"), // sourceExchange
+		false, // noWait
+		nil,   // arguments
+	); err != nil {
+		mut.Unlock()
+		return nil, err
+	}
+	mut.Unlock()
+	return cons, nil
+}
+
+//returns AMQP Consumer (ASynchronous, blocked - dies on shutdown)
+func consume(timeout time.Duration) (*amqp.Delivery, error) {
+	cons, err = rconnection()
+
+	if deliveries, err := cons.channel.Consume(
+		consumer.queue.Name, // name
+		consumer.tag,        // consumerTag,
+		false,               // noAck
+		false,               // exclusive
+		false,               // noLocal
+		false,               // noWait
+		nil,                 // arguments
+	); err != nil {
+		return nil, err
+	}
+
+	return deliveries, nil
+}
+
+/* 
+//shut it down, the handler actually shuts it down.
 func (c *Consumer) Shutdown() error {
 	// will close() the deliveries channel
 	if err := c.channel.Cancel(c.tag, true); err != nil {
@@ -159,19 +252,4 @@ func (c *Consumer) Shutdown() error {
 	return <-c.done
 }
 
-func handle(deliveries <-chan amqp.Delivery, done chan error) {
-	for d := range deliveries {
-		log.Printf(
-			"got %dB delivery: [%v] %q",
-			len(d.Body),
-			d.DeliveryTag,
-			d.Body,
-		)
-		
-		//unmarshall the body.
-		//dispatch it to the appropriate command.
-		
-	}
-	log.Printf("handle: deliveries channel closed")
-	done <- nil
-}
+*/

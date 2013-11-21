@@ -165,8 +165,8 @@ cecho "Checking ..." $green
     	cecho "FOUND: hg " $green
     	cecho "=========================================================" $magenta	    	
 	else
-	cecho "FATAL: you must install bzr to download launchpad.net deps, to install" $red
-	cecho "       in ubuntu, sudo apt-get install bzr" $white
+	cecho "FATAL: you must install hg to download launchpad.net deps, to install" $red
+	cecho "       in ubuntu, sudo apt-get install mercurial" $white
 	fi
 
 	
@@ -188,7 +188,7 @@ packages="
 	github.com/streadway/amqp
 	github.com/howeyc/fsnotify
 	launchpad.net/goyaml
-	launchpad.net/goamz/aws	
+	launchpad.net/goamz	
 	github.com/globocom/config
 	github.com/globocom/commandmocker	
 	github.com/tpjg/goriakpbc		
@@ -216,18 +216,18 @@ for p in $packages; do
 	go get -u -d $p
 
 	# Attempt to find the commit hash of the repo
-	HEAD=
-	if [ -d $gp/.git ]; then
+	#HEAD=
+	#if [ -d $gp/.git ]; then
 		# Grab the head if it is git
-		HEAD=$(git --git-dir=$gp/.git rev-parse HEAD)
-	fi
+   #HEAD=$(git --git-dir=$gp/.git rev-parse HEAD)
+   #fi
 
 	# Grab the head if it is mercurial
-	if [ -d $gp/.hg ]; then
-		cd $gp
-		HEAD=$(hg id -i)
-		cd -
-	fi
+	#if [ -d $gp/.hg ]; then
+	#	cd $gp
+	#	HEAD=$(hg id -i)
+	#	cd -
+	#fi
 
 	# Copy the code into the final directory
 	rsync -a -z -r --exclude '.git/' --exclude '.hg/' $gp $p
@@ -269,7 +269,8 @@ for i in third_party/*; do
 done
 
 #./scripts/release-version > release_version.go
-go build "${BDMY_PACKAGE}"
+#go build -o gulpd
+#go build -o ./cmd/gulp.go
 }
 #--------------------------------------------------------------------------
 #This command will exit out of the script.

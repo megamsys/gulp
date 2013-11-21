@@ -32,7 +32,7 @@ func (c *TestCommand) Info() *Info {
 	}
 }
 
-func (c *TestCommand) Run(context *Context, client *Client) error {
+func (c *TestCommand) Run(context *Context) error {
 	io.WriteString(context.Stdout, "Running TestCommand")
 	return nil
 }
@@ -45,7 +45,7 @@ func (c *ErrorCommand) Info() *Info {
 	return &Info{Name: "error"}
 }
 
-func (c *ErrorCommand) Run(context *Context, client *Client) error {
+func (c *ErrorCommand) Run(context *Context) error {
 	return errors.New(c.msg)
 }
 

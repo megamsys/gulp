@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -32,7 +31,7 @@ Your repository for "ble" project is "git@github.com/indykish:ble.git"` + "\n"
 		Stdout: &stdout,
 		Stderr: &stderr,
 	}
-	trans := testing.ConditionalTransport{
+/*	trans := testing.ConditionalTransport{
 		Transport: testing.Transport{Message: result, Status: http.StatusOK},
 		CondFunc: func(req *http.Request) bool {
 			defer req.Body.Close()
@@ -43,8 +42,8 @@ Your repository for "ble" project is "git@github.com/indykish:ble.git"` + "\n"
 		},
 	}
 	client := cmd.NewClient(&http.Client{Transport: &trans}, nil, manager)
-	command := AppCreate{}
-	err := command.Run(&context, client)
+*/	command := AppCreate{}
+	err := command.Run(&context)
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(stdout.String(), gocheck.Equals, expected)
 }

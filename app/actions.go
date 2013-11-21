@@ -65,7 +65,7 @@ var startApp = action.Action{
 // removes it in the Backward.
 //
 // The first argument in the context must be an App or a pointer to an App.
-var startApp = action.Action{
+var stopApp = action.Action{
 	Name: "stopapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		var app App

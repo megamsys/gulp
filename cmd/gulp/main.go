@@ -25,29 +25,35 @@ const (
 	header  = "Supported-Gulp"
 )
 
+const defaultConfigPath = "/conf/gulpd.conf"
+
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
-	m.Register(&gulp.AppRun{})
-	m.Register(&gulp.AppRestart{})
-	m.Register(&gulp.AppStop{})
-	m.Register(&gulp.AppRestart{})
-	m.Register(&gulp.AppBuild{})
-	m.Register(&gulp.SSLAdd{})
-	m.Register(&gulp.SSLRemove{})
-	m.Register(&gulp.MeterStop{})
-	m.Register(&gulp.MeterStart{})
-	m.Register(&gulp.LogStart{})
-	m.Register(&gulp.LogStop{})
-	m.Register(&gulp.EnvGet{})
-	m.Register(&gulp.EnvSet{})
-	m.Register(&gulp.EnvUnset{})
-	m.Register(&KeyAdd{})
-	m.Register(&KeyRemove{})
-	m.Register(gulp.ServiceList{})
+	m.Register(&GulpStart{&m})            //start the gulpd daemon 
+	/*m.Register(Stop{})		   //stop  the gulpd daemon
+	m.Register(&gulp.AppStart{})   //sudo service <appname> start
+	m.Register(&gulp.AppStop{})    //sudo service <appname> stop
+	m.Register(&gulp.AppRestart{}) //sudo service <apppname> restart
+	m.Register(&gulp.AppBuild{})   //git fetch -q
+	m.Register(&gulp.AppMaintain{})//sudo service nginx maintain ?
+	m.Register(&gulp.SSLAdd{})     //download node_name.pub, crt from S3, mk ssl_template, cp to sites_available, ln to sites_enabled. && AppRestart
+	m.Register(&gulp.SSLRemove{})  //rm node_name.pub, crt, mk regular non_ssl_template, cp to sites_available, ln to sites_enabled. && AppRestart
+	m.Register(&gulp.MeterStop{})  //sudo service gmond start
+	m.Register(&gulp.MeterStart{}) //sudo service gmond stop
+	m.Register(&gulp.LogStart{})   //sudo service beaver start
+	m.Register(&gulp.LogStop{})    //sudo service beaver stop
+	m.Register(&gulp.EnvGet{})     //ENV['JMP_UP_PATH'] '~/sofware/kangaroo'
+	m.Register(&gulp.EnvSet{})     //ENV['JMP_UP_PATH'] = '~/software/kangaroo'
+	m.Register(&gulp.EnvUnset{})   //ENV['JMP_UP_PATH'] = blank
+	m.Register(&KeyAdd{})          //add the id_rsa/pub
+	m.Register(&KeyRemove{})       //remove the id_rsa/pub
+	m.Register(gulp.ServiceList{}) //ps -ef 
+	*/
 	return m
 }
 
 func main() {
+	config.ReadConfigFile(defaultConfigPath)
 	name := cmd.ExtractProgramName(os.Args[0])
 	manager := buildManager(name)
 	manager.Run(os.Args[1:])
