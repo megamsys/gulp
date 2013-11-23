@@ -9,7 +9,7 @@ import (
 	"github.com/indykish/gulp/action"
 	"github.com/indykish/gulp/db"
 	"github.com/indykish/gulp/amqp"
-	"github.com/indykish/gulp/repository"
+	"github.com/indykish/gulp/scm"
 	"launchpad.net/goamz/aws"
 	"strconv"
 	"strings"

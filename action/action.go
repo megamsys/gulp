@@ -19,6 +19,7 @@ package action
 import (
 	"errors"
 	"sync"
+	"log"
 )
 
 // Result is the value returned by Forward. It is used in the call of the next

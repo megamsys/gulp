@@ -8,6 +8,7 @@ package db
 
 import (
 	"github.com/globocom/config"
+	"github.com/mrb/riakpbc"
 	"sync"
 	"time"
 )

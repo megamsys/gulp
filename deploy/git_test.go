@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/globocom/config"
-	"github.com/indykish/gulp/repository"
+	"github.com/indykish/gulp/scm"
 	"launchpad.net/gocheck"
 )
 

@@ -16,12 +16,11 @@
 package amqp
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"github.com/globocom/config"
 	"github.com/streadway/amqp"
-	"io"
 	"net"
 	"regexp"
 	"sync"

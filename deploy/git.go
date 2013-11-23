@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/indykish/gulp/repository"
+	"github.com/indykish/gulp/scm"
 	"io"
 )
 
