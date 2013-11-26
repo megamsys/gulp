@@ -1,7 +1,7 @@
-megam_buildmonkey
+Gulpd
 =================
 
-Build monkeys for megam platform (support for sbt, mvn, npm, bundler). Integrates with megam_akka
+Gulpd is a node daemon for megam cloud. Builders supported are sbt, mvn, npm, bundler). 
 
 * `sbt `
 * `mvn`
@@ -12,13 +12,17 @@ Build monkeys for megam platform (support for sbt, mvn, npm, bundler). Integrate
 ### Requirements
 
 > 
-[Scala 2.10.2 +](http://www.scala-lang.org)
+[Golang 1.2o > +](http://www.golang.org)
 
-#### Tested on Ubuntu 13.04, AWS - EC2
+#### Tested on Ubuntu 13.04, AWS - EC2, GCE
+
+
 
 ## Usage
 
-
+gulpd start 
+ 
+gulpd start
 
 
 ###

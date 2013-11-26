@@ -6,7 +6,6 @@ import (
 	"github.com/indykish/gulp/fs"
 	"io"
 	"launchpad.net/gnuflag"
-	"net/http"
 	"os"
 	"regexp"
 	"sort"

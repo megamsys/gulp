@@ -3,12 +3,10 @@ package cmd
 import (
 	"bytes"
 	"errors"
-	"fmt"
-	"github.com/indykish/gulp/fs"
 	"io"
-	"launchpad.net/gnuflag"
+	"os"	
+	//	"launchpad.net/gnuflag"
 	"launchpad.net/gocheck"
-	"os"
 )
 
 type recordingExiter int
@@ -60,13 +58,11 @@ func (s *S) TestManagerRunShouldWriteErrorsOnStderr(c *gocheck.C) {
 	c.Assert(manager.stderr.(*bytes.Buffer).String(), gocheck.Equals, "Error: You are wrong\n")
 }
 
-
 func (s *S) TestRun(c *gocheck.C) {
 	manager.Register(&TestCommand{})
 	manager.Run([]string{"foo"})
 	c.Assert(manager.stdout.(*bytes.Buffer).String(), gocheck.Equals, "Running TestCommand")
 }
-
 
 /*func (s *S) TestFileSystem(c *gocheck.C) {
 	fsystem = &testing.RecordingFs{}
@@ -75,3 +71,115 @@ func (s *S) TestRun(c *gocheck.C) {
 	c.Assert(filesystem(), gocheck.DeepEquals, fs.OsFs{})
 }*/
 
+func (s *S) TestHelpCommandShouldBeRegisteredByDefault(c *gocheck.C) {
+	var stdout, stderr bytes.Buffer
+	m := NewManager("gulp", "1.0", "", &stdout, &stderr, os.Stdin)
+	_, exists := m.Commands["help"]
+	c.Assert(exists, gocheck.Equals, true)
+}
+
+func (s *S) TestHelpReturnErrorIfTheGivenCommandDoesNotExist(c *gocheck.C) {
+	command := help{manager: manager}
+	context := Context{[]string{"someone-create"}, manager.stdout, manager.stderr, manager.stdin}
+	err := command.Run(&context)
+	c.Assert(err, gocheck.NotNil)
+	c.Assert(err, gocheck.ErrorMatches, `^command "someone-create" does not exist.$`)
+}
+
+func (s *S) TestVersion(c *gocheck.C) {
+	var stdout, stderr bytes.Buffer
+	manager := NewManager("gulpd", "0.1", "", &stdout, &stderr, os.Stdin)
+	command := version{manager: manager}
+	context := Context{[]string{}, manager.stdout, manager.stderr, manager.stdin}
+	err := command.Run(&context)
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(manager.stdout.(*bytes.Buffer).String(), gocheck.Equals, "gulpd version 0.1.\n")
+}
+
+func (s *S) TestVersionInfo(c *gocheck.C) {
+	expected := &Info{
+		Name:    "version",
+		MinArgs: 0,
+		Usage:   "version",
+		Desc:    "display the current version",
+	}
+	c.Assert((&version{}).Info(), gocheck.DeepEquals, expected)
+}
+
+type ArgCmd struct{}
+
+func (c *ArgCmd) Info() *Info {
+	return &Info{
+		Name:    "arg",
+		MinArgs: 1,
+		MaxArgs: 2,
+		Usage:   "arg [args]",
+		Desc:    "some desc",
+	}
+}
+
+func (cmd *ArgCmd) Run(ctx *Context) error {
+	return nil
+}
+
+func (s *S) TestRunWrongArgsNumberShouldRunsHelpAndReturnStatus1(c *gocheck.C) {
+	expected := `pogo version 1.0.
+
+ERROR: wrong number of arguments.
+
+Usage: pogo arg [args]
+
+some desc
+
+Minimum # of arguments: 1
+Maximum # of arguments: 2
+`
+	manager.Register(&ArgCmd{})
+	manager.Run([]string{"arg"})
+	c.Assert(manager.stdout.(*bytes.Buffer).String(), gocheck.Equals, expected)
+	c.Assert(manager.e.(*recordingExiter).value(), gocheck.Equals, 1)
+}
+
+func (s *S) TestHelpShouldReturnUsageWithTheCommandName(c *gocheck.C) {
+	expected := `gulpd version 1.0.
+
+Usage: gulpd foo
+
+Foo do anything or nothing.
+
+`
+	var stdout, stderr bytes.Buffer
+	manager := NewManager("gulp", "0.1", "", &stdout, &stderr, os.Stdin)
+	manager.Register(&TestCommand{})
+	context := Context{[]string{"foo"}, manager.stdout, manager.stderr, manager.stdin}
+	command := help{manager: manager}
+	err := command.Run(&context)
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(manager.stdout.(*bytes.Buffer).String(), gocheck.Equals, expected)
+}
+
+func (s *S) TestExtractProgramNameWithAbsolutePath(c *gocheck.C) {
+	got := ExtractProgramName("/home/ram/bin/gulpd")
+	c.Assert(got, gocheck.Equals, "gulpd")
+}
+
+func (s *S) TestExtractProgramNameWithRelativePath(c *gocheck.C) {
+	got := ExtractProgramName("./gulpd")
+	c.Assert(got, gocheck.Equals, "gulpd")
+}
+
+func (s *S) TestExtractProgramNameWithinThePATH(c *gocheck.C) {
+	got := ExtractProgramName("gulpd")
+	c.Assert(got, gocheck.Equals, "gulpd")
+}
+
+func (s *S) TestFinisherReturnsOsExiterIfNotDefined(c *gocheck.C) {
+	m := Manager{}
+	c.Assert(m.finisher(), gocheck.FitsTypeOf, osExiter{})
+}
+
+func (s *S) TestFinisherReturnTheDefinedE(c *gocheck.C) {
+	var exiter recordingExiter
+	m := Manager{e: &exiter}
+	c.Assert(m.finisher(), gocheck.FitsTypeOf, &exiter)
+}

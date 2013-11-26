@@ -2,7 +2,7 @@
 // Package heal provides an interface for heal anything.
 package heal
 
-import "fmt"
+//import "fmt"
 /*
 // Healer represents a healer.
 type Healer interface {

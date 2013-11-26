@@ -1,18 +1,17 @@
-
-
 package app
 
 import (
 	"errors"
-	"fmt"
-	"github.com/globocom/config"
+	"log"
+	//"fmt"
+	//"github.com/globocom/config"
 	"github.com/indykish/gulp/action"
 	"github.com/indykish/gulp/db"
-	"github.com/indykish/gulp/amqp"
-	"github.com/indykish/gulp/scm"
-	"launchpad.net/goamz/aws"
-	"strconv"
-	"strings"
+	//"github.com/indykish/gulp/amqp"
+	//"github.com/indykish/gulp/scm"
+	//"launchpad.net/goamz/aws"
+	//"strconv"
+	//"strings"
 )
 
 var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
@@ -34,18 +33,19 @@ var startApp = action.Action{
 			return nil, errors.New("First parameter must be App or *App.")
 		}
 		/*
-		IF you need to go to Riak, then do it here. or else no.
-		conn, err := db.Conn()
-		if err != nil {
-			return nil, err
-		}
-		defer conn.Close()
+			IF you need to go to Riak, then do it here. or else no.
+			conn, err := db.Conn()
+			if err != nil {
+				return nil, err
+			}
+			defer conn.Close()
 		*/
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
 		//}
-		return &app, err
+		//return &app, err
+		return &app, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
@@ -54,12 +54,12 @@ var startApp = action.Action{
 			log.Printf("Could not connect to the database: %s", err)
 			return
 		}
+		log.Printf("App name is %s", app.Name)
 		defer conn.Close()
-		conn.Apps().Remove(bson.M{"name": app.Name})
+		//conn.Apps().Remove(bson.M{"name": app.Name})
 	},
 	MinParams: 1,
 }
-
 
 // insertApp is an action that inserts an app in the database in Forward and
 // removes it in the Backward.
@@ -78,18 +78,19 @@ var stopApp = action.Action{
 			return nil, errors.New("First parameter must be App or *App.")
 		}
 		/*
-		IF you need to go to Riak, then do it here. or else no.
-		conn, err := db.Conn()
-		if err != nil {
-			return nil, err
-		}
-		defer conn.Close()
+			IF you need to go to Riak, then do it here. or else no.
+			conn, err := db.Conn()
+			if err != nil {
+				return nil, err
+			}
+			defer conn.Close()
 		*/
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
 		//}
-		return &app, err
+		//return &app, err
+		return &app, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
@@ -98,8 +99,9 @@ var stopApp = action.Action{
 			log.Printf("Could not connect to the database: %s", err)
 			return
 		}
+		log.Printf("App name is %s", app.Name)
 		defer conn.Close()
-		conn.Apps().Remove(bson.M{"name": app.Name})
+		//conn.Apps().Remove(bson.M{"name": app.Name})
 	},
 	MinParams: 1,
 }

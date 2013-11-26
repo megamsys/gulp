@@ -1,20 +1,20 @@
 package app
 
 import (
-	"bytes"
+	//"bytes"
 	"encoding/json"
-	stderr "errors"
-	"fmt"
-	"github.com/globocom/config"
-	"github.com/indykish/gulp/action"
+//	stderr "errors"
+//	"fmt"
+//	"github.com/globocom/config"
+//	"github.com/indykish/gulp/action"
 	"github.com/indykish/gulp/db"
-	"github.com/indykish/gulp/errors"	
-	"io"
-	"os"
+//	"github.com/indykish/gulp/errors"
+	//"io"
+	//"os"
 	"regexp"
-	"sort"
-	"strings"
-	"time"
+	//"sort"
+	//"strings"
+	//"time"
 )
 
 var (
@@ -26,35 +26,34 @@ var (
 // This struct holds information about the app: its name, address, list of
 // teams that have access to it, used platform, etc.
 type App struct {
-	Env      map[string]bind.EnvVar
+	//Env      map[string]bind.EnvVar
 	Platform string `chef:"java"`
 	Name     string
 	Ip       string
 	CName    string
-	Units    []Unit
-	Teams    []string
-	Owner    string
-	State    string
-	Deploys  uint
+	//	Units    []Unit
+	Teams   []string
+	Owner   string
+	State   string
+	Deploys uint
 
-	hr hookRunner
+	//	hr hookRunner
 }
 
 // MarshalJSON marshals the app in json format. It returns a JSON object with
-// the following keys: name, framework, teams, units, repository and ip.
+//the following keys: name, framework, teams, units, repository and ip.
 func (app *App) MarshalJSON() ([]byte, error) {
 	result := make(map[string]interface{})
 	result["name"] = app.Name
 	result["platform"] = app.Platform
 	result["teams"] = app.Teams
-	result["units"] = app.Units
-	result["repository"] = repository.ReadWriteURL(app.Name)
+	//result["units"] = app.Units
+	//result["repository"] = repository.ReadWriteURL(app.Name)
 	result["ip"] = app.Ip
 	result["cname"] = app.CName
 	result["ready"] = app.State == "ready"
 	return json.Marshal(&result)
 }
-
 
 // Get queries the database and fills the App object with data retrieved from
 // the database. It uses the name of the app as filter in the query, so you can
@@ -69,61 +68,53 @@ func (app *App) Get() error {
 		return err
 	}
 	defer conn.Close()
-	return conn.Apps().Find(bson.M{"name": app.Name}).One(app)
+	//return conn.Apps().Find(bson.M{"name": app.Name}).One(app)
+	return nil
 }
 
 // StartsApp creates a new app.
 //
 // Starts the app :
 //
-func StartApp(app *App, user *auth.User) error {
-	teams, err := user.Teams()
-	if err != nil {
-		return err
-	}
-	if len(teams) == 0 {
-		return NoTeamsError{}
-	}
-	if _, err := getPlatform(app.Platform); err != nil {
-		return err
-	}
-	app.SetTeams(teams)
-	app.Owner = user.Email
-	if !app.isValid() {
-		msg := "Invalid app name, your app should have at most 63 " +
-			"characters, containing only lower case letters, numbers or dashes, " +
-			"starting with a letter."
-		return &errors.ValidationError{Message: msg}
-	}
-	actions := []*action.Action{&reserveUserApp, &createAppQuota, &insertApp}
-	useS3, _ := config.GetBool("bucket-support")
-	if useS3 {
-		actions = append(actions, &createIAMUserAction,
-			&createIAMAccessKeyAction,
-			&createBucketAction, &createUserPolicyAction)
-	}
-	actions = append(actions, &exportEnvironmentsAction,
-		&createRepository, &provisionApp)
-	pipeline := action.NewPipeline(actions...)
-	err = pipeline.Execute(app, user)
-	if err != nil {
-		return &AppCreationError{app: app.Name, Err: err}
-	}
+//func StartApp(app *App, user *auth.User) error {
+func StartApp(app *App) error {
+	/*	teams, err := user.Teams()
+		if err != nil {
+			return err
+		}
+		if len(teams) == 0 {
+			return NoTeamsError{}
+		}
+		if _, err := getPlatform(app.Platform); err != nil {
+			return err
+		}
+		app.SetTeams(teams)
+		app.Owner = user.Email
+		if !app.isValid() {
+			msg := "Invalid app name, your app should have at most 63 " +
+				"characters, containing only lower case letters, numbers or dashes, " +
+				"starting with a letter."
+			return &errors.ValidationError{Message: msg}
+		}
+		actions := []*action.Action{&reserveUserApp, &createAppQuota, &insertApp}
+		useS3, _ := config.GetBool("bucket-support")
+		if useS3 {
+			actions = append(actions, &createIAMUserAction,
+				&createIAMAccessKeyAction,
+				&createBucketAction, &createUserPolicyAction)
+		}
+		actions = append(actions, &exportEnvironmentsAction,
+			&createRepository, &provisionApp)
+		pipeline := action.NewPipeline(actions...)
+		err = pipeline.Execute(app, user)
+		if err != nil {
+			return &AppCreationError{app: app.Name, Err: err}
+		}
+	*/
 	return nil
 }
 
-
-// Available returns true if at least one of N units is started or unreachable.
-func (app *App) Available() bool {
-	for _, unit := range app.ProvisionedUnits() {
-		if unit.Available() {
-			return true
-		}
-	}
-	return false
-}
-
-// setEnv sets the given environment variable in the app.
+/* setEnv sets the given environment variable in the app.
 func (app *App) setEnv(env bind.EnvVar) {
 	if app.Env == nil {
 		app.Env = make(map[string]bind.EnvVar)
@@ -147,7 +138,7 @@ func (app *App) getEnv(name string) (bind.EnvVar, error) {
 	}
 	return env, err
 }
-
+*/
 // GetName returns the name of the app.
 func (app *App) GetName() string {
 	return app.Name
@@ -167,7 +158,7 @@ func (app *App) GetDeploys() uint {
 	return app.Deploys
 }
 
-// Env returns app.Env
+/* Env returns app.Env
 func (app *App) Envs() map[string]bind.EnvVar {
 	return app.Env
-}
+}*/

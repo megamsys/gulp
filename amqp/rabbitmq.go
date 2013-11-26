@@ -18,9 +18,9 @@ package amqp
 import (
 	"errors"
 	"fmt"
-	"log"
 	"github.com/globocom/config"
 	"github.com/streadway/amqp"
+	"log"
 	"net"
 	"regexp"
 	"sync"
@@ -39,6 +39,16 @@ type rabbitmqQ struct {
 	name string
 }
 
+const (
+	DefaultAMQPURL      = "http://localhost:8098/amqp"
+	DefaultQueue        = "thirsting.megam.co"
+	DefaultExchange     = "megam_nodes"
+	DefaultExchangeType = "fanout"
+	DefaultRoutingKey   = "megam_routingkey"
+	DefaultConsumerTag  = "megam_node_consumer"
+	
+)
+
 var (
 	mut            sync.Mutex // for conn access
 	timeoutRegexp  = regexp.MustCompile(`(TIMED_OUT|timeout)$`)
@@ -46,7 +56,7 @@ var (
 )
 
 func (b *rabbitmqQ) Get(timeout time.Duration) (*Message, error) {
-	return errors.New("Get: Not supported, Handler.start(), subscribe for RabbitMQ.")
+	return nil, errors.New("Get: Not supported, Handler.start(), subscribe for RabbitMQ.")
 
 }
 
@@ -60,11 +70,19 @@ func (b *rabbitmqQ) Put(m *Message, delay time.Duration) error {
 	var body = m.Args[0]
 
 	log.Printf("declared Exchange, publishing %dB body (%q)", len(body), body)
+	
+	exchange_conf, _ := config.GetString("amqp:exchange")
+	if exchange_conf == "" {
+		exchange_conf = DefaultExchange
+	}
+	routingkey_conf, _ := config.GetString("amqp:routingkey")
+	if routingkey_conf == "" {
+		routingkey_conf = DefaultRoutingKey
+	}
+	
 	if err = cons.channel.Publish(
-		//buddy you don't capture an err here.
-		config.GetString("amqp:exchange"), // publish to an exchange
-		//buddy you don't capture an err here.
-		config.GetString("amqp:routingKey"), // routing to 0 or more queues
+		exchange_conf, // publish to an exchange
+		routingkey_conf, // routing to 0 or more queues
 		false, // mandatory
 		false, // immediate
 		amqp.Publishing{
@@ -100,12 +118,12 @@ func (b rabbitmqFactory) Get(name string) (Q, error) {
 func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, error) {
 	return &executor{
 		inner: func() {
-			if consumer, err := consume(5e9); err == nil {
-				deliveries := <-consumer
+			if deliveries, err := consume(5e9); err == nil {
 
 				for d := range deliveries {
 					log.Printf("got %dB delivery: [%v] %q", len(d.Body), d.DeliveryTag, d.Body)
-					//We have the message here, what do you want to do ?
+				    message := &Message{}
+					//We have the message here (oo not yet), what do you want to do ?
 					//Associate it with a command, and pass it in a go routine ?
 					//				log.Printf("Dispatching %q message to handler function.", message.Action)
 					go func(m *Message) {
@@ -119,7 +137,7 @@ func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, err
 					}(message)
 				}
 				log.Printf("handle: deliveries channel closed")
-				done <- nil
+				//done <- nil
 			} else {
 				log.Printf("Failed to get message from the queue: %s. Trying again...", err)
 				if e, ok := err.(*net.OpError); ok && e.Op == "dial" {
@@ -142,7 +160,7 @@ func connection() (*Consumer, error) {
 	c := &Consumer{
 		conn:    nil,
 		channel: nil,
-		tag:     ctag,
+		tag:     DefaultConsumerTag,
 		done:    make(chan error),
 	}
 
@@ -163,11 +181,15 @@ func connection() (*Consumer, error) {
 		mut.Unlock()
 		return nil, err
 	}
+	
+	exchange_conf, _ := config.GetString("amqp:exchange")
+	if exchange_conf == "" {
+		exchange_conf = DefaultExchange
+	}	
 
-	if c.channel, err = c.channel.ExchangeDeclare(
-		//buddy you don't capture an err here.
-		config.GetString("amqp:exchange"), // name of the exchange
-		"fanout", // exchange Type
+	if err = c.channel.ExchangeDeclare(
+		exchange_conf, // name of the exchange
+		DefaultExchangeType, // exchange Type
 		true,     // durable
 		false,    // delete when complete
 		false,    // internal
@@ -185,25 +207,41 @@ func connection() (*Consumer, error) {
 func rconnection() (*Consumer, error) {
 	cons, err := connection()
 	mut.Lock()
-	if cons.queue, err = cons.channel.QueueDeclare(
-		//buddy you don't capture an err here.
-		config.GetString("amqp:queue"), // name of the queue
+	
+	queue_conf, _ := config.GetString("amqp:queue")
+	if queue_conf == "" {
+		queue_conf = DefaultQueue
+	}
+	
+	decl_q, err := cons.channel.QueueDeclare(
+		queue_conf, // name of the queue
 		true,  // durable
 		false, // delete when usused
 		false, // exclusive
 		false, // noWait
 		nil,   // arguments
-	); err != nil {
+	)
+	
+	if err != nil {
 		mut.Unlock()
 		return nil, err
+	}
+	
+	cons.queue = &decl_q
+		
+	exchange_conf, _ := config.GetString("amqp:exchange")
+	if exchange_conf == "" {
+		exchange_conf = DefaultExchange
+	}
+	routingkey_conf, _ := config.GetString("amqp:routingkey")
+	if routingkey_conf == "" {
+		routingkey_conf = DefaultRoutingKey
 	}
 
 	if err = cons.channel.QueueBind(
 		cons.queue.Name, // name of the queue
-		//buddy you don't capture an err here.
-		config.GetString("amqp:routingKey"), // name of bindingKey
-		//buddy you don't capture an err here.
-		config.GetString("amqp:exchange"), // sourceExchange
+		routingkey_conf,
+		exchange_conf,
 		false, // noWait
 		nil,   // arguments
 	); err != nil {
@@ -215,25 +253,27 @@ func rconnection() (*Consumer, error) {
 }
 
 //returns AMQP Consumer (ASynchronous, blocked - dies on shutdown)
-func consume(timeout time.Duration) (*amqp.Delivery, error) {
-	cons, err = rconnection()
+func consume(timeout time.Duration) (<-chan amqp.Delivery, error) {
+	cons, err := rconnection()
 
-	if deliveries, err := cons.channel.Consume(
-		consumer.queue.Name, // name
-		consumer.tag,        // consumerTag,
+	deliveries, err := cons.channel.Consume(
+		cons.queue.Name, // name
+		cons.tag,        // consumerTag,
 		false,               // noAck
 		false,               // exclusive
 		false,               // noLocal
 		false,               // noWait
 		nil,                 // arguments
-	); err != nil {
+	)
+	
+	if err != nil {
 		return nil, err
 	}
-
+    
 	return deliveries, nil
 }
 
-/* 
+/*
 //shut it down, the handler actually shuts it down.
 func (c *Consumer) Shutdown() error {
 	// will close() the deliveries channel
