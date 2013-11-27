@@ -73,7 +73,7 @@ func (s *S) TestRun(c *gocheck.C) {
 
 func (s *S) TestHelpCommandShouldBeRegisteredByDefault(c *gocheck.C) {
 	var stdout, stderr bytes.Buffer
-	m := NewManager("gulp", "1.0", "", &stdout, &stderr, os.Stdin)
+	m := NewManager("gulpd", "0.1", "", &stdout, &stderr, os.Stdin)
 	_, exists := m.Commands["help"]
 	c.Assert(exists, gocheck.Equals, true)
 }
@@ -123,11 +123,11 @@ func (cmd *ArgCmd) Run(ctx *Context) error {
 }
 
 func (s *S) TestRunWrongArgsNumberShouldRunsHelpAndReturnStatus1(c *gocheck.C) {
-	expected := `pogo version 1.0.
+	expected := `gulpd version 0.1.
 
 ERROR: wrong number of arguments.
 
-Usage: pogo arg [args]
+Usage: gulpd arg [args]
 
 some desc
 
@@ -141,7 +141,7 @@ Maximum # of arguments: 2
 }
 
 func (s *S) TestHelpShouldReturnUsageWithTheCommandName(c *gocheck.C) {
-	expected := `gulpd version 1.0.
+	expected := `gulpd version 0.1.
 
 Usage: gulpd foo
 
@@ -149,7 +149,7 @@ Foo do anything or nothing.
 
 `
 	var stdout, stderr bytes.Buffer
-	manager := NewManager("gulp", "0.1", "", &stdout, &stderr, os.Stdin)
+	manager := NewManager("gulpd", "0.1", "", &stdout, &stderr, os.Stdin)
 	manager.Register(&TestCommand{})
 	context := Context{[]string{"foo"}, manager.stdout, manager.stderr, manager.stdin}
 	command := help{manager: manager}

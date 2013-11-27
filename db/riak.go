@@ -11,6 +11,7 @@ import (
 	"github.com/mrb/riakpbc"
 	"fmt"
 	"sync"
+	"log"
 	"time"
 )
 
@@ -21,7 +22,7 @@ var (
 )
 
 const (
-	DefaultRiakURL    = "http://localhost:8098/riak/"
+	DefaultRiakURL    = "127.0.0.1"
 	DefaultBucketName = "nodes"
 )
 
@@ -42,9 +43,11 @@ func open(addr, bucketname string) (*Storage, error) {
 	// Alternative marshallers can be built from this interface.
 	coder := riakpbc.NewCoder("json", riakpbc.JsonMarshaller, riakpbc.JsonUnmarshaller)
 	riakCoder := riakpbc.NewClientWithCoder([]string{addr}, coder)
+	log.Printf("open: dial %s", addr)			
 
 	err := riakCoder.Dial()
 	if err != nil {
+		log.Printf("Could not connect to the database: %s", err)	
 		return nil, err
 	}
 
@@ -68,19 +71,23 @@ func Open(addr, bktname string) (storage *Storage, err error) {
 			storage, err = open(addr, bktname)
 		}
 	}()
+	log.Printf("Open: connecting to %s", addr)
 	mut.RLock()
 	if session, ok := conn[addr]; ok {
 		mut.RUnlock()
 		if _, err = session.s.Ping(); err == nil {
 			mut.Lock()
 			session.used = time.Now()
+			log.Printf("Open: store  %s", addr)			
 			conn[addr] = session
 			mut.Unlock()
 			return &Storage{session.s, bktname}, nil
 		}
+		log.Printf("Open: stale  %s", addr)		
 		return open(addr, bktname)
 	}
 	mut.RUnlock()
+	log.Printf("Open: fresh open %s", addr)	
 	return open(addr, bktname)
 }
 
@@ -97,6 +104,7 @@ func Conn() (*Storage, error) {
 	if bktname == "" {
 		bktname = DefaultBucketName
 	}
+	log.Printf("Conn: %s %s", url, bktname)
 	return Open(url, bktname)
 }
 

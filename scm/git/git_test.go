@@ -138,7 +138,7 @@ func (s *S) TestOpenRepository(c *gocheck.C) {
 	}
 }
 
-func (s *S) TestGetRemoteURL(c *gocheck.C) {
+/*func (s *S) TestGetRemoteURL(c *gocheck.C) {
 	var data = []struct {
 		name     string
 		expected string
@@ -187,3 +187,4 @@ func BenchmarkGetRemoteURL(b *testing.B) {
 		repo.RemoteURL("megam")
 	}
 }
+*/

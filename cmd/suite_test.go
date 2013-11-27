@@ -40,7 +40,7 @@ func (s *S) TearDownSuite(c *gocheck.C) {
 
 func (s *S) SetUpTest(c *gocheck.C) {
 	var stdout, stderr bytes.Buffer
-	manager = NewManager("gulp", "0.1", "", &stdout, &stderr, os.Stdin)
+	manager = NewManager("gulpd", "0.1", "", &stdout, &stderr, os.Stdin)
 	var exiter recordingExiter
 	manager.e = &exiter
 }
