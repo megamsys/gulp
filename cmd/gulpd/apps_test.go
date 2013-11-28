@@ -9,24 +9,23 @@ import (
 //	"strings"
 )
 
-func (s *S) TestAppCreateInfo(c *gocheck.C) {
+func (s *S) TestAppStart(c *gocheck.C) {
 	expected := &cmd.Info{
-		Name:    "app-create",
-		Usage:   "app-create <appname> <platform>",
-		Desc:    "create a new app.",
-		MinArgs: 2,
+		Name:    "startapp",
+		Usage:   "startapp <appname> <lifecycle_when>",
+		Desc:    "starts the installed app.",
+		MinArgs: 1,
 	}
-	c.Assert((&AppCreate{}).Info(), gocheck.DeepEquals, expected)
+	c.Assert((&AppStart{}).Info(), gocheck.DeepEquals, expected)
 }
 
-func (s *S) TestAppCreate(c *gocheck.C) {
+func (s *S) TestAppStop(c *gocheck.C) {
 	var stdout, stderr bytes.Buffer
 //	result := `{"status":"success", "repository_url":"git@github.com/indykish:nilavu.git"}`
-	expected := `App "ble" is being created!
-Use app-info to check the status of the app and its units.
-Your repository for "ble" project is "git@github.com/indykish:ble.git"` + "\n"
+	expected := `App "ble.megam.co" is being started!
+Use appreqs list to check the status of the app.` + "\n"
 	context := cmd.Context{
-		Args:   []string{"ble", "django"},
+		Args:   []string{"ble.megam.co", "rails"},
 		Stdout: &stdout,
 		Stderr: &stderr,
 	}
@@ -41,7 +40,8 @@ Your repository for "ble" project is "git@github.com/indykish:ble.git"` + "\n"
 		},
 	}
 	client := cmd.NewClient(&http.Client{Transport: &trans}, nil, manager)
-*/	command := AppCreate{}
+	*/
+	command := AppStart{}
 	err := command.Run(&context)
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(stdout.String(), gocheck.Equals, expected)

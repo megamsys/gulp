@@ -1,24 +1,24 @@
 package main
 
 import (
-	"bytes"
+	//"bytes"
 	//	"encoding/json"
 	"fmt"
 	"github.com/indykish/gulp/cmd"
 	//	"io/ioutil"
 	"launchpad.net/gnuflag"
-	"log"
+	//"log"
 	//	"net/http"
 )
 
-type AppCreate struct{}
+type AppStart struct{}
 
-func (AppCreate) Run(context *cmd.Context) error {
+func (AppStart) Run(context *cmd.Context) error {
 	appName := context.Args[0]
-	platform := context.Args[1]
+	/*platform := context.Args[1]
 	b := bytes.NewBufferString(fmt.Sprintf(`{"name":"%s","platform":"%s"}`, appName, platform))
 	log.Printf("This is just a crappy print %s", b)
-	/* url, err := cmd.GetURL("/apps")
+	 url, err := cmd.GetURL("/apps")
 	if err != nil {
 		return err
 	}
@@ -41,39 +41,38 @@ func (AppCreate) Run(context *cmd.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(context.Stdout, "App %q is being created!\n", appName)
-	fmt.Fprintln(context.Stdout, "Use app-info to check the status of the app and its units.")
-	fmt.Fprintf(context.Stdout, "Your repository for %q project is %q\n", appName, out["repository_url"])
 	*/
+	fmt.Fprintf(context.Stdout, "App %q is being started!\n", appName)
+	fmt.Fprintln(context.Stdout, "Use appreqs list to check the status of the app.")	
 	return nil
 }
 
-func (AppCreate) Info() *cmd.Info {
+func (AppStart) Info() *cmd.Info {
 	return &cmd.Info{
-		Name:    "app-create",
-		Usage:   "app-create <appname> <platform>",
-		Desc:    "create a new app.",
-		MinArgs: 2,
+		Name:    "startapp",
+		Usage:   "startapp <appname> <lifecycle_when>",
+		Desc:    "starts the installed app.",
+		MinArgs: 1,
 	}
 }
 
-type AppRemove struct {
+type AppStop struct {
 	yes bool
 	fs  *gnuflag.FlagSet
 }
 
-func (c *AppRemove) Info() *cmd.Info {
+func (c *AppStop) Info() *cmd.Info {
 	return &cmd.Info{
-		Name:  "app-remove",
-		Usage: "app-remove [--app appname] [--assume-yes]",
-		Desc: `removes an app.
+		Name:  "stopapp",
+		Usage: "stopapp appname [--lifecycle-when-yes]",
+		Desc: `stops the installed app.
 
 If you don't provide the app name, megam will try to guess it.`,
-		MinArgs: 0,
+		MinArgs: 1,
 	}
 }
 
-func (c *AppRemove) Run(context *cmd.Context) error {
+func (c *AppStop) Run(context *cmd.Context) error {
 	appName := context.Args[0]
 	
 	var answer string
@@ -102,7 +101,7 @@ func (c *AppRemove) Run(context *cmd.Context) error {
 	return nil
 }
 
-func (c *AppRemove) Flags() *gnuflag.FlagSet {
+func (c *AppStop) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
 		c.fs = gnuflag.NewFlagSet("appremove", gnuflag.ExitOnError)
 		c.fs.BoolVar(&c.yes, "assume-yes", false, "Don't ask for confirmation, just remove the app.")

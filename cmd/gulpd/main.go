@@ -18,7 +18,7 @@ package main
 import (
 	"github.com/globocom/config"
 	"github.com/indykish/gulp/cmd"
-	"github.com/indykish/gulp/cmd/gulpd_jump"
+	"github.com/indykish/gulp/cmd/jumps"
 	"os"
 )
 
@@ -41,12 +41,11 @@ type tsrCommand struct {
 
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
-	gs:= &jump.GulpStart{}
-	m.Register(gs) //start the gulpd daemon
-	/*m.Register(Stop{})		   //stop  the gulpd daemon
-	m.Register(&gulp.AppStart{})   //sudo service <appname> start
-	m.Register(&gulp.AppStop{})    //sudo service <appname> stop
-	m.Register(&gulp.AppRestart{}) //sudo service <apppname> restart
+	m.Register(&jumps.GulpStart{}) //start the gulpd daemon
+	m.Register(&jumps.GulpStop{})		   //stop  the gulpd daemon
+	m.Register(&AppStart{})   //sudo service <appname> start
+	m.Register(&AppStop{})    //sudo service <appname> stop
+	/*m.Register(&gulp.AppRestart{}) //sudo service <apppname> restart
 	m.Register(&gulp.AppBuild{})   //git fetch -q
 	m.Register(&gulp.AppMaintain{})//sudo service nginx maintain ?
 	m.Register(&gulp.SSLAdd{})     //download node_name.pub, crt from S3, mk ssl_template, cp to sites_available, ln to sites_enabled. && AppRestart
