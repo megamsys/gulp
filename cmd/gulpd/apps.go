@@ -1,14 +1,14 @@
-
 package main
 
 import (
 	"bytes"
-	"encoding/json"
+	//	"encoding/json"
 	"fmt"
 	"github.com/indykish/gulp/cmd"
-	"io/ioutil"
+	//	"io/ioutil"
 	"launchpad.net/gnuflag"
-	"net/http"
+	"log"
+	//	"net/http"
 )
 
 type AppCreate struct{}
@@ -17,11 +17,12 @@ func (AppCreate) Run(context *cmd.Context) error {
 	appName := context.Args[0]
 	platform := context.Args[1]
 	b := bytes.NewBufferString(fmt.Sprintf(`{"name":"%s","platform":"%s"}`, appName, platform))
-	url, err := cmd.GetURL("/apps")
+	log.Printf("This is just a crappy print %s", b)
+	/* url, err := cmd.GetURL("/apps")
 	if err != nil {
 		return err
 	}
-	/*request, err := http.NewRequest("POST", url, b)
+	request, err := http.NewRequest("POST", url, b)
 	if err != nil {
 		return err
 	}
@@ -73,10 +74,8 @@ If you don't provide the app name, megam will try to guess it.`,
 }
 
 func (c *AppRemove) Run(context *cmd.Context) error {
-	appName, err := c.Guess()
-	if err != nil {
-		return err
-	}
+	appName := context.Args[0]
+	
 	var answer string
 	if !c.yes {
 		fmt.Fprintf(context.Stdout, `Are you sure you want to remove app "%s"? (y/n) `, appName)
@@ -105,7 +104,7 @@ func (c *AppRemove) Run(context *cmd.Context) error {
 
 func (c *AppRemove) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
-		c.fs = c.GuessingCommand.Flags()
+		c.fs = gnuflag.NewFlagSet("appremove", gnuflag.ExitOnError)
 		c.fs.BoolVar(&c.yes, "assume-yes", false, "Don't ask for confirmation, just remove the app.")
 		c.fs.BoolVar(&c.yes, "y", false, "Don't ask for confirmation, just remove the app.")
 	}

@@ -28,10 +28,3 @@ func (s *S) TestAppRemoveIsRegistered(c *gocheck.C) {
 	c.Assert(ok, gocheck.Equals, true)
 	c.Assert(remove, gocheck.FitsTypeOf, &AppRemove{})
 }
-
-func (s *S) TestAppListIsRegistered(c *gocheck.C) {
-	manager := buildManager("megam")
-	list, ok := manager.Commands["app-list"]
-	c.Assert(ok, gocheck.Equals, true)
-	c.Assert(list, gocheck.FitsTypeOf, megam.AppList{})
-}

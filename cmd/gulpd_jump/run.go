@@ -1,12 +1,8 @@
-package gulp
+package jump
 
 import (
-	"fmt"
 	"github.com/indykish/gulp/cmd"
-	"io"
 	"launchpad.net/gnuflag"
-	"net/http"
-	"strings"
 )
 
 type GulpStart struct {
@@ -29,8 +25,8 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 	}
 }
 
-func (c *GulpStart) Run(context *cmd.Context, client *cmd.Client) error {
-	api.RunServer(c.dry)
+func (c *GulpStart) Run(context *cmd.Context) error {
+	//api.RunServer(c.dry)
 	// The struc will also have the c.manager
 	// c.manager
 	// Now using this value start the queue.
@@ -55,8 +51,9 @@ func (c *GulpStart) Run(context *cmd.Context, client *cmd.Client) error {
 	}
 	defer r.Body.Close()
 	_, err = io.Copy(context.Stdout, r.Body)
-	*/
 	return err
+	*/
+	return nil
 }
 
 func (c *GulpStart) Flags() *gnuflag.FlagSet {
@@ -88,8 +85,8 @@ If you use the '--bark' flag gulpd will notify daemon status.
 	}
 }
 
-func (c *GulpStart) Run(context *cmd.Context, client *cmd.Client) error {
-	api.RunServer(c.bark)
+func (c *GulpStop) Run(context *cmd.Context) error {
+	//api.RunServer(c.bark)
 	// The struc will also have the started Handler to the Queue
 	// c.handler
 	// Now using the handler call
@@ -116,15 +113,17 @@ func (c *GulpStart) Run(context *cmd.Context, client *cmd.Client) error {
 	}
 	defer r.Body.Close()
 	_, err = io.Copy(context.Stdout, r.Body)
-	*/
+	
 	return err
+	*/
+	return nil
 }
 
 func (c *GulpStop) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
 		c.fs = gnuflag.NewFlagSet("gulpd", gnuflag.ExitOnError)
-		c.fs.BoolVar(&c.dry, "bark", false, "bark: does a notify of the daemon status (to zk)")
-		c.fs.BoolVar(&c.dry, "b", false, "bark: does a notify of the daemon status (to zk)")
+		c.fs.BoolVar(&c.bark, "bark", false, "bark: does a notify of the daemon status (to zk)")
+		c.fs.BoolVar(&c.bark, "b", false, "bark: does a notify of the daemon status (to zk)")
 	}
 	return c.fs
 }

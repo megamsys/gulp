@@ -3,11 +3,10 @@ package main
 import (
 	"bytes"
 	"github.com/indykish/gulp/cmd"
-	"github.com/indykish/gulp/cmd/testing"
-	"io/ioutil"
+//	"io/ioutil"
 	"launchpad.net/gocheck"
-	"net/http"
-	"strings"
+//	"net/http"
+//	"strings"
 )
 
 func (s *S) TestAppCreateInfo(c *gocheck.C) {
@@ -22,7 +21,7 @@ func (s *S) TestAppCreateInfo(c *gocheck.C) {
 
 func (s *S) TestAppCreate(c *gocheck.C) {
 	var stdout, stderr bytes.Buffer
-	result := `{"status":"success", "repository_url":"git@github.com/indykish:nilavu.git"}`
+//	result := `{"status":"success", "repository_url":"git@github.com/indykish:nilavu.git"}`
 	expected := `App "ble" is being created!
 Use app-info to check the status of the app and its units.
 Your repository for "ble" project is "git@github.com/indykish:ble.git"` + "\n"

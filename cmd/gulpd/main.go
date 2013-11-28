@@ -1,4 +1,4 @@
-/* 
+/*
 ** Copyright [2012-2013] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,13 @@
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-*/
+ */
 package main
 
 import (
+	"github.com/globocom/config"
 	"github.com/indykish/gulp/cmd"
+	"github.com/indykish/gulp/cmd/gulpd_jump"
 	"os"
 )
 
@@ -27,9 +29,20 @@ const (
 
 const defaultConfigPath = "/conf/gulpd.conf"
 
+/*
+type tsrCommand struct {
+	cmd.Command
+	fs   *gnuflag.FlagSet
+	file configFile
+}
+	m.Register(&tsrCommand{Command: &apiCmd{}})
+
+*/
+
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
-	m.Register(&GulpStart{&m})            //start the gulpd daemon 
+	gs:= &jump.GulpStart{}
+	m.Register(gs) //start the gulpd daemon
 	/*m.Register(Stop{})		   //stop  the gulpd daemon
 	m.Register(&gulp.AppStart{})   //sudo service <appname> start
 	m.Register(&gulp.AppStop{})    //sudo service <appname> stop
@@ -47,7 +60,7 @@ func buildManager(name string) *cmd.Manager {
 	m.Register(&gulp.EnvUnset{})   //ENV['JMP_UP_PATH'] = blank
 	m.Register(&KeyAdd{})          //add the id_rsa/pub
 	m.Register(&KeyRemove{})       //remove the id_rsa/pub
-	m.Register(gulp.ServiceList{}) //ps -ef 
+	m.Register(gulp.ServiceList{}) //ps -ef
 	*/
 	return m
 }

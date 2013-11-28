@@ -90,7 +90,7 @@ _go_test:
 	@go test ./...
 
 _gulpd_dry:
-	@go build -o gulpd ./cmd/gulp
+	@go build -o gulpd ./cmd/gulpd
 	@./gulpd start --dry --config ./config/gulpd.conf
 	@rm -f gulpd
 
