@@ -19,9 +19,9 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 `
 	return &cmd.Info{
 		Name:    "start",
-		Usage:   `start [--dry]`,
+		Usage:   `start [--dry] [--config]`,
 		Desc:    desc,
-		MinArgs: 1,
+		MinArgs: 0,
 	}
 }
 
@@ -59,6 +59,8 @@ func (c *GulpStart) Run(context *cmd.Context) error {
 func (c *GulpStart) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
 		c.fs = gnuflag.NewFlagSet("gulpd", gnuflag.ExitOnError)
+		c.fs.BoolVar(&c.dry, "config", false, "config: the configuration file to use")
+		c.fs.BoolVar(&c.dry, "c", false, "dry-run: does not start the gulpd (for testing purpose)")
 		c.fs.BoolVar(&c.dry, "dry", false, "dry-run: does not start the gulpd (for testing purpose)")
 		c.fs.BoolVar(&c.dry, "d", false, "dry-run: does not start the gulpd (for testing purpose)")
 	}
@@ -81,7 +83,7 @@ If you use the '--bark' flag gulpd will notify daemon status.
 		Name:    "stop",
 		Usage:   `stop [--bark]`,
 		Desc:    desc,
-		MinArgs: 1,
+		MinArgs: 0,
 	}
 }
 

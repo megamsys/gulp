@@ -1,45 +1,50 @@
 package jumps
 
 import (
-	"bytes"
 	"github.com/indykish/gulp/cmd"
 	"launchpad.net/gocheck"
+	"testing"
 )
 
+func Test(t *testing.T) {
+	gocheck.TestingT(t)
+}
+
+type S struct{}
 
 
+var _ = gocheck.Suite(&S{})
 func (s *S) TestGulpStartInfo(c *gocheck.C) {
-	desc := `run a command in all instances of the app, and prints the output.
+	desc := `starts the gulpd daemon, and connects to queue.
 
-If you use the '--once' flag tsuru will run the command only in one unit.
+If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 
-If you don't provide the app name, tsuru will try to guess it.
 `
+
 	expected := &cmd.Info{
-		Name:    "run",
-		Usage:   `run <command> [commandarg1] [commandarg2] ... [commandargn] [--app appname] [--once]`,
+		Name:    "start",
+		Usage:   `start [--dry] [--config]`,
 		Desc:    desc,
-		MinArgs: 1,
+		MinArgs: 0,
 	}
-	command := AppRun{}
+	command := GulpStart{}
 	c.Assert(command.Info(), gocheck.DeepEquals, expected)
 }
 
 
 func (s *S) TestGulpStopInfo(c *gocheck.C) {
-	desc := `run a command in all instances of the app, and prints the output.
+	desc := `stops the gulpd daemon, and shutsdown the queue.
 
-If you use the '--once' flag tsuru will run the command only in one unit.
+If you use the '--bark' flag gulpd will notify daemon status.
 
-If you don't provide the app name, tsuru will try to guess it.
 `
 	expected := &cmd.Info{
-		Name:    "run",
-		Usage:   `run <command> [commandarg1] [commandarg2] ... [commandargn] [--app appname] [--once]`,
+		Name:    "stop",
+		Usage:   `stop [--bark]`,
 		Desc:    desc,
-		MinArgs: 1,
+		MinArgs: 0,
 	}
-	command := AppRun{}
+	command := GulpStop{}
 	c.Assert(command.Info(), gocheck.DeepEquals, expected)
 }
 
