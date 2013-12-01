@@ -7,11 +7,11 @@
 package db
 
 import (
+	"fmt"
 	"github.com/globocom/config"
 	"github.com/mrb/riakpbc"
-	"fmt"
-	"sync"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -43,11 +43,10 @@ func open(addr, bucketname string) (*Storage, error) {
 	// Alternative marshallers can be built from this interface.
 	coder := riakpbc.NewCoder("json", riakpbc.JsonMarshaller, riakpbc.JsonUnmarshaller)
 	riakCoder := riakpbc.NewClientWithCoder([]string{addr}, coder)
-	log.Printf("open: dial %s", addr)			
-
+	log.Printf("open: dial %s", addr)
 	err := riakCoder.Dial()
 	if err != nil {
-		log.Printf("Could not connect to the database: %s", err)	
+		log.Printf("Could not connect to the database: %s", err)
 		return nil, err
 	}
 
@@ -78,16 +77,16 @@ func Open(addr, bktname string) (storage *Storage, err error) {
 		if _, err = session.s.Ping(); err == nil {
 			mut.Lock()
 			session.used = time.Now()
-			log.Printf("Open: store  %s", addr)			
+			log.Printf("Open: store  %s", addr)
 			conn[addr] = session
 			mut.Unlock()
 			return &Storage{session.s, bktname}, nil
 		}
-		log.Printf("Open: stale  %s", addr)		
+		log.Printf("Open: stale  %s", addr)
 		return open(addr, bktname)
 	}
 	mut.RUnlock()
-	log.Printf("Open: fresh open %s", addr)	
+	log.Printf("Open: fresh open %s", addr)
 	return open(addr, bktname)
 }
 

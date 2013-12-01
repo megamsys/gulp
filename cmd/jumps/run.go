@@ -3,6 +3,7 @@ package jumps
 import (
 	"github.com/indykish/gulp/cmd"
 	"launchpad.net/gnuflag"
+	"log"
 )
 
 type GulpStart struct {
@@ -26,6 +27,8 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 }
 
 func (c *GulpStart) Run(context *cmd.Context) error {
+    log.Printf("arg 0    = %s",context.Args[0])
+    log.Printf("manager = %s",c.manager)
 	//api.RunServer(c.dry)
 	// The struc will also have the c.manager
 	// c.manager

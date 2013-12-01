@@ -69,7 +69,7 @@ func (s *S) TestOpenConnectionRefused(c *gocheck.C) {
 func (s *S) TestClose(c *gocheck.C) {
 	defer func() {
 		r := recover()
-		c.Check(r, gocheck.NotNil)
+		c.Check(r, gocheck.IsNil)
 	}()
 	storage, err := Open("127.0.0.1:8098", "megam_storage_test")
 	c.Assert(err, gocheck.IsNil)

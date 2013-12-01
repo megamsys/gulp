@@ -19,6 +19,7 @@ import (
 	"github.com/globocom/config"
 	"github.com/indykish/gulp/cmd"
 	"github.com/indykish/gulp/cmd/jumps"
+	"log"
 	"os"
 )
 
@@ -29,15 +30,6 @@ const (
 
 const defaultConfigPath = "/conf/gulpd.conf"
 
-/*
-type tsrCommand struct {
-	cmd.Command
-	fs   *gnuflag.FlagSet
-	file configFile
-}
-	m.Register(&tsrCommand{Command: &apiCmd{}})
-
-*/
 
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
@@ -68,5 +60,6 @@ func main() {
 	config.ReadConfigFile(defaultConfigPath)
 	name := cmd.ExtractProgramName(os.Args[0])
 	manager := buildManager(name)
+	log.Printf("Called Run");
 	manager.Run(os.Args[1:])
 }
