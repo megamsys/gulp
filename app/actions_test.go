@@ -33,6 +33,3 @@ func (s *S) TestCreateRepositoryBackward(c *gocheck.C) {
 	c.Assert(string(h.body[0]), gocheck.Equals, "null")
 }
 */
-
-
-
