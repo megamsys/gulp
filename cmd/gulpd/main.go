@@ -18,7 +18,6 @@ package main
 import (
 	"github.com/globocom/config"
 	"github.com/indykish/gulp/cmd"
-	"github.com/indykish/gulp/cmd/jumps"
 	"log"
 	"os"
 )
@@ -30,13 +29,12 @@ const (
 
 const defaultConfigPath = "/conf/gulpd.conf"
 
-
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
-	m.Register(&jumps.GulpStart{}) //start the gulpd daemon
-	m.Register(&jumps.GulpStop{})		   //stop  the gulpd daemon
-	m.Register(&AppStart{})   //sudo service <appname> start
-	m.Register(&AppStop{})    //sudo service <appname> stop
+	m.Register(&GulpStart{m, nil, false}) //start the gulpd daemon
+	m.Register(&GulpStop{})               //stop  the gulpd daemon
+	m.Register(&AppStart{})               //sudo service <appname> start
+	m.Register(&AppStop{})                //sudo service <appname> stop
 	/*m.Register(&gulp.AppRestart{}) //sudo service <apppname> restart
 	m.Register(&gulp.AppBuild{})   //git fetch -q
 	m.Register(&gulp.AppMaintain{})//sudo service nginx maintain ?
@@ -60,6 +58,6 @@ func main() {
 	config.ReadConfigFile(defaultConfigPath)
 	name := cmd.ExtractProgramName(os.Args[0])
 	manager := buildManager(name)
-	log.Printf("Called Run");
+	log.Printf("Called Run")
 	manager.Run(os.Args[1:])
 }

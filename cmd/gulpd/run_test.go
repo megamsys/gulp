@@ -1,19 +1,10 @@
-package jumps
+package main
 
 import (
 	"github.com/indykish/gulp/cmd"
 	"launchpad.net/gocheck"
-	"testing"
 )
 
-func Test(t *testing.T) {
-	gocheck.TestingT(t)
-}
-
-type S struct{}
-
-
-var _ = gocheck.Suite(&S{})
 func (s *S) TestGulpStartInfo(c *gocheck.C) {
 	desc := `starts the gulpd daemon, and connects to queue.
 

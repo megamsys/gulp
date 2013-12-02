@@ -1,4 +1,4 @@
-package jumps
+package main
 
 import (
 	"github.com/indykish/gulp/cmd"
