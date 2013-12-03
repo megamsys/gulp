@@ -7,9 +7,9 @@ import (
 )
 
 type GulpStart struct {
- 	manager *cmd.Manager
-	fs  *gnuflag.FlagSet
-	dry bool
+	manager *cmd.Manager
+	fs      *gnuflag.FlagSet
+	dry     bool
 }
 
 func (g *GulpStart) Info() *cmd.Info {
@@ -27,35 +27,12 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 }
 
 func (c *GulpStart) Run(context *cmd.Context) error {
-    log.Printf("arg 0    = %s",context.Args[0])
-    log.Printf("manager = %s",c.manager)
-	//api.RunServer(c.dry)
+	log.Printf("arg 0    = %s", context.Args[0])
+	log.Printf("manager  = %s", c.manager)
 	// The struc will also have the c.manager
 	// c.manager
 	// Now using this value start the queue.
-	
-	/*appName, err := c.dry()
-	if err != nil {
-		return err
-	}
-	
-	url, err := cmd.GetURL(fmt.Sprintf("/apps/%s/run?once=%t", appName, c.once))
-	if err != nil {
-		return err
-	}
-	b := strings.NewReader(strings.Join(context.Args, " "))
-	request, err := http.NewRequest("POST", url, b)
-	if err != nil {
-		return err
-	}
-	r, err := client.Do(request)
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-	_, err = io.Copy(context.Stdout, r.Body)
-	return err
-	*/
+	RunServer(c.dry)
 	return nil
 }
 
@@ -70,9 +47,8 @@ func (c *GulpStart) Flags() *gnuflag.FlagSet {
 	return c.fs
 }
 
-
 type GulpStop struct {
-	fs  *gnuflag.FlagSet
+	fs   *gnuflag.FlagSet
 	bark bool
 }
 
@@ -97,12 +73,12 @@ func (c *GulpStop) Run(context *cmd.Context) error {
 	// Now using the handler call
 	// c.handler.stop()
 	//on successful stop, propagate the status if there was no err and bark is turned on..
-	
+
 	/*appName, err := c.dry()
 	if err != nil {
 		return err
 	}
-	
+
 	url, err := cmd.GetURL(fmt.Sprintf("/apps/%s/run?once=%t", appName, c.once))
 	if err != nil {
 		return err
@@ -118,7 +94,7 @@ func (c *GulpStop) Run(context *cmd.Context) error {
 	}
 	defer r.Body.Close()
 	_, err = io.Copy(context.Stdout, r.Body)
-	
+
 	return err
 	*/
 	return nil
