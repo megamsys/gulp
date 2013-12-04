@@ -116,6 +116,8 @@ func (b rabbitmqFactory) Get(name string) (Q, error) {
 }
 
 func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, error) {
+				log.Printf("RabbitMQ: Handler ")
+
 	return &executor{
 		inner: func() {
 			if deliveries, err := consume(5e9); err == nil {
