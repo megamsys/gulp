@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/indykish/gulp/cmd"
 	"launchpad.net/gnuflag"
-	"log"
 )
 
 type GulpStart struct {
@@ -27,8 +26,6 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 }
 
 func (c *GulpStart) Run(context *cmd.Context) error {
-	log.Printf("arg 0    = %s", context.Args[0])
-	log.Printf("manager  = %s", c.manager)
 	// The struc will also have the c.manager
 	// c.manager
 	// Now using this value start the queue.
@@ -67,27 +64,17 @@ If you use the '--bark' flag gulpd will notify daemon status.
 }
 
 func (c *GulpStop) Run(context *cmd.Context) error {
-	//api.RunServer(c.bark)
-	// The struc will also have the started Handler to the Queue
-	// c.handler
-	// Now using the handler call
-	// c.handler.stop()
-	//on successful stop, propagate the status if there was no err and bark is turned on..
+	// The struc will also have the c.manager
+	// c.manager
+	// Now using this value start the queue.
+	StopServer(c.bark)
+	return nil
 
 	/*appName, err := c.dry()
 	if err != nil {
 		return err
 	}
-
-	url, err := cmd.GetURL(fmt.Sprintf("/apps/%s/run?once=%t", appName, c.once))
-	if err != nil {
-		return err
-	}
-	b := strings.NewReader(strings.Join(context.Args, " "))
-	request, err := http.NewRequest("POST", url, b)
-	if err != nil {
-		return err
-	}
+		
 	r, err := client.Do(request)
 	if err != nil {
 		return err

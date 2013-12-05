@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
-	"log"
 	"strings"
 )
 
@@ -97,8 +96,7 @@ func (m *Manager) Run(args []string) {
 	}
 	context := Context{args, m.stdout, m.stderr, m.stdin}
 	
-	log.Printf("Getting ready to call command.Run");
-	
+
 	err := command.Run(&context)
 	
 	if err != nil {

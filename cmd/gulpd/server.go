@@ -2,6 +2,10 @@ package main
 
 import (
 	"github.com/indykish/gulp/amqp"
+	"time"
+	"os"
+	"os/signal"
+	"syscall"
 	"log"
 	"sync"
 )
@@ -13,17 +17,30 @@ var (
 	_queue   amqp.Q
 	_handler amqp.Handler
 	o        sync.Once
+	signalChannel chan<- os.Signal
 )
 
 func RunServer(dry bool) {
-	log.Printf("RunServer    = %s", dry)
+	log.Printf("Gulpd starting at %s",time.Now())
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, syscall.SIGINT)
 	handler().Start()
+	log.Printf("Gulpd at your service.")
+	<-signalChannel
+	log.Println("Gulpd killed |_|.")
 }
+
+func StopServer(bark bool) {
+	log.Printf("Gulpd stopping at %s",time.Now())
+	handler().Stop()
+	close(signalChannel)
+	log.Println("Gulpd finished |-|.")
+}
+
 
 func setQueue() {
 	var err error
 	qfactory, err = amqp.Factory()
-	log.Printf("setQueue    = %s", qfactory)
 
 	if err != nil {
 		log.Fatalf("Failed to get the queue instance: %s", err)
@@ -32,14 +49,17 @@ func setQueue() {
 	if err != nil {
 		log.Fatalf("Failed to create the queue handler: %s", err)
 	}
-	log.Printf("_handler    = %s", _handler)
 
 	_queue, err = qfactory.Get(queueName)
-	log.Printf("_queue    = %s", _queue)
 
 	if err != nil {
 		log.Fatalf("Failed to get the queue instance: %s", err)
 	}
+}
+
+func aqueue() amqp.Q {
+	o.Do(setQueue)
+	return _queue
 }
 
 func handler() amqp.Handler {

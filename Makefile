@@ -98,6 +98,6 @@ test: _go_test _gulpd_dry
 
 
 client:
-	@go build -o gulpd ./cmd/gulp
-	@echo "Copy gulpd to your binary path"
+	@go build -o gulpd ./cmd/gulpd
+	@echo "Done."
 

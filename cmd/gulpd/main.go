@@ -16,10 +16,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/globocom/config"
 	"github.com/indykish/gulp/cmd"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -27,7 +29,7 @@ const (
 	header  = "Supported-Gulp"
 )
 
-const defaultConfigPath = "/conf/gulpd.conf"
+const defaultConfigPath = "conf/gulpd.conf"
 
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
@@ -55,9 +57,10 @@ func buildManager(name string) *cmd.Manager {
 }
 
 func main() {
+	p, _ := filepath.Abs(defaultConfigPath)
+	log.Println(fmt.Errorf("Conf: %s", p))
 	config.ReadConfigFile(defaultConfigPath)
 	name := cmd.ExtractProgramName(os.Args[0])
 	manager := buildManager(name)
-	log.Printf("Called Run")
 	manager.Run(os.Args[1:])
 }
