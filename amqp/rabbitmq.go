@@ -40,10 +40,10 @@ type rabbitmqQ struct {
 
 const (
 	DefaultAMQPURL      = "amqp://localhost1:5672/"
-	DefaultQueue        = "rampwalk.megam.co"
-	DefaultExchange     = "megam_nodes"
+	DefaultQueue        = "megam_cloudstandup_queue"
+	DefaultExchange     = "megam_cloudstandup_exchange"
 	DefaultExchangeType = "fanout"
-	DefaultRoutingKey   = "megam_routingkey"
+	DefaultRoutingKey   = "megam_key"
 	DefaultConsumerTag  = "megam_node_consumer"
 )
 
