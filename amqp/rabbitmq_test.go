@@ -1,0 +1,99 @@
+package amqp
+
+import (
+
+)
+
+import (
+	"github.com/globocom/config"
+	"launchpad.net/gocheck"
+)
+
+type RabbitMQSuite struct{}
+
+var _ = gocheck.Suite(&RabbitMQSuite{})
+
+func (s *RabbitMQSuite) SetUpSuite(c *gocheck.C) {
+//	config.Set("queue-server", "127.0.0.1:11300")	
+}
+
+
+func (s *RabbitMQSuite) TestConnection(c *gocheck.C) {
+	_, err := connection()
+	c.Assert(err, gocheck.IsNil)
+}
+
+func (s *RabbitMQSuite) TestConnectionQueueServerUndefined(c *gocheck.C) {
+	old, _ := config.Get("amqp:url")
+	config.Unset("amqp:url")
+	defer config.Set("amqp:url", old)
+	conn, err := connection()
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(conn, gocheck.NotNil)
+}
+
+func (s *RabbitMQSuite) TestConnectionResfused(c *gocheck.C) {
+	old, _ := config.Get("amqp:url")
+	config.Set("amqp:url", "127.0.0.1:11301")
+	defer config.Set("amqp:url", old)
+	conn, err := connection()
+	c.Assert(conn, gocheck.IsNil)
+	c.Assert(err, gocheck.NotNil)
+}
+
+
+/*func (s *RabbitMQSuite) TestPut(c *gocheck.C) {
+	msg := Message{
+		Action: "regenerate-apprc",
+		Args:   []string{"myapp"},
+	}
+	q := beanstalkdQ{name: "default"}
+	err := q.Put(&msg, 0)
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(msg.id, gocheck.Not(gocheck.Equals), 0)
+	defer conn.Delete(msg.id)
+	id, body, err := conn.Reserve(1e6)
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(id, gocheck.Equals, msg.id)
+	var got Message
+	buf := bytes.NewBuffer(body)
+	err = gob.NewDecoder(buf).Decode(&got)
+	c.Assert(err, gocheck.IsNil)
+	got.id = msg.id
+	c.Assert(got, gocheck.DeepEquals, msg)
+}
+
+func (s *RabbitMQSuite) TestPutWithDelay(c *gocheck.C) {
+	msg := Message{
+		Action: "do-something",
+		Args:   []string{"nothing"},
+	}
+	q := beanstalkdQ{name: "default"}
+	err := q.Put(&msg, 1e9)
+	c.Assert(err, gocheck.IsNil)
+	defer conn.Delete(msg.id)
+	_, _, err = conn.Reserve(1e6)
+	c.Assert(err, gocheck.NotNil)
+	time.Sleep(1e9)
+	id, _, err := conn.Reserve(1e6)
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(id, gocheck.Equals, msg.id)
+}
+
+
+func (s *RabbitMQSuite) TestGetFromEmptyQueue(c *gocheck.C) {
+	q := beanstalkdQ{name: "default"}
+	msg, err := q.Get(1e6)
+	c.Assert(msg, gocheck.IsNil)
+	c.Assert(err, gocheck.NotNil)
+	c.Assert(err.Error(), gocheck.Equals, "Timed out waiting for message after 1ms.")
+}
+*/
+
+
+func (s *RabbitMQSuite) TestRabbitMQFactoryIsInFactoriesMap(c *gocheck.C) {
+	f, ok := factories["rabbitmq"]
+	c.Assert(ok, gocheck.Equals, true)
+	_, ok = f.(rabbitmqFactory)
+	c.Assert(ok, gocheck.Equals, true)
+}

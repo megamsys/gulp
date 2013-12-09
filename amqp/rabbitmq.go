@@ -39,7 +39,7 @@ type rabbitmqQ struct {
 }
 
 const (
-	DefaultAMQPURL      = "amqp://localhost1:5672/"
+	DefaultAMQPURL      = "amqp://localhost:5672/"
 	DefaultQueue        = "megam_cloudstandup_queue"
 	DefaultExchange     = "megam_cloudstandup_exchange"
 	DefaultExchangeType = "fanout"
