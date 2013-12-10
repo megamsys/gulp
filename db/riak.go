@@ -11,6 +11,7 @@ import (
 	"github.com/globocom/config"
 	"github.com/mrb/riakpbc"
 	"log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -22,7 +23,7 @@ var (
 )
 
 const (
-	DefaultRiakURL    = "127.0.0.1"
+	DefaultRiakURL    = "127.0.0.1:8087"
 	DefaultBucketName = "nodes"
 )
 
@@ -39,54 +40,46 @@ type Storage struct {
 	bktname      string
 }
 
-func open(addr, bucketname string) (*Storage, error) {
-	// Alternative marshallers can be built from this interface.
+func open(addr []string, bucketname string) (*Storage, error) {
+	log.Printf("--> Dialing to %v", addr)
 	coder := riakpbc.NewCoder("json", riakpbc.JsonMarshaller, riakpbc.JsonUnmarshaller)
-	riakCoder := riakpbc.NewClientWithCoder([]string{addr}, coder)
-	log.Printf("open: dial %s", addr)
-	err := riakCoder.Dial()
-	if err != nil {
-		log.Printf("Could not connect to the database: %s", err)
+	riakCoder := riakpbc.NewClientWithCoder(addr, coder)
+	if err := riakCoder.Dial(); err != nil {
 		return nil, err
 	}
-
 	storage := &Storage{coder_client: riakCoder, bktname: bucketname}
 	mut.Lock()
-	conn[addr] = &session{s: riakCoder, used: time.Now()}
+	conn[strings.Join(addr, "::")] = &session{s: riakCoder, used: time.Now()}
 	mut.Unlock()
 	return storage, nil
 }
 
-// Open dials to the Riak database, and return the connection (represented
+// Open dials to the Riak database, and return a new connection (represented
 // by the type Storage).
 //
-// addr is a MongoDB connection URI, and bktname is the name of the bucket.
+// addr is a Riak connection URI, and bktname is the name of the bucket.
 //
 // This function returns a pointer to a Storage, or a non-nil error in case of
 // any failure.
-func Open(addr, bktname string) (storage *Storage, err error) {
+func Open(addr []string, bktname string) (storage *Storage, err error) {
+	log.Printf("--> Connecting to %v", addr)
 	defer func() {
 		if r := recover(); r != nil {
 			storage, err = open(addr, bktname)
 		}
 	}()
-	log.Printf("Open: connecting to %s", addr)
 	mut.RLock()
-	if session, ok := conn[addr]; ok {
+	if session, ok := conn[strings.Join(addr, "::")]; ok {
 		mut.RUnlock()
 		if _, err = session.s.Ping(); err == nil {
 			mut.Lock()
 			session.used = time.Now()
-			log.Printf("Open: store  %s", addr)
-			conn[addr] = session
+			conn[strings.Join(addr, "::")] = session
 			mut.Unlock()
-			return &Storage{session.s, bktname}, nil
 		}
-		log.Printf("Open: stale  %s", addr)
-		return open(addr, bktname)
+	return open(addr, bktname)
 	}
 	mut.RUnlock()
-	log.Printf("Open: fresh open %s", addr)
 	return open(addr, bktname)
 }
 
@@ -103,12 +96,14 @@ func Conn() (*Storage, error) {
 	if bktname == "" {
 		bktname = DefaultBucketName
 	}
-	log.Printf("Conn: %s %s", url, bktname)
-	return Open(url, bktname)
+	tadr := make([]string, 1)
+	tadr = append(tadr, url)
+	return Open(tadr, bktname)
 }
 
 // Close closes the storage, releasing the connection.
 func (s *Storage) Close() {
+	log.Printf("---] Closing storage %v", s)
 	s.coder_client.Close()
 }
 
@@ -136,7 +131,7 @@ func (s *Storage) StoreStruct(key string, data interface{}) error {
 	return nil
 }
 
-func init() {
+/*func init() {
 	ticker = time.NewTicker(time.Hour)
 	go retire(ticker)
 }
@@ -160,4 +155,4 @@ func retire(t *time.Ticker) {
 		}
 		mut.Unlock()
 	}
-}
+}*/

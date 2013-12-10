@@ -1,16 +1,13 @@
-
 package db
 
 import (
-//	"github.com/globocom/config"
+	"github.com/globocom/config"
 	"launchpad.net/gocheck"
-//	"reflect"
-//	"sync"
+	//	"reflect"
+	//	"sync"
 	"testing"
-//	"time"
-"log"
+	//	"time"
 )
-
 
 func Test(t *testing.T) { gocheck.TestingT(t) }
 
@@ -18,15 +15,19 @@ type S struct{}
 
 var _ = gocheck.Suite(&S{})
 
+var addr = []string{"127.0.0.1:8098"}
+
+const bkt = "nodes"
+
+/*
 func (s *S) SetUpSuite(c *gocheck.C) {
 	ticker.Stop()
 }
 
-/*func (s *S) TearDownSuite(c *gocheck.C) {
-	storage, err := Open("127.0.0.1:8098", "megam_storage_test")
+func (s *S) TearDownSuite(c *gocheck.C) {
+	storage, err := Open(addr, bkt)
 	c.Assert(err, gocheck.IsNil)
 	defer storage.coder_client.Close()
-//	storage.session.DB("megam_storage_test").DropDatabase()
 }
 
 func (s *S) TearDownTest(c *gocheck.C) {
@@ -34,61 +35,53 @@ func (s *S) TearDownTest(c *gocheck.C) {
 }
 
 func (s *S) TestOpenConnectsToTheDatabase(c *gocheck.C) {
-	storage, err := Open("127.0.0.1:8098", "megam_storage_test")
+	storage, err := Open(addr, bkt)
 	c.Assert(err, gocheck.IsNil)
 	defer storage.Close()
 	_, err = storage.coder_client.Ping()
 	c.Assert(err, gocheck.IsNil)
 }
 
-func (s *S) TestOpenCopiesConnection(c *gocheck.C) {
-	storage, err := Open("127.0.0.1:8098", "megam_storage_test")
-	c.Assert(err, gocheck.IsNil)
-	defer storage.Close()
-	storage2, err := Open("127.0.0.1:8098", "megam_storage_test")
-	c.Assert(err, gocheck.IsNil)
-	c.Assert(storage.coder_client, gocheck.Not(gocheck.Equals), storage2.coder_client)
-}
-
 func (s *S) TestOpenReconnects(c *gocheck.C) {
-	storage, err := Open("127.0.0.1:8098", "megam_storage_test")
+	storage, err := Open(addr, bkt)
 	c.Assert(err, gocheck.IsNil)
 	storage.Close()
-	storage, err = Open("127.0.0.1:8098", "megam_storage_test")
+	storage, err = Open(addr, bkt)
 	c.Assert(err, gocheck.IsNil)
 	_, err = storage.coder_client.Ping()
 	c.Assert(err, gocheck.IsNil)
 }
 
 func (s *S) TestOpenConnectionRefused(c *gocheck.C) {
-	storage, err := Open("127.0.0.1:27018", "megam_storage_test")
+	storage, err := Open([]string{"127.0.0.1:68098"}, bkt)
 	c.Assert(storage, gocheck.IsNil)
 	c.Assert(err, gocheck.NotNil)
 }
-*/
+
 func (s *S) TestClose(c *gocheck.C) {
 	defer func() {
 		r := recover()
 		c.Check(r, gocheck.IsNil)
 	}()
-	storage, err := Open("127.0.0.1:8098", "megam_storage_test")
-	c.Assert(err, gocheck.IsNil)
+
+	storage, err := Open(addr, bkt)
 	storage.Close()
+	c.Assert(err, gocheck.IsNil)
+	c.Assert(storage, gocheck.NotNil)
 	_, err = storage.coder_client.Ping()
-	log.Printf(" --> %s", err)
 	c.Check(err, gocheck.NotNil)
 }
-/*
+*/
 func (s *S) TestConn(c *gocheck.C) {
-	config.Set("riak:url", "127.0.0.1:8098")
+	config.Set("riak:url", "127.0.0.1:8087")
 	defer config.Unset("riak:url")
-	config.Set("bucket:name", "megam_storage_test")
+	config.Set("bucket:name", "nodes")
 	defer config.Unset("bucket:name")
 	storage, err := Conn()
 	c.Assert(err, gocheck.IsNil)
-	defer storage.Close()
-	_,  err = storage.coder_client.Ping()
-	c.Assert(err, gocheck.IsNil)
+	c.Assert(storage, gocheck.NotNil)
+	_, err = storage.coder_client.Ping()
+	c.Check(err, gocheck.IsNil)
 }
 
 /*func (s *S) TestUsers(c *gocheck.C) {

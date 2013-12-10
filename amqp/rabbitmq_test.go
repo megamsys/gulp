@@ -44,10 +44,10 @@ func (s *RabbitMQSuite) TestConnectionResfused(c *gocheck.C) {
 
 /*func (s *RabbitMQSuite) TestPut(c *gocheck.C) {
 	msg := Message{
-		Action: "regenerate-apprc",
-		Args:   []string{"myapp"},
+		Action: "startapp",
+		Args:   []string{"node1.megam.co"},
 	}
-	q := beanstalkdQ{name: "default"}
+	q := rabbitmqQ{name: "default"}
 	err := q.Put(&msg, 0)
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(msg.id, gocheck.Not(gocheck.Equals), 0)
@@ -82,7 +82,7 @@ func (s *RabbitMQSuite) TestPutWithDelay(c *gocheck.C) {
 
 
 func (s *RabbitMQSuite) TestGetFromEmptyQueue(c *gocheck.C) {
-	q := beanstalkdQ{name: "default"}
+	q := rabbitmqQ{name: "default"}
 	msg, err := q.Get(1e6)
 	c.Assert(msg, gocheck.IsNil)
 	c.Assert(err, gocheck.NotNil)
