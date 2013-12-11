@@ -58,6 +58,10 @@ ifneq ($(subst ~,$(HOME),$(GOPATH))/src/github.com/indykish/gulp, $(PWD))
 	@exit 1
 endif
 
+clean:
+	@/bin/rm ../pkg	
+	@/bin/echo -n "Clean ...ok"
+
 get: hg git bzr get-test get-prod
 
 hg:

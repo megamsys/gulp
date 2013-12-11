@@ -47,7 +47,14 @@ func open(addr []string, bucketname string) (*Storage, error) {
 	if err := riakCoder.Dial(); err != nil {
 		return nil, err
 	}
+
+	// Set Client ID
+	/*if _, err := riakCoder.SetClientId("coolio"); err != nil {
+		log.Fatalf("Setting client ID failed: %v", err)
+	}
+	*/
 	storage := &Storage{coder_client: riakCoder, bktname: bucketname}
+
 	mut.Lock()
 	conn[strings.Join(addr, "::")] = &session{s: riakCoder, used: time.Now()}
 	mut.Unlock()
@@ -65,6 +72,7 @@ func Open(addr []string, bktname string) (storage *Storage, err error) {
 	log.Printf("--> Connecting to %v", addr)
 	defer func() {
 		if r := recover(); r != nil {
+			log.Printf("--> Recovered from panic")
 			storage, err = open(addr, bktname)
 		}
 	}()
@@ -77,7 +85,7 @@ func Open(addr []string, bktname string) (storage *Storage, err error) {
 			conn[strings.Join(addr, "::")] = session
 			mut.Unlock()
 		}
-	return open(addr, bktname)
+		return open(addr, bktname)
 	}
 	mut.RUnlock()
 	return open(addr, bktname)
@@ -96,8 +104,8 @@ func Conn() (*Storage, error) {
 	if bktname == "" {
 		bktname = DefaultBucketName
 	}
-	tadr := make([]string, 1)
-	tadr = append(tadr, url)
+	tadr := []string{url}
+	log.Printf("%v %s", tadr, bktname)
 	return Open(tadr, bktname)
 }
 
@@ -131,7 +139,7 @@ func (s *Storage) StoreStruct(key string, data interface{}) error {
 	return nil
 }
 
-/*func init() {
+func init() {
 	ticker = time.NewTicker(time.Hour)
 	go retire(ticker)
 }
@@ -143,6 +151,7 @@ func retire(t *time.Ticker) {
 		var old []string
 		mut.RLock()
 		for k, v := range conn {
+
 			if now.Sub(v.used) >= period {
 				old = append(old, k)
 			}
@@ -150,9 +159,10 @@ func retire(t *time.Ticker) {
 		mut.RUnlock()
 		mut.Lock()
 		for _, c := range old {
+			log.Printf("--> Stale conn[%s]", c)
 			conn[c].s.Close()
 			delete(conn, c)
 		}
 		mut.Unlock()
 	}
-}*/
+}
