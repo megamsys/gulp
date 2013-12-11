@@ -61,34 +61,8 @@ func (s *RabbitMQSuite) TestConnectionResfused(c *gocheck.C) {
 	c.Assert(err, gocheck.IsNil)
 	got.id = msg.id
 	c.Assert(got, gocheck.DeepEquals, msg)
-}
+}*/
 
-func (s *RabbitMQSuite) TestPutWithDelay(c *gocheck.C) {
-	msg := Message{
-		Action: "do-something",
-		Args:   []string{"nothing"},
-	}
-	q := beanstalkdQ{name: "default"}
-	err := q.Put(&msg, 1e9)
-	c.Assert(err, gocheck.IsNil)
-	defer conn.Delete(msg.id)
-	_, _, err = conn.Reserve(1e6)
-	c.Assert(err, gocheck.NotNil)
-	time.Sleep(1e9)
-	id, _, err := conn.Reserve(1e6)
-	c.Assert(err, gocheck.IsNil)
-	c.Assert(id, gocheck.Equals, msg.id)
-}
-
-
-func (s *RabbitMQSuite) TestGetFromEmptyQueue(c *gocheck.C) {
-	q := rabbitmqQ{name: "default"}
-	msg, err := q.Get(1e6)
-	c.Assert(msg, gocheck.IsNil)
-	c.Assert(err, gocheck.NotNil)
-	c.Assert(err.Error(), gocheck.Equals, "Timed out waiting for message after 1ms.")
-}
-*/
 
 
 func (s *RabbitMQSuite) TestRabbitMQFactoryIsInFactoriesMap(c *gocheck.C) {

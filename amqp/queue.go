@@ -42,15 +42,16 @@ type Q interface {
 	// is 0, the message is sent immediately to the queue.
 	Put(m *Message, delay time.Duration) error
 
-	// Delete deletes a message from the queue.
-	Delete(m *Message) error
+	// Acknowledge that the message was successfully received from the queue. 	
+	Delete(m *Message, tag uint64, multiple bool) error
 
-	// Release puts a message back in the queue the given delay. When delay
-	// is 0, the message is released immediately.
+	// Release sends a Not Acknowledged message in the queue.When the requeue
+	// flag is true, the messaged is released again.
 	//
 	// This method should be used when handling a message that you cannot
 	// handle, maximizing throughput.
-	Release(m *Message, delay time.Duration) error
+	Release(m *Message, tag uint64, multiple bool, requeue bool) error
+
 }
 
 // Handler represents a runnable routine. It can be started and stopped.
@@ -112,12 +113,13 @@ func Factory() (QFactory, error) {
 // A message is specified by an action and a slice of strings, representing
 // arguments to the action.
 //
-// For example, the action "stopapp" could receive one argument: the
+// For example, the action "NSTART" could receive one argument: the
 // name of the app for which the app will be stopped.
 type Message struct {
-	Action string
-	Args   []string
-	id     uint64
+	Action string    //action NSTART, NSTOP, NRESTART etc.
+	Args   []string  //any arguments as deemed fit.
+	id     string    //the id in Riak which starts like RIP..
+	mid    uint64    //a counter incremented each time the msg is received.
 	delete bool
 }
 

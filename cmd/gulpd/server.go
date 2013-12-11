@@ -2,26 +2,26 @@ package main
 
 import (
 	"github.com/indykish/gulp/amqp"
-	"time"
+	"log"
 	"os"
 	"os/signal"
-	"syscall"
-	"log"
 	"sync"
+	"syscall"
+	"time"
 )
 
 const queueName = "gulpd-app"
 
 var (
-	qfactory amqp.QFactory
-	_queue   amqp.Q
-	_handler amqp.Handler
-	o        sync.Once
+	qfactory      amqp.QFactory
+	_queue        amqp.Q
+	_handler      amqp.Handler
+	o             sync.Once
 	signalChannel chan<- os.Signal
 )
 
 func RunServer(dry bool) {
-	log.Printf("Gulpd starting at %s",time.Now())
+	log.Printf("Gulpd starting at %s", time.Now())
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
 	handler().Start()
@@ -31,12 +31,11 @@ func RunServer(dry bool) {
 }
 
 func StopServer(bark bool) {
-	log.Printf("Gulpd stopping at %s",time.Now())
+	log.Printf("Gulpd stopping at %s", time.Now())
 	handler().Stop()
 	close(signalChannel)
 	log.Println("Gulpd finished |-|.")
 }
-
 
 func setQueue() {
 	var err error
@@ -69,7 +68,7 @@ func handler() amqp.Handler {
 
 // handle is the function called by the queue handler on each message.
 func handle(msg *amqp.Message) {
-	log.Printf("Hurray I got a message => %s", msg)
+	log.Printf("Hurray I got a message => %v", msg)
 	/*	switch msg.Action {
 		case RegenerateApprcAndStart:
 			fallthrough

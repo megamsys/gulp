@@ -17,9 +17,9 @@
 ###############################################################################
                             
 
-yup_go = $(HOME)/code/megam/workspace/gulp
+GULPCODE_HOME = $(HOME)/code/megam/workspace/gulp
 
-export GOPATH=$(yup_go)
+export GOPATH=$(GULPCODE_HOME)
 
 define HG_ERROR
 
@@ -59,8 +59,14 @@ ifneq ($(subst ~,$(HOME),$(GOPATH))/src/github.com/indykish/gulp, $(PWD))
 endif
 
 clean:
-	@/bin/rm ../pkg	
-	@/bin/echo -n "Clean ...ok"
+	@/bin/rm -f -r $(GULPCODE_HOME)/pkg	
+	@go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | tr ' ' '\n' |\
+		grep '^.*\..*/.*$$' | grep -v 'github.com/indykish/gulp' |\
+		sort | uniq | xargs -I{} rm -f -r $(GULPCODE_HOME)/src/{}	
+	@go list -f '{{range .Imports}}{{.}} {{end}}' ./... | tr ' ' '\n' |\
+		grep '^.*\..*/.*$$' | grep -v 'github.com/indykish/gulp' |\
+		sort | uniq | xargs -I{} rm -f -r $(GULPCODE_HOME)/src/{} 
+	@/bin/echo "Clean ...ok"
 
 get: hg git bzr get-test get-prod
 

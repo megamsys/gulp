@@ -20,7 +20,7 @@ func (s *S) TestDeploy(c *gocheck.C) {
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(app.Commands, gocheck.DeepEquals, []string{"restart"})
 	c.Assert(provisioner.InstalledDeps(app), gocheck.Equals, 1)
-	cloneCommand := "git clone git://tsuruhost.com/cribcaged.git test/dir --depth 1"
+	cloneCommand := "git clone git://github.com/indykish/aryabhata.git test/dir --depth 1"
 	c.Assert(provisioner.GetCmds(cloneCommand, app), gocheck.HasLen, 1)
 	path, _ := repository.GetPath()
 	checkoutCommand := fmt.Sprintf("cd %s && git checkout 5734f0042844fdeb5bbc1b72b18f2dc1779cade7", path)

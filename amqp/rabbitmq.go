@@ -16,6 +16,7 @@
 package amqp
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/globocom/config"
@@ -40,11 +41,11 @@ type rabbitmqQ struct {
 
 const (
 	DefaultAMQPURL      = "amqp://localhost:5672/"
-	DefaultQueue        = "megam_cloudstandup_queue"
-	DefaultExchange     = "megam_cloudstandup_exchange"
+	DefaultQueue        = "megam_node_stale"
+	DefaultExchange     = "megam_node_exchange_stale"
 	DefaultExchangeType = "fanout"
 	DefaultRoutingKey   = "megam_key"
-	DefaultConsumerTag  = "megam_node_consumer"
+	DefaultConsumerTag  = "megam_node_consumer_stale"
 )
 
 var (
@@ -97,13 +98,15 @@ func (b *rabbitmqQ) Put(m *Message, delay time.Duration) error {
 	return err
 }
 
-func (b *rabbitmqQ) Delete(m *Message) error {
-	return errors.New("Delete: Not supported for RabbitMQ.")
+func (b *rabbitmqQ) Delete(m *Message, tag uint64, multiple bool) error {
+	log.Printf("%-6s:%s [%v][%d]", "WARN", "Acknowledge not Implemented yet.", m, tag)
+	return nil
 
 }
 
-func (b *rabbitmqQ) Release(m *Message, delay time.Duration) error {
-	return errors.New("Release: Not supported for RabbitMQ.")
+func (b *rabbitmqQ) Release(m *Message, tag uint64, multiple bool, requeue bool) error {
+	log.Printf("%-6s:%s [%v][%d]", "WARN", "NAcknowledge not Implemented yet.", m, tag)
+	return nil
 }
 
 type rabbitmqFactory struct{}
@@ -119,33 +122,30 @@ func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, err
 			log.Printf("Waiting for deliveries from consumers.")
 
 			if deliveries, err := consume(5e9); err == nil {
-
 				for d := range deliveries {
-					log.Printf("got %dB delivery: [%v] %q", len(d.Body), d.DeliveryTag, d.Body)
-					message := &Message{}
-					//We have the message here (oo not yet), what do you want to do ?
-					//Associate it with a command, and pass it in a go routine ?
-					//				log.Printf("Dispatching %q message to handler function.", message.Action)
-					go func(m *Message) {
+					log.Printf("%dB : [%v] %q", len(d.Body), d.DeliveryTag, d.Body)
+					var message Message
+					err := json.Unmarshal(d.Body, &message)
+					if err != nil {
+						fmt.Println("error:", err)
+					}
+					fmt.Printf("%+v", message)
+
+					go func(m *Message, tag uint64) {
 						f(m)
 						q := rabbitmqQ{}
 						if m.delete {
-							q.Delete(m)
+							q.Delete(m,tag, false)
 						} else {
-							q.Release(m, 0)
+							q.Release(m,tag,false,false) //don't requeue it.
 						}
-					}(message)
+					}(&message,d.DeliveryTag)
 				}
-				log.Printf("handle: deliveries channel closed")
+				log.Printf("TO-DO: Deliveries channel closed")
 				//done <- nil
 			} else {
 				log.Println(fmt.Errorf("Dial: %s", err))
-				//log.Printf("Failed to get message from the queue: %s. Trying again...", err)
 				time.Sleep(5e9)
-				//if e, ok := err.(*net.OpError); ok && e.Op == "dial" {
-				//	time.Sleep(5e9)
-				//}
-
 			}
 		},
 	}, nil

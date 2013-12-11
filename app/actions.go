@@ -162,9 +162,9 @@ var exportEnvironmentsAction = action.Action{
 				vars[i] = k
 				i++
 			}
-			vars[i] = "TSURU_HOST"
-			vars[i+1] = "TSURU_APPNAME"
-			vars[i+2] = "TSURU_APP_TOKEN"
+			vars[i] = "MEGAM_HOST"
+			vars[i+1] = "MEGAM_APPNAME"
+			vars[i+2] = "MEGAM_APIKEY"
 			app.UnsetEnvs(vars, false)
 		}
 	},

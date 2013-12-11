@@ -14,7 +14,7 @@ var _ = gocheck.Suite(&S{})
 
 func (s *S) SetUpSuite(c *gocheck.C) {
 	config.Set("git:unit-repo", "test/dir")
-	config.Set("git:ro-host", "tsuruhost.com")
+	config.Set("git:ro-host", "api.megam.co")
 }
 
 func (s *S) TearDownSuite(c *gocheck.C) {
