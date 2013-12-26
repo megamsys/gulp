@@ -74,7 +74,7 @@ func (c *GulpStop) Run(context *cmd.Context) error {
 	if err != nil {
 		return err
 	}
-		
+
 	r, err := client.Do(request)
 	if err != nil {
 		return err

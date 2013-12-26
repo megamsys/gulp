@@ -2,15 +2,24 @@ package main
 
 import (
 	"github.com/indykish/gulp/amqp"
+	"github.com/indykish/gulp/app"
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"sync"
 	"syscall"
 	"time"
 )
 
-const queueName = "gulpd-app"
+const (
+	// queue actions
+	startApp   = "nstart"
+	stopApp    = "nstop"
+	buildApp   = "nbuild"
+	restartApp = "nrestart"
+	queueName  = "gulpd-app"
+)
 
 var (
 	qfactory      amqp.QFactory
@@ -18,6 +27,7 @@ var (
 	_handler      amqp.Handler
 	o             sync.Once
 	signalChannel chan<- os.Signal
+	nameRegexp    = regexp.MustCompile(`^[a-z][a-z0-9-]{0,62}$`)
 )
 
 func RunServer(dry bool) {
@@ -66,55 +76,57 @@ func handler() amqp.Handler {
 	return _handler
 }
 
+/*func handle(msg *amqp.Message) {
+	log.Printf("Hurray I got a message => %v", msg)
+
+	if nameRegexp.MatchString(msg.Action) {
+		msg.Delete()
+		manager.Run(msg.Args[1:])
+	} else {
+		log.Printf("Error handling %q: invalid action.", msg.Action)
+	}
+
+}
+*/
+
 // handle is the function called by the queue handler on each message.
 func handle(msg *amqp.Message) {
-	log.Printf("Hurray I got a message => %v", msg)
-	/*	switch msg.Action {
-		case RegenerateApprcAndStart:
-			fallthrough
-		case regenerateApprc:
-			if len(msg.Args) < 1 {
-				log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-				msg.Delete()
-				return
-			}
-			app, err := ensureAppIsStarted(msg)
-			if err != nil {
-				log.Print(err)
-				return
-			}
-			msg.Delete()
-			app.SerializeEnvVars()
-			fallthrough
-		case startApp:
-			if msg.Action == regenerateApprc {
-				break
-			}
-			if len(msg.Args) < 1 {
-				log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-			}
-			app, err := ensureAppIsStarted(msg)
-			if err != nil {
-				log.Print(err)
-				return
-			}
-			err = app.Restart(ioutil.Discard)
-			if err != nil {
-				log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
-				return
-			}
-			msg.Delete()
-		case BindService:
-			err := bindUnit(msg)
-			if err != nil {
-				log.Print(err)
-				return
-			}
-			msg.Delete()
-		default:
-			log.Printf("Error handling %q: invalid action.", msg.Action)
-			msg.Delete()
-		}
-	*/
+	log.Printf("Handling message %v", msg)
 
+	switch msg.Action {
+	case restartApp:
+		fallthrough
+	case startApp:
+		if len(msg.Args) < 1 {
+			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
+		}
+		//stick the id from msg.
+		ap := app.App{Name: "myapp", Id: "RIPAB"}
+
+		if err := ap.Get(); err != nil {
+			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
+			return
+		}
+
+		err := app.StartApp(&ap)
+		if err != nil {
+			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
+			return
+		}
+
+		msg.Delete()
+		break
+	case stopApp:
+	/*	err := bindUnit(msg)
+		if err != nil {
+			log.Print(err)
+			return
+		}
+		msg.Delete()
+		break
+	*/
+	default:
+		log.Printf("Error handling %q: invalid action.", msg.Action)
+		msg.Delete()
+	}
 }

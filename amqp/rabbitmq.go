@@ -129,7 +129,7 @@ func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, err
 					if err != nil {
 						fmt.Println("error:", err)
 					}
-					fmt.Printf("%+v", message)
+					log.Printf("%+v", message)
 
 					go func(m *Message, tag uint64) {
 						f(m)
