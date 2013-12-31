@@ -2,7 +2,8 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/indykish/gulp/action"
+	"log"
+	"github.com/indykish/gulp/action"	
 	"github.com/indykish/gulp/app/bind"
 	"github.com/indykish/gulp/db"
 	"regexp"
@@ -25,9 +26,21 @@ type App struct {
 	//	Units    []Unit
 	State   string
 	Deploys uint
-
+    AppReqs *AppRequests
 	//	hr hookRunner
 }
+
+type AppRequests struct {
+   AppId             string    `json:"id"` 
+   NodeId         string   `json:"node_id"` 
+   NodeName       string   `json:"node_name"` 
+   AppDefnsId     string   `json:"appdefns_id"` 
+   ReqType        string   `json:"req_type"` 
+   LCApply        string   `json:"lc_apply"` 
+   LCAdditional   string   `json:"lc_additional"` 
+   LCWhen         string   `json:"lc_when"` 
+   CreatedAT      string   `json:"created_at"` 
+   }
 
 // MarshalJSON marshals the app in json format. It returns a JSON object with
 //the following keys: name, framework, teams, units, repository and ip.
@@ -49,12 +62,17 @@ func (app *App) MarshalJSON() ([]byte, error) {
 //     app := App{Name: "myapp"}
 //     err := app.Get()
 //     // do something with the app
-func (app *App) Get() error {
+func (app *App) Get(reqId string) error {
+log.Printf("Get message %v", reqId)
 	conn, err := db.Conn()
-	if err != nil {
+	if err != nil {	
 		return err
-	}
+	}	
+	appout := &AppRequests{}
+	conn.FetchStruct(reqId, appout)	
+	app.AppReqs = appout
 	defer conn.Close()
+	
 	//fetch it from riak.
 	// conn.Fetch(app.id)
 	// store stuff back in the appreq object.
@@ -74,6 +92,21 @@ func StartApp(app *App) error {
 	}
 	return nil
 }
+
+// StopsApp creates a new app.
+//
+// Stops the app :
+func StopApp(app *App) error {
+	actions := []*action.Action{&stopApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
 
 // GetName returns the name of the app.
 func (app *App) GetName() string {
@@ -97,6 +130,11 @@ func (app *App) GetDeploys() uint {
 // Env returns app.Env
 func (app *App) Envs() map[string]bind.EnvVar {
 	return app.Env
+}
+
+// GetAppReqs returns the app requests of the app.
+func (app *App) GetAppReqs() *AppRequests {
+	return app.AppReqs
 }
 
 /* setEnv sets the given environment variable in the app.

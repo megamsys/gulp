@@ -66,7 +66,7 @@ func (b *rabbitmqQ) Put(m *Message, delay time.Duration) error {
 	}
 
 	//convert Message to "body" bytes
-	var body = m.Args[0]
+	var body = m.Args
 	log.Printf("Publishing %dB message (%q).", len(body), body)
 
 	exchange_conf, _ := config.GetString("amqp:exchange")
@@ -124,8 +124,8 @@ func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, err
 			if deliveries, err := consume(5e9); err == nil {
 				for d := range deliveries {
 					log.Printf("%dB : [%v] %q", len(d.Body), d.DeliveryTag, d.Body)
-					var message Message
-					err := json.Unmarshal(d.Body, &message)
+					var message Message										
+					err := json.Unmarshal(d.Body, &message)					
 					if err != nil {
 						fmt.Println("error:", err)
 					}

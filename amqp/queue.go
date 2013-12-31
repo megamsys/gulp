@@ -117,8 +117,8 @@ func Factory() (QFactory, error) {
 // name of the app for which the app will be stopped.
 type Message struct {
 	Action string    //action NSTART, NSTOP, NRESTART etc.
-	Args   []string  //any arguments as deemed fit.
-	id     string    //the id in Riak which starts like RIP..
+	Args   string  //any arguments as deemed fit.
+	Id     string    //the id in Riak which starts like RIP..
 	mid    uint64    //a counter incremented each time the msg is received.
 	delete bool
 }

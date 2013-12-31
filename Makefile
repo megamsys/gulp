@@ -51,12 +51,12 @@ ifndef GOPATH
 	@echo "       http://golang.org/cmd/go/#GOPATH_environment_variable"
 	@exit 1
 endif
-ifneq ($(subst ~,$(HOME),$(GOPATH))/src/github.com/indykish/gulp, $(PWD))
-	@echo "FATAL: you must clone gulp inside your GOPATH To do so,"
-	@echo "       you can run go get github.com/indykish/gulp/..."
-	@echo "       or clone it manually to the dir $(GOPATH)/src/github.com/indykish/gulp"
-	@exit 1
-endif
+#ifneq ($(subst ~,$(HOME),$(GOPATH))/src/github.com/*/gulp, $(PWD))
+#	@echo "FATAL: you must clone gulp inside your GOPATH To do so,"
+#	@echo "       you can run go get github.com/indykish/gulp/..."
+#	@echo "       or clone it manually to the dir $(GOPATH)/src/github.com/indykish/gulp"
+#	@exit 1
+#endif
 
 clean:
 	@/bin/rm -f -r $(GULPCODE_HOME)/pkg	

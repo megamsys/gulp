@@ -14,10 +14,10 @@ import (
 
 const (
 	// queue actions
-	startApp   = "nstart"
-	stopApp    = "nstop"
-	buildApp   = "nbuild"
-	restartApp = "nrestart"
+	startApp   = "start"
+	stopApp    = "stop"
+	buildApp   = "build"
+	restartApp = "restart"
 	queueName  = "gulpd-app"
 )
 
@@ -103,11 +103,11 @@ func handle(msg *amqp.Message) {
 		//stick the id from msg.
 		ap := app.App{Name: "myapp", Id: "RIPAB"}
 
-		if err := ap.Get(); err != nil {
+		if err := ap.Get(msg.Id); err != nil {
 			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
 			return
 		}
-
+        log.Printf("Handling message %v", ap.GetAppReqs())
 		err := app.StartApp(&ap)
 		if err != nil {
 			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
@@ -117,6 +117,25 @@ func handle(msg *amqp.Message) {
 		msg.Delete()
 		break
 	case stopApp:
+	    if len(msg.Args) < 1 {
+			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
+		}
+		//stick the id from msg.
+		ap := app.App{Name: "myapp", Id: "RIPAB"}
+
+		if err := ap.Get(msg.Id); err != nil {
+			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
+			return
+		}
+        log.Printf("Handling message %v", ap.GetAppReqs())
+		err := app.StopApp(&ap)
+		if err != nil {
+			log.Printf("Error handling %q. App failed to stop:\n%s.", msg.Action, err)
+			return
+		}
+
+		msg.Delete()
+		break
 	/*	err := bindUnit(msg)
 		if err != nil {
 			log.Print(err)

@@ -15,11 +15,28 @@ func Test(t *testing.T) { gocheck.TestingT(t) }
 
 type S struct{}
 
+type ExampleData struct {
+        Field1 string `riak:"index" json:"field1"`
+        Field2 int `json:"field2"`
+}
+
+type AppRequests struct {
+   id             string    `json:"id"` 
+   node_id         string   `json:"node_id"` 
+   node_name       string   `json:"node_name"` 
+   appdefns_id     string   `json:"appdefns_id"` 
+   req_type        string   `json:"req_type"` 
+   lc_apply        string   `json:"lc_apply"` 
+   lc_additional   string   `json:"lc_additional"` 
+   lc_when         string   `json:"lc_when"` 
+   created_at      string   `json:"created_at"` 
+   }
+
 var _ = gocheck.Suite(&S{})
 
 var addr = []string{"127.0.0.1:8087"}
 
-const bkt = "nodes"
+const bkt = "appreqs"
 
 func (s *S) SetUpSuite(c *gocheck.C) {
 	ticker.Stop()
@@ -75,8 +92,8 @@ func (s *S) TestConn(c *gocheck.C) {
 
 	config.Set("riak:url", "127.0.0.1:8087")
 	defer config.Unset("riak:url")
-	config.Set("bucket:name", "nodes")
-	defer config.Unset("bucket:name")
+	config.Set("riak:bucket", "appreqs")
+	defer config.Unset("riak:bucket")
 	storage, err := Conn()
 	defer storage.Close()
 	c.Assert(storage, gocheck.NotNil)
@@ -86,6 +103,45 @@ func (s *S) TestConn(c *gocheck.C) {
 	log.Println("--> end   [TestConn]")
 
 }
+
+func (s *S) TestStore(c *gocheck.C) {
+   log.Println("--> start [TestFetch]")
+   config.Set("riak:url", "127.0.0.1:8087")
+	defer config.Unset("riak:url")
+	config.Set("riak:bucket", "appreqs")
+	defer config.Unset("riak:bucket")
+	storage, err := Conn()
+	defer storage.Close()
+	c.Assert(storage, gocheck.NotNil)
+	c.Assert(err, gocheck.IsNil)
+    // Store Struct (uses coder)
+    data := ExampleData{
+           Field1: "ExampleData1",
+           Field2: 1,
+      }
+      err = storage.StoreStruct("sampledata", &data)
+    c.Assert(err, gocheck.IsNil)   
+   log.Println("--> end   [TestFetch]")
+}
+
+func (s *S) TestFetch(c *gocheck.C) {
+   log.Println("--> start [TestFetch]")
+   config.Set("riak:url", "127.0.0.1:8087")
+	defer config.Unset("riak:url")
+	config.Set("riak:bucket", "appreqs")
+	defer config.Unset("riak:bucket")
+	storage, err := Conn()
+	defer storage.Close()
+	c.Assert(storage, gocheck.NotNil)
+	c.Assert(err, gocheck.IsNil)
+   out := &AppRequests{}  
+   err = storage.FetchStruct("APR417529039931047936", out)
+   log.Println("--> value   [TestFetch] [%s]", out.node_id)
+   c.Assert(err, gocheck.IsNil)   
+   log.Println("--> end   [TestFetch]")
+}
+
+
 
 /*func (s *S) TestUsers(c *gocheck.C) {
 	storage, _ := Open("127.0.0.1:27017", "megam_storage_test")

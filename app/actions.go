@@ -3,10 +3,12 @@ package app
 import (
 	"errors"
 	"log"
+	"bytes"
 	//"fmt"
 	//"github.com/globocom/config"
 	"github.com/indykish/gulp/action"
-	"github.com/indykish/gulp/db"
+	"github.com/indykish/gulp/db"	
+	"github.com/indykish/gulp/exec"
 	//"github.com/indykish/gulp/amqp"
 	//"github.com/indykish/gulp/scm"
 	//"launchpad.net/goamz/aws"
@@ -16,13 +18,23 @@ import (
 
 var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
 
+func CommandExecutor(app *App) (action.Result, error) {
+	    var e exec.OsExecutor
+	    var b bytes.Buffer
+	    if err := e.Execute(app.AppReqs.LCApply, nil, nil, &b, &b); err != nil {	
+		return nil, err
+	    }    
+	    log.Printf("%s", b)
+	    return &app, nil
+}
+
 // insertApp is an action that inserts an app in the database in Forward and
 // removes it in the Backward.
 //
 // The first argument in the context must be an App or a pointer to an App.
 var startApp = action.Action{
 	Name: "startapp",
-	Forward: func(ctx action.FWContext) (action.Result, error) {
+	Forward: func(ctx action.FWContext) (action.Result, error) {	    
 		var app App
 		switch ctx.Params[0].(type) {
 		case App:
@@ -31,21 +43,14 @@ var startApp = action.Action{
 			app = *ctx.Params[0].(*App)
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
-		}
-		/*
-			IF you need to go to Riak, then do it here. or else no.
-			conn, err := db.Conn()
-			if err != nil {
-				return nil, err
-			}
-			defer conn.Close()
-		*/
+		}		
+		
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
 		//}
 		//return &app, err
-		return &app, nil
+		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
@@ -77,20 +82,13 @@ var stopApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		/*
-			IF you need to go to Riak, then do it here. or else no.
-			conn, err := db.Conn()
-			if err != nil {
-				return nil, err
-			}
-			defer conn.Close()
-		*/
+		
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
 		//}
 		//return &app, err
-		return &app, nil
+		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)

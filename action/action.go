@@ -124,14 +124,14 @@ func (p *Pipeline) Execute(params ...interface{}) error {
 	if len(p.actions) == 0 {
 		return errors.New("No actions to execute.")
 	}
-	fwCtx := FWContext{Params: params}
-	for i, a := range p.actions {
+	fwCtx := FWContext{Params: params}	
+	for i, a := range p.actions {	
 		log.Printf("[pipeline] running the Forward for the %s action", a.Name)
-		if a.Forward == nil {
+		if a.Forward == nil {		
 			err = errors.New("All actions must define the forward function.")
-		} else if len(fwCtx.Params) < a.MinParams {
+		} else if len(fwCtx.Params) < a.MinParams {		
 			err = errors.New("Not enough parameters to call Action.Forward.")
-		} else {
+		} else {		
 			r, err = a.Forward(fwCtx)
 			a.rMutex.Lock()
 			a.result = r
