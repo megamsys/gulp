@@ -1,31 +1,37 @@
 package app
 
 import (
+	"bytes"
 	"errors"
 	"log"
-	"bytes"
-	//"fmt"
+	"fmt"
 	//"github.com/globocom/config"
 	"github.com/indykish/gulp/action"
-	"github.com/indykish/gulp/db"	
+	"github.com/indykish/gulp/db"
 	"github.com/indykish/gulp/exec"
 	//"github.com/indykish/gulp/amqp"
 	//"github.com/indykish/gulp/scm"
 	//"launchpad.net/goamz/aws"
 	//"strconv"
-	//"strings"
+	"strings"
 )
 
 var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
 
 func CommandExecutor(app *App) (action.Result, error) {
-	    var e exec.OsExecutor
-	    var b bytes.Buffer
-	    if err := e.Execute(app.AppReqs.LCApply, nil, nil, &b, &b); err != nil {	
-		return nil, err
-	    }    
-	    log.Printf("%s", b)
-	    return &app, nil
+	var e exec.OsExecutor
+	var b bytes.Buffer
+	commandWords := strings.Fields(app.AppReqs.LCApply)
+	fmt.Println(commandWords, len(commandWords))
+	
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, &b, &b); err != nil {
+			return nil, err
+		}
+	} 	
+
+	log.Printf("%s", b)
+	return &app, nil
 }
 
 // insertApp is an action that inserts an app in the database in Forward and
@@ -34,7 +40,7 @@ func CommandExecutor(app *App) (action.Result, error) {
 // The first argument in the context must be an App or a pointer to an App.
 var startApp = action.Action{
 	Name: "startapp",
-	Forward: func(ctx action.FWContext) (action.Result, error) {	    
+	Forward: func(ctx action.FWContext) (action.Result, error) {
 		var app App
 		switch ctx.Params[0].(type) {
 		case App:
@@ -43,8 +49,8 @@ var startApp = action.Action{
 			app = *ctx.Params[0].(*App)
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
-		}		
-		
+		}
+
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
@@ -82,7 +88,7 @@ var stopApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		
+
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
