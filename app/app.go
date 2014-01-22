@@ -107,6 +107,20 @@ func StopApp(app *App) error {
 	return nil
 }
 
+// StopsApp creates a new app.
+//
+// Stops the app :
+func BuildApp(app *App) error {
+	actions := []*action.Action{&buildApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
 
 // GetName returns the name of the app.
 func (app *App) GetName() string {
@@ -136,6 +150,8 @@ func (app *App) Envs() map[string]bind.EnvVar {
 func (app *App) GetAppReqs() *AppRequests {
 	return app.AppReqs
 }
+
+
 
 /* setEnv sets the given environment variable in the app.
 func (app *App) setEnv(env bind.EnvVar) {

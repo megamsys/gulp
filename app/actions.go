@@ -3,14 +3,12 @@ package app
 import (
 	"bytes"
 	"errors"
-	"log"
 	"fmt"
-	//"github.com/globocom/config"
 	"github.com/indykish/gulp/action"
 	"github.com/indykish/gulp/db"
 	"github.com/indykish/gulp/exec"
-	//"github.com/indykish/gulp/amqp"
-	//"github.com/indykish/gulp/scm"
+	"github.com/indykish/gulp/scm"
+	"log"
 	//"launchpad.net/goamz/aws"
 	//"strconv"
 	"strings"
@@ -23,12 +21,12 @@ func CommandExecutor(app *App) (action.Result, error) {
 	var b bytes.Buffer
 	commandWords := strings.Fields(app.AppReqs.LCApply)
 	fmt.Println(commandWords, len(commandWords))
-	
+
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, &b, &b); err != nil {
 			return nil, err
 		}
-	} 	
+	}
 
 	log.Printf("%s", b)
 	return &app, nil
@@ -89,6 +87,72 @@ var stopApp = action.Action{
 			return nil, errors.New("First parameter must be App or *App.")
 		}
 
+		//err = conn.Apps().Insert(app)
+		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
+		//	return nil, ErrAppAlreadyExists
+		//}
+		//return &app, err
+		return CommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		app := ctx.FWResult.(*App)
+		conn, err := db.Conn()
+		if err != nil {
+			log.Printf("Could not connect to the database: %s", err)
+			return
+		}
+		log.Printf("App name is %s", app.Name)
+		defer conn.Close()
+		//conn.Apps().Remove(bson.M{"name": app.Name})
+	},
+	MinParams: 1,
+}
+
+// insertApp is an action that inserts an app in the database in Forward and
+// removes it in the Backward.
+//
+// The first argument in the context must be an App or a pointer to an App.
+var buildApp = action.Action{
+	Name: "buildapp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app App
+		switch ctx.Params[0].(type) {
+		case App:
+			app = ctx.Params[0].(App)
+		case *App:
+			app = *ctx.Params[0].(*App)
+		default:
+			return nil, errors.New("First parameter must be App or *App.")
+		}
+		
+		project, err := scm.Project()
+		if err != nil {
+			log.Printf("Could not find the project name in gulp.conf file: %s", err)
+			return nil, errors.New("Could not find the project name in gulp.conf file")
+		}
+		
+		builder, err := scm.Builder()
+		if err != nil {
+			log.Printf("Could not find the builder in gulp.conf file: %s", err)
+			return nil, errors.New("Could not find the builder in gulp.conf file")
+
+		}
+		
+		local_repo, err := scm.GetPath()
+		if err != nil {
+			log.Printf("Could not find the local repo  in gulp.conf file: %s", err)
+			return nil, errors.New("Could not find the local repo in gulp.conf file")
+		}
+		
+		remote_repo, err := scm.GetRemotePath()
+		if err != nil {
+			log.Printf("Could not find the remote repo in gulp.conf file: %s", err)
+			return nil, errors.New("Could not find the remote repo in gulp.conf file")
+		}
+
+        build_parms := fmt.Sprintf("%s/%s %s %s %s",builder, app.AppReqs.LCApply,project, local_repo, remote_repo)
+        
+        app.AppReqs.LCApply = build_parms
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
