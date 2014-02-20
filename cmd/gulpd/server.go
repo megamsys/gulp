@@ -95,7 +95,32 @@ func handle(msg *amqp.Message) {
 
 	switch msg.Action {
 	case restartApp:
-		fallthrough
+		if len(msg.Args) < 1 {
+			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
+		}
+		//stick the id from msg.
+		ap := app.App{Name: "myapp", Id: "RIPAB"}
+
+		if err := ap.Get(msg.Id); err != nil {
+			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
+			return
+		}
+				
+		log.Printf("Handling message %#v", ap.GetAppReqs())
+		err := app.StopApp(&ap)
+		if err != nil {
+			log.Printf("Error handling %q. App failed to stop:\n%s.", msg.Action, err)
+			return
+		}
+		
+		err = app.StartApp(&ap)
+		if err != nil {
+			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
+			return
+		}
+
+		msg.Delete()
+		break
 	case startApp:
 		if len(msg.Args) < 1 {
 			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
@@ -107,17 +132,16 @@ func handle(msg *amqp.Message) {
 			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
 			return
 		}
-        log.Printf("Handling message %#v", ap.GetAppReqs())
+		log.Printf("Handling message %#v", ap.GetAppReqs())
 		err := app.StartApp(&ap)
 		if err != nil {
 			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
 			return
 		}
-
 		msg.Delete()
 		break
 	case stopApp:
-	    if len(msg.Args) < 1 {
+		if len(msg.Args) < 1 {
 			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
 		}
 		//stick the id from msg.
@@ -127,7 +151,7 @@ func handle(msg *amqp.Message) {
 			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
 			return
 		}
-        log.Printf("Handling message %#v", ap.GetAppReqs())
+		log.Printf("Handling message %#v", ap.GetAppReqs())
 		err := app.StopApp(&ap)
 		if err != nil {
 			log.Printf("Error handling %q. App failed to stop:\n%s.", msg.Action, err)
@@ -155,7 +179,7 @@ func handle(msg *amqp.Message) {
 			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
 			return
 		}
-        log.Printf("Handling message %#v", ap.GetAppReqs())
+		log.Printf("Handling message %#v", ap.GetAppReqs())
 		err := app.BuildApp(&ap)
 		if err != nil {
 			log.Printf("Error handling %q. App failed to build:\n%s.", msg.Action, err)

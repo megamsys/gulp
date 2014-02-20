@@ -14,6 +14,12 @@ import (
 	"strings"
 )
 
+const (
+	keyremote_repo = "remote_repo="
+	keylocal_repo  = "local_repo="
+	keyproject     = "project="
+)
+
 var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
 
 func CommandExecutor(app *App) (action.Result, error) {
@@ -124,35 +130,35 @@ var buildApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		
+
 		project, err := scm.Project()
 		if err != nil {
 			log.Printf("Could not find the project name in gulp.conf file: %s", err)
 			return nil, errors.New("Could not find the project name in gulp.conf file")
 		}
-		
+
 		builder, err := scm.Builder()
 		if err != nil {
 			log.Printf("Could not find the builder in gulp.conf file: %s", err)
 			return nil, errors.New("Could not find the builder in gulp.conf file")
 
 		}
-		
+
 		local_repo, err := scm.GetPath()
 		if err != nil {
 			log.Printf("Could not find the local repo  in gulp.conf file: %s", err)
 			return nil, errors.New("Could not find the local repo in gulp.conf file")
 		}
-		
+
 		remote_repo, err := scm.GetRemotePath()
 		if err != nil {
 			log.Printf("Could not find the remote repo in gulp.conf file: %s", err)
 			return nil, errors.New("Could not find the remote repo in gulp.conf file")
 		}
 
-        build_parms := fmt.Sprintf("%s/%s %s %s %s",builder, app.AppReqs.LCApply,project, local_repo, remote_repo)
-        
-        app.AppReqs.LCApply = build_parms
+		build_parms := fmt.Sprintf("%s/%s %s %s %s", builder, app.AppReqs.LCApply, keyproject+project, keylocal_repo+local_repo, keyremote_repo+remote_repo)
+
+		app.AppReqs.LCApply = build_parms
 		//err = conn.Apps().Insert(app)
 		//if err != nil && strings.HasPrefix(err.Error(), "E11000") {
 		//	return nil, ErrAppAlreadyExists
