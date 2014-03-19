@@ -13,7 +13,7 @@ import (
 
 type AppStart struct{}
 
-func (AppStart) Run(context *cmd.Context) error {
+func (AppStart) Run(context *cmd.Context,client *cmd.Client) error {
 	appName := context.Args[0]
 	/*platform := context.Args[1]
 	b := bytes.NewBufferString(fmt.Sprintf(`{"name":"%s","platform":"%s"}`, appName, platform))
@@ -72,7 +72,7 @@ If you don't provide the app name, megam will try to guess it.`,
 	}
 }
 
-func (c *AppStop) Run(context *cmd.Context) error {
+func (c *AppStop) Run(context *cmd.Context, client *cmd.Client) error {
 	appName := context.Args[0]
 	
 	var answer string

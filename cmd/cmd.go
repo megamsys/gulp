@@ -1,4 +1,3 @@
-
 package cmd
 
 import (
@@ -11,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"net/http"
 )
 
 type exiter interface {
@@ -61,7 +61,6 @@ func (m *Manager) Register(command Command) {
 	m.Commands[name] = command
 }
 
-
 func (m *Manager) Run(args []string) {
 	var status int
 	if len(args) == 0 {
@@ -95,10 +94,10 @@ func (m *Manager) Run(args []string) {
 		status = 1
 	}
 	context := Context{args, m.stdout, m.stderr, m.stdin}
-	
 
-	err := command.Run(&context)
-	
+	client := NewClient(&http.Client{}, &context, m)
+	err := command.Run(&context, client)
+
 	if err != nil {
 		re := regexp.MustCompile(`^((Invalid token)|(You must provide the Authorization header))`)
 		errorMsg := err.Error()
@@ -123,7 +122,7 @@ func (m *Manager) finisher() exiter {
 
 type Command interface {
 	Info() *Info
-	Run(context *Context) error
+	Run(context *Context, client *Client) error
 }
 
 type FlaggedCommand interface {
@@ -157,7 +156,7 @@ func (c *help) Info() *Info {
 	}
 }
 
-func (c *help) Run(context *Context) error {
+func (c *help) Run(context *Context, client *Client) error {
 	output := fmt.Sprintf("%s version %s.\n\n", c.manager.name, c.manager.version)
 	if c.manager.wrong {
 		output += fmt.Sprint("ERROR: wrong number of arguments.\n\n")
@@ -215,7 +214,7 @@ func (c *version) Info() *Info {
 	}
 }
 
-func (c *version) Run(context *Context) error {
+func (c *version) Run(context *Context, client *Client) error {
 	fmt.Fprintf(context.Stdout, "%s version %s.\n", c.manager.name, c.manager.version)
 	return nil
 }

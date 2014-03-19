@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"github.com/indykish/gulp/cmd"
+	"github.com/indykish/gulp/cmd/testing"
 //	"io/ioutil"
 	"launchpad.net/gocheck"
-//	"net/http"
+	"net/http"
 //	"strings"
 )
 
-func (s *S) TestAppStart(c *gocheck.C) {
+func (s *S) TestAppStartInfo(c *gocheck.C) {
 	expected := &cmd.Info{
 		Name:    "startapp",
 		Usage:   "startapp <appname> <lifecycle_when>",
@@ -19,7 +20,7 @@ func (s *S) TestAppStart(c *gocheck.C) {
 	c.Assert((&AppStart{}).Info(), gocheck.DeepEquals, expected)
 }
 
-func (s *S) TestAppStop(c *gocheck.C) {
+func (s *S) TestAppStart(c *gocheck.C) {
 	var stdout, stderr bytes.Buffer
 //	result := `{"status":"success", "repository_url":"git@github.com/indykish:nilavu.git"}`
 	expected := `App "ble.megam.co" is being started!
@@ -42,7 +43,9 @@ Use appreqs list to check the status of the app.` + "\n"
 	client := cmd.NewClient(&http.Client{Transport: &trans}, nil, manager)
 	*/
 	command := AppStart{}
-	err := command.Run(&context)
+	trans := testing.Transport{Message: "success", Status: http.StatusOK}
+	client := cmd.NewClient(&http.Client{Transport: &trans}, nil, manager)
+	err := command.Run(&context, client)
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(stdout.String(), gocheck.Equals, expected)
 }
