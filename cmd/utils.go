@@ -5,11 +5,11 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
-	"github.com/globocom/config"
+	"fmt"
+	"github.com/tsuru/config"
 	"regexp"
 	"strconv"
 	"strings"
-	"fmt"
 	"time"
 )
 
@@ -36,18 +36,18 @@ type Authly struct {
 }
 
 func NewAuthly(urlsuffix string, jsonbody []byte) (*Authly, error) {
-	email, err := config.GetString("api:email"); 
-	
+	email, err := config.GetString("api:email")
+
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find the email (%s).", err)
 	}
-	
-	api_key, err := config.GetString("api:api_key"); 
-	
+
+	api_key, err := config.GetString("api:api_key")
+
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find the api_key (%s).", err)
 	}
-	
+
 	return &Authly{
 		UrlSuffix: urlsuffix,
 		Date:      strconv.FormatInt(time.Now().Unix(), 10),
@@ -69,9 +69,9 @@ func (authly *Authly) AuthHeader() error {
 	headMap[X_Megam_EMAIL] = authly.Email
 	headMap[X_Megam_APIKEY] = authly.APIKey
 	headMap[Accept] = application_vnd_megam_json
-	headMap[X_Megam_HMAC] = authly.Email + ":"+CalcHMAC(authly.APIKey, (timeStampedPath + "\n" + md5Body))
+	headMap[X_Megam_HMAC] = authly.Email + ":" + CalcHMAC(authly.APIKey, (timeStampedPath+"\n"+md5Body))
 	headMap["Content-Type"] = "application/json"
-//headMap["Content-Length"] = strconv.Itoa(len(authly.JSONBody.Encode()))
+	//headMap["Content-Length"] = strconv.Itoa(len(authly.JSONBody.Encode()))
 	authly.AuthMap = headMap
 	return nil
 }
@@ -103,7 +103,7 @@ func GetURL(path string) (string, error) {
 	if m, _ := regexp.MatchString("^https?://", target); !m {
 		prefix = "http://"
 	}
-	return prefix + strings.TrimRight(target, "/") + "/"+ strings.TrimRight(API_GATEWAY_VERSION, "/") + path, nil
+	return prefix + strings.TrimRight(target, "/") + "/" + strings.TrimRight(API_GATEWAY_VERSION, "/") + path, nil
 }
 
 /*
