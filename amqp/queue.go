@@ -28,7 +28,7 @@ package amqp
 
 import (
 	"fmt"
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"time"
 )
 
@@ -42,7 +42,7 @@ type Q interface {
 	// is 0, the message is sent immediately to the queue.
 	Put(m *Message, delay time.Duration) error
 
-	// Acknowledge that the message was successfully received from the queue. 	
+	// Acknowledge that the message was successfully received from the queue.
 	Delete(m *Message, tag uint64, multiple bool) error
 
 	// Release sends a Not Acknowledged message in the queue.When the requeue
@@ -51,7 +51,6 @@ type Q interface {
 	// This method should be used when handling a message that you cannot
 	// handle, maximizing throughput.
 	Release(m *Message, tag uint64, multiple bool, requeue bool) error
-
 }
 
 // Handler represents a runnable routine. It can be started and stopped.
@@ -116,10 +115,10 @@ func Factory() (QFactory, error) {
 // For example, the action "NSTART" could receive one argument: the
 // name of the app for which the app will be stopped.
 type Message struct {
-	Action string    //action NSTART, NSTOP, NRESTART etc.
-	Args   string  //any arguments as deemed fit.
-	Id     string    //the id in Riak which starts like RIP..
-	mid    uint64    //a counter incremented each time the msg is received.
+	Action string //action NSTART, NSTOP, NRESTART etc.
+	Args   string //any arguments as deemed fit.
+	Id     string //the id in Riak which starts like RIP..
+	mid    uint64 //a counter incremented each time the msg is received.
 	delete bool
 }
 

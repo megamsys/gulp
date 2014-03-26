@@ -1,7 +1,7 @@
 package scm
 
 import (
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"log"
 )
 

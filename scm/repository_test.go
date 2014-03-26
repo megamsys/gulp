@@ -1,10 +1,9 @@
 package scm
 
 import (
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"launchpad.net/gocheck"
 )
-
 
 func (s *S) TestGetPath(c *gocheck.C) {
 	path, err := GetPath()

@@ -8,8 +8,8 @@ package db
 
 import (
 	"fmt"
-	"github.com/globocom/config"
 	"github.com/mrb/riakpbc"
+	"github.com/tsuru/config"
 	"log"
 	"strings"
 	"sync"
@@ -41,10 +41,10 @@ type Storage struct {
 }
 
 func open(addr []string, bucketname string) (*Storage, error) {
-	log.Printf("--> Dialing to %v", addr)	
+	log.Printf("--> Dialing to %v", addr)
 	coder := riakpbc.NewCoder("json", riakpbc.JsonMarshaller, riakpbc.JsonUnmarshaller)
 	riakCoder := riakpbc.NewClientWithCoder(addr, coder)
-	if err := riakCoder.Dial(); err != nil {	
+	if err := riakCoder.Dial(); err != nil {
 		return nil, err
 	}
 
@@ -96,11 +96,11 @@ func Open(addr []string, bktname string) (storage *Storage, err error) {
 // Most megam packages should probably use this function. Open is intended for
 // use when supporting more than one database.
 func Conn() (*Storage, error) {
-	url, _ := config.GetString("riak:url")	
+	url, _ := config.GetString("riak:url")
 	if url == "" {
 		url = DefaultRiakURL
 	}
-	bktname, _ := config.GetString("riak:bucket")	
+	bktname, _ := config.GetString("riak:bucket")
 	if bktname == "" {
 		bktname = DefaultBucketName
 	}
@@ -125,7 +125,7 @@ func (s *Storage) Close() {
 func (s *Storage) FetchStruct(key string, out interface{}) error {
 	if _, err := s.coder_client.FetchStruct(s.bktname, key, out); err != nil {
 		return fmt.Errorf("Convert fetched JSON to the Struct, and return it failed: %s", err)
-	}		
+	}
 	fmt.Println(out)
 	//TO-DO:
 	//we need to return the fetched json -> to struct interface

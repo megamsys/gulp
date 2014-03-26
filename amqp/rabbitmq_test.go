@@ -1,11 +1,9 @@
 package amqp
 
-import (
-
-)
+import ()
 
 import (
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"launchpad.net/gocheck"
 )
 
@@ -14,9 +12,8 @@ type RabbitMQSuite struct{}
 var _ = gocheck.Suite(&RabbitMQSuite{})
 
 func (s *RabbitMQSuite) SetUpSuite(c *gocheck.C) {
-//	config.Set("queue-server", "127.0.0.1:11300")	
+	//	config.Set("queue-server", "127.0.0.1:11300")
 }
-
 
 func (s *RabbitMQSuite) TestConnection(c *gocheck.C) {
 	_, err := connection()
@@ -41,7 +38,6 @@ func (s *RabbitMQSuite) TestConnectionResfused(c *gocheck.C) {
 	c.Assert(err, gocheck.NotNil)
 }
 
-
 /*func (s *RabbitMQSuite) TestPut(c *gocheck.C) {
 	msg := Message{
 		Action: "startapp",
@@ -62,8 +58,6 @@ func (s *RabbitMQSuite) TestConnectionResfused(c *gocheck.C) {
 	got.id = msg.id
 	c.Assert(got, gocheck.DeepEquals, msg)
 }*/
-
-
 
 func (s *RabbitMQSuite) TestRabbitMQFactoryIsInFactoriesMap(c *gocheck.C) {
 	f, ok := factories["rabbitmq"]

@@ -4,7 +4,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -19,16 +19,14 @@ type Client struct {
 	versionHeader  string
 }
 
-
 func NewClient(client *http.Client, context *Context, manager *Manager) *Client {
 	return &Client{
 		HTTPClient:     client,
 		context:        context,
-		Authly: &Authly{},
+		Authly:         &Authly{},
 		progname:       manager.name,
 		currentVersion: manager.version,
 		versionHeader:  manager.versionHeader,
-		
 	}
 }
 
