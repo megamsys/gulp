@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/globocom/config"
 	"github.com/streadway/amqp"
+	"github.com/tsuru/config"
 	"log"
 	"regexp"
 	"sync"
@@ -124,8 +124,8 @@ func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, err
 			if deliveries, err := consume(5e9); err == nil {
 				for d := range deliveries {
 					log.Printf("%dB : [%v] %q", len(d.Body), d.DeliveryTag, d.Body)
-					var message Message										
-					err := json.Unmarshal(d.Body, &message)					
+					var message Message
+					err := json.Unmarshal(d.Body, &message)
 					if err != nil {
 						fmt.Println("error:", err)
 					}
@@ -135,11 +135,11 @@ func (b rabbitmqFactory) Handler(f func(*Message), name ...string) (Handler, err
 						f(m)
 						q := rabbitmqQ{}
 						if m.delete {
-							q.Delete(m,tag, false)
+							q.Delete(m, tag, false)
 						} else {
-							q.Release(m,tag,false,false) //don't requeue it.
+							q.Release(m, tag, false, false) //don't requeue it.
 						}
-					}(&message,d.DeliveryTag)
+					}(&message, d.DeliveryTag)
 				}
 				log.Printf("TO-DO: Deliveries channel closed")
 				//done <- nil

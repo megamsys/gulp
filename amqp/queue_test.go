@@ -1,7 +1,7 @@
 package amqp
 
 import (
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"launchpad.net/gocheck"
 	"testing"
 )
@@ -53,5 +53,3 @@ func (s *S) TestRegister(c *gocheck.C) {
 	_, err := Factory()
 	c.Assert(err, gocheck.IsNil)
 }
-
-

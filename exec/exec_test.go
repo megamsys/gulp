@@ -2,7 +2,7 @@ package exec
 
 import (
 	"bytes"
-	"github.com/globocom/commandmocker"
+	"github.com/tsuru/commandmocker"
 	"launchpad.net/gocheck"
 	"testing"
 )

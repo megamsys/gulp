@@ -3,15 +3,12 @@ package app
 import (
 /*	"errors"
 	"fmt"
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"github.com/indykish/gulp/action"
 	"launchpad.net/gocheck"
 	"sort"
 	"strings"*/
 )
-
-
-
 
 /*
 func (s *S) TestCreateRepositoryForwardInvalidType(c *gocheck.C) {
