@@ -9,8 +9,9 @@ import (
 	"github.com/indykish/gulp/exec"
 	"github.com/indykish/gulp/scm"
 	"log"
-	//"launchpad.net/goamz/aws"
-	//"strconv"
+	"text/template"
+	"path"
+	"bufio"
 	"strings"
 )
 
@@ -18,6 +19,10 @@ const (
 	keyremote_repo = "remote_repo="
 	keylocal_repo  = "local_repo="
 	keyproject     = "project="
+	kibana         ="kibana"
+	kibanaTemplatePath = "conf/kibana"	
+	kibanaDashPath = "/var/www/kibana/app/dashboards"
+	nginx_restart = "/etc/init.d/service nginx restart"
 )
 
 var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
@@ -25,6 +30,7 @@ var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
 func CommandExecutor(app *App) (action.Result, error) {
 	var e exec.OsExecutor
 	var b bytes.Buffer
+	if (app.AppReqs!=nil) {
 	commandWords := strings.Fields(app.AppReqs.LCApply)
 	fmt.Println(commandWords, len(commandWords))
 
@@ -33,7 +39,7 @@ func CommandExecutor(app *App) (action.Result, error) {
 			return nil, err
 		}
 	}
-
+   }
 	log.Printf("%s", b)
 	return &app, nil
 }
@@ -179,6 +185,68 @@ var buildApp = action.Action{
 	},
 	MinParams: 1,
 }
+
+// insertApp is an action that inserts an app in the database in Forward and
+// removes it in the Backward.
+//
+// The first argument in the context must be an App or a pointer to an App.
+var launchedApp = action.Action{
+	Name: "launchedapp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app App
+		switch ctx.Params[0].(type) {
+		case App:
+			app = ctx.Params[0].(App)
+		case *App:
+			app = *ctx.Params[0].(*App)
+		default:
+			return nil, errors.New("First parameter must be App or *App.")
+		}
+		
+		log.Printf("Launched, attaching post install to %s", app.Name)
+		
+		tmpl, err := template.New(kibana).ParseFiles(kibanaTemplatePath)
+		
+		if err != nil {
+	      return nil, err
+		}	
+		
+		kibanaPath := path.Join(kibanaDashPath, app.Name + ".json")
+		kibanaFile, err := filesystem().Create(kibanaPath)
+				
+		if err != nil {
+		   return nil, err
+		}	
+		
+		w := bufio.NewWriter(kibanaFile)
+		err = tmpl.Execute(w, app)
+		w.Flush()
+		
+		tmpAppreq := &AppRequests{}
+		tmpAppreq.LCApply = nginx_restart
+		
+		app.AppReqs = tmpAppreq
+		
+		if err != nil {
+	      return nil, err
+		}	
+				
+		return CommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		app := ctx.FWResult.(*App)
+		conn, err := db.Conn()
+		if err != nil {
+			log.Printf("Could not connect to the database: %s", err)
+			return
+		}
+		log.Printf("App name is %s", app.Name)
+		defer conn.Close()
+		//conn.Apps().Remove(bson.M{"name": app.Name})
+	},
+	MinParams: 1,
+}
+
 
 /*
 // exportEnvironmentsAction exports megam's default environment variables in a

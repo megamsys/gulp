@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"log"
+	"github.com/indykish/gulp/fs"	
 	"github.com/indykish/gulp/action"	
 	"github.com/indykish/gulp/app/bind"
 	"github.com/indykish/gulp/db"
@@ -11,6 +12,7 @@ import (
 
 var (
 	cnameRegexp = regexp.MustCompile(`^[a-zA-Z0-9][\w-.]+$`)
+	fsystem fs.Fs
 )
 
 // Appreq is the main type in megam. An app represents a real world application.
@@ -51,8 +53,15 @@ func (app *App) MarshalJSON() ([]byte, error) {
 	//result["repository"] = repository.ReadWriteURL(app.Name)
 	result["ip"] = app.Ip
 	result["cname"] = app.CName
-	result["ready"] = app.State == "ready"
+	result["launched"] = app.State == "launched"
 	return json.Marshal(&result)
+}
+
+func filesystem() fs.Fs {
+	if fsystem == nil {
+		fsystem = fs.OsFs{}
+	}
+	return fsystem
 }
 
 // Get queries the database and fills the App object with data retrieved from
@@ -112,6 +121,20 @@ func StopApp(app *App) error {
 // Stops the app :
 func BuildApp(app *App) error {
 	actions := []*action.Action{&buildApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+// StopsApp creates a new app.
+//
+// Stops the app :
+func LaunchedApp(app *App) error {
+	actions := []*action.Action{&launchedApp}
 
 	pipeline := action.NewPipeline(actions...)
 	err := pipeline.Execute(app)

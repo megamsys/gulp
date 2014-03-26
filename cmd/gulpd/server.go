@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"regexp"
 	"sync"
 	"syscall"
@@ -14,6 +15,7 @@ import (
 
 const (
 	// queue actions
+	runningApp = "running"	
 	startApp   = "start"
 	stopApp    = "stop"
 	buildApp   = "build"
@@ -76,24 +78,12 @@ func handler() amqp.Handler {
 	return _handler
 }
 
-/*func handle(msg *amqp.Message) {
-	log.Printf("Hurray I got a message => %v", msg)
-
-	if nameRegexp.MatchString(msg.Action) {
-		msg.Delete()
-		manager.Run(msg.Args[1:])
-	} else {
-		log.Printf("Error handling %q: invalid action.", msg.Action)
-	}
-
-}
-*/
 
 // handle is the function called by the queue handler on each message.
 func handle(msg *amqp.Message) {
 	log.Printf("Handling message %v", msg)
 
-	switch msg.Action {
+	switch strings.ToLower(msg.Action) {
 	case restartApp:
 		if len(msg.Args) < 1 {
 			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
@@ -188,6 +178,23 @@ func handle(msg *amqp.Message) {
 
 		msg.Delete()
 		break
+	case runningApp:
+		if len(msg.Args) < 1 {
+			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
+		}
+		//stick the i
+		ap := app.App{Name: msg.Id, Id: "RIPAB"}
+
+		log.Printf("Handling message %#v", ap.Name)
+		err := app.LaunchedApp(&ap)
+		if err != nil {
+			log.Printf("Error handling %q. App failed to launch:\n%s.", msg.Action, err)
+			return
+		}
+
+		msg.Delete()
+		break	
+		
 	default:
 		log.Printf("Error handling %q: invalid action.", msg.Action)
 		msg.Delete()

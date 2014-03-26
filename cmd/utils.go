@@ -5,9 +5,10 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"crypto/hmac"
+    "crypto/sha1"
 	"github.com/globocom/config"
 	"regexp"
-	"strconv"
 	"strings"
 	"fmt"
 	"time"
@@ -18,8 +19,7 @@ const (
 	X_Megam_APIKEY      = "X-Megam-APIKEY"
 	X_Megam_DATE        = "X-Megam-DATE"
 	X_Megam_HMAC        = "X-Megam-HMAC"
-	API_GATEWAY_VERSION = "v1"
-
+	API_GATEWAY_VERSION = "/v1"
 	Content_Type               = "Content-Type"
 	application_json           = "application/json"
 	Accept                     = "Accept"
@@ -50,7 +50,7 @@ func NewAuthly(urlsuffix string, jsonbody []byte) (*Authly, error) {
 	
 	return &Authly{
 		UrlSuffix: urlsuffix,
-		Date:      strconv.FormatInt(time.Now().Unix(), 10),
+		Date:      time.Now().Format(time.RFC850),
 		Email:     email,
 		APIKey:    api_key,
 		JSONBody:  jsonbody,
@@ -71,19 +71,38 @@ func (authly *Authly) AuthHeader() error {
 	headMap[Accept] = application_vnd_megam_json
 	headMap[X_Megam_HMAC] = authly.Email + ":"+CalcHMAC(authly.APIKey, (timeStampedPath + "\n" + md5Body))
 	headMap["Content-Type"] = "application/json"
-//headMap["Content-Length"] = strconv.Itoa(len(authly.JSONBody.Encode()))
 	authly.AuthMap = headMap
 	return nil
 }
 
-func CalcHMAC(api_key string, to_sign string) string {
-	return "blahblash"
-}
+func CalcHMAC(secret string, message string) string {
+	fmt.Println(secret +","+message)	
+    key := []byte(secret)
+    fmt.Printf("[secret==>%x, %x]",key, secret)
+    fmt.Println()
+    h := hmac.New(sha1.New, key)
+    h.Write([]byte(message))    
+    sumh := h.Sum(nil)
+    fmt.Printf("sumh==>%x",sumh)
+    fmt.Println()
+
+    sumi := make([]string, len(sumh))
+    for i := 0; i < len(sumh); i++ {
+    	sumi[i] = ("00" + fmt.Sprintf("%x",(sumh[i] & 0xff)))
+    	sumi[i]=sumi[i][len(sumi[i])-2: len(sumi[i])]
+    }
+    outs := strings.Join(sumi, "")
+	fmt.Println(outs)
+    return outs
+  }
+ 
 
 func GetMD5Hash(text []byte) string {
 	hasher := md5.New()
 	hasher.Write(text)
-	return hex.EncodeToString(hasher.Sum(nil))
+	fmt.Println("md5body="+ hex.EncodeToString(hasher.Sum(nil)))
+	return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
+	
 }
 
 func CalcBase64(data string) string {
@@ -103,7 +122,7 @@ func GetURL(path string) (string, error) {
 	if m, _ := regexp.MatchString("^https?://", target); !m {
 		prefix = "http://"
 	}
-	return prefix + strings.TrimRight(target, "/") + "/"+ strings.TrimRight(API_GATEWAY_VERSION, "/") + path, nil
+	return prefix + strings.TrimRight(target, "/") + strings.TrimRight(API_GATEWAY_VERSION, "/") + path, nil
 }
 
 /*
