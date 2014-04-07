@@ -134,9 +134,8 @@ func (s *S) TestFetch(c *gocheck.C) {
 	defer storage.Close()
 	c.Assert(storage, gocheck.NotNil)
 	c.Assert(err, gocheck.IsNil)
-   out := &AppRequests{}  
-   err = storage.FetchStruct("APR417529039931047936", out)
-   log.Println("--> value   [TestFetch] [%s]", out.node_id)
+   out := &ExampleData{}  
+   err = storage.FetchStruct("sampledata", out)   
    c.Assert(err, gocheck.IsNil)   
    log.Println("--> end   [TestFetch]")
 }
