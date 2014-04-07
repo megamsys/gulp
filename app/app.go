@@ -43,6 +43,21 @@ type AppRequests struct {
    LCWhen         string   `json:"lc_when"` 
    CreatedAT      string   `json:"created_at"` 
    }
+   
+   type AppConfigurations struct {
+   		ConfigId       		string   `json:"market_config_id"` 
+   		NodeId         		string   `json:"node_id"` 
+   		NodeName       		string   `json:"node_name"` 
+   		DRLocations    		string   `json:"disaster_recovery:locations"` 
+   		DRFromhost     		string   `json:"disaster_recovery:from_host"`   
+   		DRToHosts      		string   `json:"disaster_recovery:to_hosts"`
+   		HAProxyhost    		string   `json:"loadbalancing:haproxy_host"`
+   		LoadbalancedHosts 	string   `json:"loadbalancing:load_balanced_hosts"`
+   		CPUThreshhold    	string   `json:"autoscaling:cpu_threshhold"`
+   		MemThreshhold    	string   `json:"autoscaling:mem_threshhold"`
+   		MonitoringAgent 		string   `json:"monitoring:agent"`   
+   		CreatedAT      		string   `json:"created_at"` 
+   }
 
 // MarshalJSON marshals the app in json format. It returns a JSON object with
 //the following keys: name, framework, teams, units, repository and ip.
