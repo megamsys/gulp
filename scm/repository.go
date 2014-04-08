@@ -1,10 +1,27 @@
-package scm 
-
+package scm
 
 import (
+	"github.com/tsuru/config"
 	"log"
-	"github.com/globocom/config"
 )
+
+func GetRemotePath() (string, error) {
+	return config.GetString("scm:remote_repo")
+}
+
+// GetPath returns the path to the repository where the app code is in its
+// units.
+func GetPath() (string, error) {
+	return config.GetString("scm:local_repo")
+}
+
+func Builder() (string, error) {
+	return config.GetString("scm:builder")
+}
+
+func Project() (string, error) {
+	return config.GetString("scm:project")
+}
 
 func ServerURL() string {
 	server, err := config.GetString("scm:api_server")
@@ -14,12 +31,3 @@ func ServerURL() string {
 	}
 	return server
 }
-
-
-// GetPath returns the path to the repository where the app code is in its
-// units.
-func GetPath() (string, error) {
-	return config.GetString("scm:local_repo")
-}
-
-

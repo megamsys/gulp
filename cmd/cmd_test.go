@@ -29,7 +29,7 @@ func (c *TestCommand) Info() *Info {
 	}
 }
 
-func (c *TestCommand) Run(context *Context) error {
+func (c *TestCommand) Run(context *Context, client *Client) error {
 	io.WriteString(context.Stdout, "Running TestCommand")
 	return nil
 }
@@ -42,7 +42,7 @@ func (c *ErrorCommand) Info() *Info {
 	return &Info{Name: "error"}
 }
 
-func (c *ErrorCommand) Run(context *Context) error {
+func (c *ErrorCommand) Run(context *Context, client *Client) error {
 	return errors.New(c.msg)
 }
 
@@ -81,7 +81,7 @@ func (s *S) TestHelpCommandShouldBeRegisteredByDefault(c *gocheck.C) {
 func (s *S) TestHelpReturnErrorIfTheGivenCommandDoesNotExist(c *gocheck.C) {
 	command := help{manager: manager}
 	context := Context{[]string{"someone-create"}, manager.stdout, manager.stderr, manager.stdin}
-	err := command.Run(&context)
+	err := command.Run(&context,nil)
 	c.Assert(err, gocheck.NotNil)
 	c.Assert(err, gocheck.ErrorMatches, `^command "someone-create" does not exist.$`)
 }
@@ -91,7 +91,7 @@ func (s *S) TestVersion(c *gocheck.C) {
 	manager := NewManager("gulpd", "0.1", "", &stdout, &stderr, os.Stdin)
 	command := version{manager: manager}
 	context := Context{[]string{}, manager.stdout, manager.stderr, manager.stdin}
-	err := command.Run(&context)
+	err := command.Run(&context,nil)
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(manager.stdout.(*bytes.Buffer).String(), gocheck.Equals, "gulpd version 0.1.\n")
 }
@@ -118,7 +118,7 @@ func (c *ArgCmd) Info() *Info {
 	}
 }
 
-func (cmd *ArgCmd) Run(ctx *Context) error {
+func (cmd *ArgCmd) Run(ctx *Context, client *Client) error {
 	return nil
 }
 
@@ -153,7 +153,7 @@ Foo do anything or nothing.
 	manager.Register(&TestCommand{})
 	context := Context{[]string{"foo"}, manager.stdout, manager.stderr, manager.stdin}
 	command := help{manager: manager}
-	err := command.Run(&context)
+	err := command.Run(&context,nil)
 	c.Assert(err, gocheck.IsNil)
 	c.Assert(manager.stdout.(*bytes.Buffer).String(), gocheck.Equals, expected)
 }

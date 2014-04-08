@@ -1,15 +1,35 @@
 package scm
 
 import (
-	"github.com/globocom/config"
+	"github.com/tsuru/config"
 	"launchpad.net/gocheck"
 )
-
 
 func (s *S) TestGetPath(c *gocheck.C) {
 	path, err := GetPath()
 	c.Assert(err, gocheck.IsNil)
-	expected := "/home/application/current"
+	expected := "/var/www/projects/aryabhata/current"
+	c.Assert(path, gocheck.Equals, expected)
+}
+
+func (s *S) TestGetRemotePath(c *gocheck.C) {
+	path, err := GetRemotePath()
+	c.Assert(err, gocheck.IsNil)
+	expected := "https://github.com/indykish/aryabhata.git"
+	c.Assert(path, gocheck.Equals, expected)
+}
+
+func (s *S) TestProject(c *gocheck.C) {
+	path, err := Project()
+	c.Assert(err, gocheck.IsNil)
+	expected := "aryabhata"
+	c.Assert(path, gocheck.Equals, expected)
+}
+
+func (s *S) TestBuilder(c *gocheck.C) {
+	path, err := Builder()
+	c.Assert(err, gocheck.IsNil)
+	expected := "megam_builder_ruby"
 	c.Assert(path, gocheck.Equals, expected)
 }
 

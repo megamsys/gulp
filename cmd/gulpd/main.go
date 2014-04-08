@@ -17,15 +17,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/globocom/config"
 	"github.com/indykish/gulp/cmd"
+	"github.com/tsuru/config"
 	"log"
 	"os"
 	"path/filepath"
 )
 
 const (
-	version = "0.1.0"
+	version = "0.2.0"
 	header  = "Supported-Gulp"
 )
 
@@ -35,10 +35,11 @@ func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
 	m.Register(&GulpStart{m, nil, false}) //start the gulpd daemon
 	m.Register(&GulpStop{})               //stop  the gulpd daemon
+	m.Register(&GulpUpdate{})             //stop  the gulpd daemon
 	m.Register(&AppStart{})               //sudo service <appname> start
 	m.Register(&AppStop{})                //sudo service <appname> stop
-	/*m.Register(&gulp.AppRestart{}) //sudo service <apppname> restart
-	m.Register(&gulp.AppBuild{})   //git fetch -q
+	/*m.Register(&AppRestart{}) //sudo service <apppname> restart
+	m.Register(&AppBuild{})   //git fetch -q
 	m.Register(&gulp.AppMaintain{})//sudo service nginx maintain ?
 	m.Register(&gulp.SSLAdd{})     //download node_name.pub, crt from S3, mk ssl_template, cp to sites_available, ln to sites_enabled. && AppRestart
 	m.Register(&gulp.SSLRemove{})  //rm node_name.pub, crt, mk regular non_ssl_template, cp to sites_available, ln to sites_enabled. && AppRestart
