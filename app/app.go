@@ -24,11 +24,13 @@ type App struct {
 	Platform string `chef:"java"`
 	Name     string
 	Ip       string
+	Type     string
 	CName    string
 	//	Units    []Unit
 	State   string
 	Deploys uint
     AppReqs *AppRequests
+    AppConf *AppConfigurations
 	//	hr hookRunner
 }
 
@@ -45,18 +47,24 @@ type AppRequests struct {
    }
    
    type AppConfigurations struct {
-   		ConfigId       		string   `json:"market_config_id"` 
+   		ConfigId       		string   `json:"id"` 
    		NodeId         		string   `json:"node_id"` 
    		NodeName       		string   `json:"node_name"` 
-   		DRLocations    		string   `json:"disaster_recovery:locations"` 
-   		DRFromhost     		string   `json:"disaster_recovery:from_host"`   
-   		DRToHosts      		string   `json:"disaster_recovery:to_hosts"`
-   		HAProxyhost    		string   `json:"loadbalancing:haproxy_host"`
-   		LoadbalancedHosts 	string   `json:"loadbalancing:load_balanced_hosts"`
-   		CPUThreshhold    	string   `json:"autoscaling:cpu_threshhold"`
-   		MemThreshhold    	string   `json:"autoscaling:mem_threshhold"`
-   		MonitoringAgent 		string   `json:"monitoring:agent"`   
+   		DRLocations    		string   
+   		DRFromhost     		string      
+   		DRToHosts      		string 
+   		DRRecipe            string  
+   		HAProxyhost    		string   
+   		LoadbalancedHosts 	string  
+   		LoadRecipe            string 
+   		CPUThreshhold    	string   
+   		MemThreshhold    	string
+   		Noofinstances       string
+   		AutoRecipe            string   
+   		MonitoringAgent     string  
+   		MonitorRecipe            string   
    		CreatedAT      		string   `json:"created_at"` 
+   		LCApply             string
    }
 
 // MarshalJSON marshals the app in json format. It returns a JSON object with
@@ -70,6 +78,47 @@ func (app *App) MarshalJSON() ([]byte, error) {
 	result["cname"] = app.CName
 	result["launched"] = app.State == "launched"
 	return json.Marshal(&result)
+}
+
+//UnmarshalJSON parse app configuration json using AppConfiguartiosn struct.
+func (a *AppConfigurations) UnmarshalJSON(b []byte) error {
+
+	var f interface{}
+	json.Unmarshal(b, &f)
+
+	m := f.(map[string]interface{})
+    a.ConfigId = m["id"].(string)
+    a.NodeId  = m["node_id"].(string)
+    a.NodeName  = m["node_name"].(string)
+    
+	config := m["config"]
+	conf := config.(map[string]interface{})
+    
+    dis := conf["disaster"]
+    disaster := dis.(map[string]interface{})
+    a.DRLocations = disaster["locations"].(string)
+    a.DRFromhost  = disaster["fromhost"].(string)
+    a.DRToHosts  = disaster["tohosts"].(string)
+    a.DRRecipe   = disaster["recipe"].(string)
+    
+    load := conf["loadbalancing"]
+    loadbalance := load.(map[string]interface{})
+    a.HAProxyhost = loadbalance["haproxyhost"].(string)
+    a.LoadbalancedHosts  = loadbalance["loadbalancehost"].(string)
+    a.LoadRecipe   = loadbalance["recipe"].(string)
+        
+    scale := conf["autoscaling"]
+    autoscale := scale.(map[string]interface{})
+    a.CPUThreshhold  = autoscale["cputhreshold"].(string)
+    a.MemThreshhold  = autoscale["memorythreshold"].(string)
+    a.Noofinstances  = autoscale["noofinstances"].(string)
+    a.AutoRecipe     = autoscale["recipe"].(string)
+    
+    mon := conf["monitoring"]
+    monitor := mon.(map[string]interface{})
+    a.MonitoringAgent  = monitor["agent"].(string)
+    a.MonitorRecipe   = monitor["recipe"].(string)
+    return nil
 }
 
 func filesystem() fs.Fs {
@@ -88,7 +137,8 @@ func filesystem() fs.Fs {
 //     // do something with the app
 func (app *App) Get(reqId string) error {
 log.Printf("Get message %v", reqId)
-	conn, err := db.Conn()
+	if app.Type != "addon" {
+	conn, err := db.Conn("appreqs")
 	if err != nil {	
 		return err
 	}	
@@ -96,7 +146,17 @@ log.Printf("Get message %v", reqId)
 	conn.FetchStruct(reqId, appout)	
 	app.AppReqs = appout
 	defer conn.Close()
-	
+	} else {
+	  conn, err := db.Conn("addonconfigs")
+	if err != nil {	
+		return err
+	}	
+	appout := &AppConfigurations{}
+	conn.FetchStruct(reqId, appout)	
+	app.AppConf = appout
+	log.Printf("Get message from riak  %v", appout)
+	defer conn.Close()
+	}
 	//fetch it from riak.
 	// conn.Fetch(app.id)
 	// store stuff back in the appreq object.
@@ -159,6 +219,17 @@ func LaunchedApp(app *App) error {
 	return nil
 }
 
+//Addon action for App 
+func AddonApp(app *App) error {
+    actions := []*action.Action{&nginxStop, &addonApp, &nginxStart}  
+  
+    pipeline := action.NewPipeline(actions...)
+    err := pipeline.Execute(app)
+    if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
 
 // GetName returns the name of the app.
 func (app *App) GetName() string {
@@ -168,6 +239,11 @@ func (app *App) GetName() string {
 // GetIp returns the ip of the app.
 func (app *App) GetIp() string {
 	return app.Ip
+}
+
+// GetIp returns the ip of the app.
+func (app *App) GetType() string {
+	return app.Type
 }
 
 // GetPlatform returns the platform of the app.
@@ -189,7 +265,9 @@ func (app *App) GetAppReqs() *AppRequests {
 	return app.AppReqs
 }
 
-
+func (app *App) GetAppConf() *AppConfigurations {
+    return app.AppConf
+}    
 
 /* setEnv sets the given environment variable in the app.
 func (app *App) setEnv(env bind.EnvVar) {

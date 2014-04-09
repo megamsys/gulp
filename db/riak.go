@@ -95,12 +95,12 @@ func Open(addr []string, bktname string) (storage *Storage, err error) {
 //
 // Most megam packages should probably use this function. Open is intended for
 // use when supporting more than one database.
-func Conn() (*Storage, error) {
+func Conn(bktname string) (*Storage, error) {
 	url, _ := config.GetString("riak:url")
 	if url == "" {
 		url = DefaultRiakURL
 	}
-	bktname, _ := config.GetString("riak:bucket")
+	//bktname, _ := config.GetString("riak:bucket")
 	if bktname == "" {
 		bktname = DefaultBucketName
 	}

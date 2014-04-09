@@ -1,9 +1,11 @@
 package app
 
 import (
+    "encoding/json"
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/tsuru/config"
 	"github.com/indykish/gulp/action"
 	"github.com/indykish/gulp/db"
 	"github.com/indykish/gulp/exec"
@@ -15,6 +17,19 @@ import (
 	"strings"
 )
 
+type DRBDMaster struct { DRBD DRBDM `json:"drbd"` } 
+type DRBDM struct {
+		Remotehost  string `json:"remote_host"`
+		Sourcedir   string `json:"source_dir"`
+		Master      bool   `json:"master"`
+	}
+	
+type DRBDSlave struct { DRBD DRBDS `json:"drbd"` } 
+type DRBDS struct {
+		Remotehost  string  `json:"remote_host"`
+		Sourcedir   string	`json:"source_dir"`	
+	   }
+
 const (
 	keyremote_repo = "remote_repo="
 	keylocal_repo  = "local_repo="
@@ -23,6 +38,9 @@ const (
 	kibanaTemplatePath = "conf/kibana"	
 	kibanaDashPath = "/var/www/kibana/app/dashboards"
 	nginx_restart = "/etc/init.d/service nginx restart"
+	nginx_stop = "/etc/init.d/service nginx stop"
+	nginx_start = "/etc/init.d/service nginx start"
+	rootPath  = "/tmp"
 )
 
 var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
@@ -30,8 +48,12 @@ var ErrAppAlreadyExists = errors.New("there is already an app with this name.")
 func CommandExecutor(app *App) (action.Result, error) {
 	var e exec.OsExecutor
 	var b bytes.Buffer
+	var commandWords []string
 	if (app.AppReqs!=nil) {
-	commandWords := strings.Fields(app.AppReqs.LCApply)
+	commandWords = strings.Fields(app.AppReqs.LCApply)
+	} else {
+	commandWords = strings.Fields(app.AppConf.LCApply)
+	}
 	fmt.Println(commandWords, len(commandWords))
 
 	if len(commandWords) > 0 {
@@ -39,9 +61,37 @@ func CommandExecutor(app *App) (action.Result, error) {
 			return nil, err
 		}
 	}
-   }
+   
 	log.Printf("%s", b)
 	return &app, nil
+}
+
+//In this function to convert bytearray value to string.
+func CToGoString(c []byte) string {
+    n := -1
+    for i, b := range c {
+        if b == 0 {
+            break
+        }
+        n = i
+    }
+    return string(c[:n+1])
+}
+
+//create a new file in rootpath and write the data into that file using bufio package. 
+func FileCreator(app *App, json []byte) (action.Result, error) {
+        filePath := path.Join(rootPath, app.AppConf.NodeName + ".json")
+		JsonFile, err := filesystem().Create(filePath)
+				
+		if err != nil {
+		   return nil, err
+		}	
+		
+		w := bufio.NewWriter(JsonFile)
+		res, err := w.WriteString(CToGoString(json[:]))
+		w.Flush()
+       log.Printf("%s", res)
+	   return &JsonFile, nil
 }
 
 // insertApp is an action that inserts an app in the database in Forward and
@@ -70,7 +120,7 @@ var startApp = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
-		conn, err := db.Conn()
+		conn, err := db.Conn("appreqs")
 		if err != nil {
 			log.Printf("Could not connect to the database: %s", err)
 			return
@@ -108,7 +158,7 @@ var stopApp = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
-		conn, err := db.Conn()
+		conn, err := db.Conn("appreqs")
 		if err != nil {
 			log.Printf("Could not connect to the database: %s", err)
 			return
@@ -174,7 +224,7 @@ var buildApp = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
-		conn, err := db.Conn()
+		conn, err := db.Conn("appreqs")
 		if err != nil {
 			log.Printf("Could not connect to the database: %s", err)
 			return
@@ -235,7 +285,7 @@ var launchedApp = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
-		conn, err := db.Conn()
+		conn, err := db.Conn("appreqs")
 		if err != nil {
 			log.Printf("Could not connect to the database: %s", err)
 			return
@@ -247,6 +297,141 @@ var launchedApp = action.Action{
 	MinParams: 1,
 }
 
+// insertApp is an action that inserts an app in the database in Forward and
+// removes it in the Backward.
+//
+// The first argument in the context must be an App or a pointer to an App.
+var addonApp = action.Action{
+	Name: "addonapp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app App		
+		switch ctx.Params[0].(type) {
+		case App:
+			app = ctx.Params[0].(App)
+		case *App:
+			app = *ctx.Params[0].(*App)
+		default:
+			return nil, errors.New("First parameter must be App or *App.")
+		}
+		
+		log.Printf("Addon, attaching post install to %s", app.Name)		
+		
+	    if app.AppConf.DRFromhost != "" {
+	     localRepo, _ := config.GetString("scm:local_repo")
+	    if app.AppConf.NodeName == app.AppConf.DRFromhost {	         
+	          group := DRBDMaster{
+	                   DRBDM{
+		                      Remotehost: app.AppConf.DRToHosts,
+		                      Sourcedir:  localRepo,
+		                      Master: true,		  
+	                         },
+	                      }
+	         b, err := json.Marshal(group)
+	         if err != nil {
+		           fmt.Println("error:", err)
+	          }
+	         log.Printf("Addon, json  to %s", b)
+	         FileCreator(&app, b)
+	         } else {
+	              group := DRBDSlave{
+	                        DRBDS{
+		                           Remotehost: app.AppConf.DRFromhost,
+		                           Sourcedir: localRepo,		    		  
+	                            },
+	               }
+	           b, err := json.Marshal(group)
+	          if err != nil {
+		        fmt.Println("error:", err)
+	          }
+	         log.Printf("Addon, json  to %s", b)
+	         FileCreator(&app, b)
+	        }
+	      tmpAppConf := &AppConfigurations{}		  
+		  //tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ app.AppConf.NodeName + ".json"
+		  tmpAppConf.LCApply = "ls -la"
+	      app.AppConf = tmpAppConf	
+	     }	    	    
+		return CommandExecutor(&app)
+		},
+		Backward: func(ctx action.BWContext) {
+		app := ctx.FWResult.(*App)
+		conn, err := db.Conn("addons")
+		if err != nil {
+			log.Printf("Could not connect to the database: %s", err)
+			return
+		}
+		log.Printf("App name is %s", app.Name)
+		defer conn.Close()
+		//conn.Apps().Remove(bson.M{"name": app.Name})
+	},
+	MinParams: 1,
+ }
+
+var nginxStart = action.Action{
+	Name: "nginxStart",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app App
+		switch ctx.Params[0].(type) {
+		case App:
+			app = ctx.Params[0].(App)
+		case *App:
+			app = *ctx.Params[0].(*App)
+		default:
+			return nil, errors.New("First parameter must be App or *App.")
+		}
+		tmpAppConf := &AppConfigurations{}
+		//start the nginx server
+		//tmpAppConf.LCApply = nginx_start
+		tmpAppConf.LCApply = "ls -la"
+	    app.AppConf = tmpAppConf	   
+	   return CommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		app := ctx.FWResult.(*App)
+		conn, err := db.Conn("addons")
+		if err != nil {
+			log.Printf("Could not connect to the database: %s", err)
+			return
+		}
+		log.Printf("App name is %s", app.Name)
+		defer conn.Close()
+		//conn.Apps().Remove(bson.M{"name": app.Name})
+	},
+	MinParams: 1,
+	}
+
+  var nginxStop = action.Action{
+	Name: "nginxStop",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app App
+		switch ctx.Params[0].(type) {
+		case App:
+			app = ctx.Params[0].(App)
+		case *App:
+			app = *ctx.Params[0].(*App)
+		default:
+			return nil, errors.New("First parameter must be App or *App.")
+		}
+		tmpAppConf := &AppConfigurations{}
+		//stop the nginx server
+		//tmpAppConf.LCApply = nginx_stop
+		tmpAppConf.LCApply = "ls"
+	    app.AppConf = tmpAppConf	   
+	   return CommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		app := ctx.FWResult.(*App)
+		conn, err := db.Conn("addons")
+		if err != nil {
+			log.Printf("Could not connect to the database: %s", err)
+			return
+		}
+		log.Printf("App name is %s", app.Name)
+		defer conn.Close()
+		//conn.Apps().Remove(bson.M{"name": app.Name})
+	},
+	MinParams: 1,
+	}
 
 /*
 // exportEnvironmentsAction exports megam's default environment variables in a

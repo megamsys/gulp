@@ -20,6 +20,7 @@ const (
 	stopApp    = "stop"
 	buildApp   = "build"
 	restartApp = "restart"
+	addonApp   = "addon"
 	queueName  = "gulpd-app"
 )
 
@@ -192,6 +193,25 @@ func handle(msg *amqp.Message) {
 			return
 		}
 
+		msg.Delete()
+		break	
+    case addonApp: 
+       if len(msg.Args) < 1 {
+			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
+		}
+		ap := app.App{Name: "myapp", Id: "RIPAB", Type: "addon"}
+		
+		if err := ap.Get(msg.Id); err != nil {
+			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
+			return
+		}
+		
+		log.Printf("Handling message %#v", ap.GetAppConf())
+		err := app.AddonApp(&ap)
+		if err != nil {
+			log.Printf("Error handling %q. Addon failed to App:\n%s.", msg.Action, err)
+			return
+		}
 		msg.Delete()
 		break	
 		
