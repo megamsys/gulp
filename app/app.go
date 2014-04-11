@@ -221,9 +221,8 @@ func LaunchedApp(app *App) error {
 
 //Addon action for App 
 func AddonApp(app *App) error {
-    actions := []*action.Action{&stopApp, &addonApp, &changeDir, &startApp}  
-    //actions := []*action.Action{&changeDir, &nginxStop, &addonApp, &nginxStart}  
-  
+    actions := []*action.Action{&stopApp, &addonApp, &modifyEnv, &startApp}  
+ 
     pipeline := action.NewPipeline(actions...)
     err := pipeline.Execute(app)
     if err != nil {
