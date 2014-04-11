@@ -15,6 +15,9 @@ import (
 	"path"
 	"bufio"
 	"strings"
+	"regexp"
+	"os"
+	"bitbucket.org/kardianos/osext"
 )
 
 type DRBDMaster struct { DRBD DRBDM `json:"drbd"` } 
@@ -343,12 +346,11 @@ var addonApp = action.Action{
 	          if err != nil {
 		        fmt.Println("error:", err)
 	          }
-	         log.Printf("Addon, json  to %s", b)
 	         FileCreator(&app, b)
 	        }
 	      tmpAppConf := &AppConfigurations{}		  
-		  //tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ app.AppConf.NodeName + ".json"
-		  tmpAppConf.LCApply = "ls -la"
+		  tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ app.AppConf.NodeName + ".json"
+		  //tmpAppConf.LCApply = "ls -la"
 	      app.AppConf = tmpAppConf	
 	     }	    	    
 		return CommandExecutor(&app)
@@ -367,6 +369,85 @@ var addonApp = action.Action{
 	MinParams: 1,
  }
 
+var changeDir = action.Action{
+	Name: "changeDir",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app App
+		switch ctx.Params[0].(type) {
+		case App:
+			app = ctx.Params[0].(App)
+		case *App:
+			app = *ctx.Params[0].(*App)
+		default:
+			return nil, errors.New("First parameter must be App or *App.")
+		}		
+		 var lines [][]string
+         tmparray := make([]string, 10)
+         var i int 
+		folderPath, err := osext.ExecutableFolder()
+        if err != nil {
+           log.Fatal(err)
+         }    
+         Path := path.Join(folderPath + "conf/env.sh")
+		 file, err := os.Open(Path)
+         if err != nil {
+            return nil, err
+          }      
+         scanner := bufio.NewScanner(file)
+         i = 0
+         for scanner.Scan() {          
+            line := scanner.Text()
+            if line != "" {                   
+                    re, err := regexp.Compile(`MEGAM_APP_SERVICE_HOME=(.*)`) 
+                    if err != nil {
+                        return nil, err
+                    }
+                    lines = re.FindAllStringSubmatch(line, -1)
+                    i = i+1            
+                    if len(lines) > 0 {                
+                         tmparray[i] = strings.Replace(line, lines[0][1], "/drbd_mnt", 1)              
+                    } else {              
+                         tmparray[i] = line
+                    }
+              }
+		 }    	
+        defer file.Close()
+        file1, err := filesystem().Create(Path)
+				
+		if err != nil {
+		   return nil, err
+		}	
+        w := bufio.NewWriter(file1)
+         for i := range tmparray {
+            res, err := w.WriteString(tmparray[i]+"\n")
+            if err != nil {
+		       return nil, err
+		     }	
+            log.Printf("File insert --> %s", res)
+        }			
+		w.Flush()
+        
+		tmpAppConf := &AppConfigurations{}
+		//start the nginx server
+		tmpAppConf.LCApply = nginx_start
+		//tmpAppConf.LCApply = "ls -la"
+	    app.AppConf = tmpAppConf	   
+	   return CommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		app := ctx.FWResult.(*App)
+		conn, err := db.Conn("addons")
+		if err != nil {
+			log.Printf("Could not connect to the database: %s", err)
+			return
+		}
+		log.Printf("App name is %s", app.Name)
+		defer conn.Close()
+		//conn.Apps().Remove(bson.M{"name": app.Name})
+	},
+	MinParams: 1,
+	}
+
 var nginxStart = action.Action{
 	Name: "nginxStart",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -381,8 +462,8 @@ var nginxStart = action.Action{
 		}
 		tmpAppConf := &AppConfigurations{}
 		//start the nginx server
-		//tmpAppConf.LCApply = nginx_start
-		tmpAppConf.LCApply = "ls -la"
+		tmpAppConf.LCApply = nginx_start
+		//tmpAppConf.LCApply = "ls -la"
 	    app.AppConf = tmpAppConf	   
 	   return CommandExecutor(&app)
 	},
@@ -414,8 +495,8 @@ var nginxStart = action.Action{
 		}
 		tmpAppConf := &AppConfigurations{}
 		//stop the nginx server
-		//tmpAppConf.LCApply = nginx_stop
-		tmpAppConf.LCApply = "ls"
+		tmpAppConf.LCApply = nginx_stop
+		//tmpAppConf.LCApply = "ls"
 	    app.AppConf = tmpAppConf	   
 	   return CommandExecutor(&app)
 	},
