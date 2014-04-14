@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/tsuru/config"
 	"github.com/indykish/gulp/action"
-	"github.com/indykish/gulp/db"
 	"github.com/indykish/gulp/exec"
 	"github.com/indykish/gulp/scm"
 	"log"
@@ -119,7 +118,7 @@ var startApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		//app := ctx.FWResult.(*App)		
 	},
 	MinParams: 1,
 }
@@ -141,7 +140,7 @@ var stopApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		//app := ctx.FWResult.(*App)		
 	},
 	MinParams: 1,
 }
@@ -190,7 +189,7 @@ var buildApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+	//	app := ctx.FWResult.(*App)		
 	},
 	MinParams: 1,
 }
@@ -239,7 +238,7 @@ var launchedApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+	//	app := ctx.FWResult.(*App)		
 	},
 	MinParams: 1,
 }
@@ -297,7 +296,7 @@ var addonApp = action.Action{
 		return CommandExecutor(&app)
 		},
 		Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+	//	app := ctx.FWResult.(*App)		
 	},
 	MinParams: 1,
  }
@@ -388,7 +387,7 @@ var nginxStart = action.Action{
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		//app := ctx.FWResult.(*App)		
 	},
 	MinParams: 1,
 	}
@@ -412,7 +411,7 @@ var nginxStart = action.Action{
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)
+	//	app := ctx.FWResult.(*App)
 		
 	},
 	MinParams: 1,
