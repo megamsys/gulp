@@ -349,8 +349,8 @@ var addonApp = action.Action{
 	         FileCreator(&app, b)
 	        }
 	      tmpAppConf := &AppConfigurations{}		  
-		  tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ app.AppConf.NodeName + ".json"
-		  //tmpAppConf.LCApply = "ls -la"
+		  //tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ app.AppConf.NodeName + ".json"
+		  tmpAppConf.LCApply = "ls -la"
 	      app.AppConf = tmpAppConf	
 	     }	    	    
 		return CommandExecutor(&app)
@@ -429,8 +429,8 @@ var changeDir = action.Action{
         
 		tmpAppConf := &AppConfigurations{}
 		//start the nginx server
-		tmpAppConf.LCApply = nginx_start
-		//tmpAppConf.LCApply = "ls -la"
+		//tmpAppConf.LCApply = nginx_start
+		tmpAppConf.LCApply = "ls -la"
 	    app.AppConf = tmpAppConf	   
 	   return CommandExecutor(&app)
 	},
@@ -462,8 +462,8 @@ var nginxStart = action.Action{
 		}
 		tmpAppConf := &AppConfigurations{}
 		//start the nginx server
-		tmpAppConf.LCApply = nginx_start
-		//tmpAppConf.LCApply = "ls -la"
+		//tmpAppConf.LCApply = nginx_start
+		tmpAppConf.LCApply = "ls -la"
 	    app.AppConf = tmpAppConf	   
 	   return CommandExecutor(&app)
 	},
@@ -495,8 +495,8 @@ var nginxStart = action.Action{
 		}
 		tmpAppConf := &AppConfigurations{}
 		//stop the nginx server
-		tmpAppConf.LCApply = nginx_stop
-		//tmpAppConf.LCApply = "ls"
+		//tmpAppConf.LCApply = nginx_stop
+		tmpAppConf.LCApply = "ls"
 	    app.AppConf = tmpAppConf	   
 	   return CommandExecutor(&app)
 	},
