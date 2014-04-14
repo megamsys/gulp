@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/tsuru/config"
 	"github.com/indykish/gulp/action"
-	"github.com/indykish/gulp/db"
 	"github.com/indykish/gulp/exec"
 	"github.com/indykish/gulp/scm"
 	"log"
@@ -84,8 +83,8 @@ func CToGoString(c []byte) string {
 }
 
 //create a new file in rootpath and write the data into that file using bufio package. 
-func FileCreator(app *App, json []byte) (action.Result, error) {
-        filePath := path.Join(rootPath, app.AppConf.NodeName + ".json")
+func FileCreator(name string, json []byte) (action.Result, error) {
+        filePath := path.Join(rootPath, name + ".json")
 		JsonFile, err := filesystem().Create(filePath)
 				
 		if err != nil {
@@ -119,7 +118,8 @@ var startApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)	
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
 }
@@ -141,7 +141,8 @@ var stopApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)	
+		log.Printf("[%s] Nothing to recover for %s", app.Name)	
 	},
 	MinParams: 1,
 }
@@ -190,7 +191,8 @@ var buildApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)	
+		log.Printf("[%s] Nothing to recover for %s", app.Name)	
 	},
 	MinParams: 1,
 }
@@ -239,7 +241,8 @@ var launchedApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)	
+		log.Printf("[%s] Nothing to recover for %s", app.Name)		
 	},
 	MinParams: 1,
 }
@@ -260,8 +263,12 @@ var addonApp = action.Action{
 		log.Printf("Addon, attaching post install to %s", app.Name)		
 		
 	    if app.AppConf.DRFromhost != "" {
+	    instance_name, err := config.GetString("name")
+	    if err != nil {
+		     return nil, err
+	      }	     
 	     localRepo, _ := config.GetString("scm:local_repo")
-	    if app.AppConf.NodeName == app.AppConf.DRFromhost {	         
+	    if instance_name == app.AppConf.DRFromhost {	         
 	          group := DRBDMaster {
 	                   DRBDM {
 		                      Remotehost: app.AppConf.DRToHosts,
@@ -275,7 +282,7 @@ var addonApp = action.Action{
 		           return nil, err
 	          }
 	         log.Printf("Found Addon-DR, creating json %s", b)
-	         FileCreator(&app, b)
+	         FileCreator(instance_name, b)
 	         } else {
 	              group := DRBDSlave{
 	                        DRBDS{
@@ -288,16 +295,17 @@ var addonApp = action.Action{
 		        fmt.Println("error:", err)
 		        return nil, err
 	          }
-	         FileCreator(&app, b)
+	         FileCreator(instance_name, b)
 	        }
-	      tmpAppConf := &AppConfigurations{}		  
-		  tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ app.AppConf.NodeName + ".json"
+	      tmpAppConf := &AppConfigurations{}
+		  tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ instance_name + ".json"
 	      app.AppConf = tmpAppConf	
 	     }	    	    
 		return CommandExecutor(&app)
 		},
 		Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)	
+		log.Printf("[%s] Nothing to recover for %s", app.Name)	
 	},
 	MinParams: 1,
  }
@@ -358,8 +366,8 @@ var modifyEnv = action.Action{
 		     }	
             log.Printf("Change to HA location successful --> %s", res)
         }			
-		w.Flush()
-        
+		w.Flush()        
+
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -389,6 +397,7 @@ var nginxStart = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)		
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
 	}
@@ -413,7 +422,7 @@ var nginxStart = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		app := ctx.FWResult.(*App)
-		
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
 	}
