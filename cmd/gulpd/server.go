@@ -81,6 +81,7 @@ func handler() amqp.Handler {
 
 
 // handle is the function called by the queue handler on each message.
+//This is getting bulky. We need to move it out to apps and others.
 func handle(msg *amqp.Message) {
 	log.Printf("Handling message %v", msg)
 
@@ -150,15 +151,7 @@ func handle(msg *amqp.Message) {
 		}
 
 		msg.Delete()
-		break
-	/*	err := bindUnit(msg)
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		msg.Delete()
-		break
-	*/
+		break	
 	case buildApp:
 		if len(msg.Args) < 1 {
 			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
