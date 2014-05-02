@@ -191,7 +191,7 @@ var buildApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)	
+	app := ctx.FWResult.(*App)		
 		log.Printf("[%s] Nothing to recover for %s", app.Name)	
 	},
 	MinParams: 1,
@@ -241,7 +241,7 @@ var launchedApp = action.Action{
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)	
+		app := ctx.FWResult.(*App)		
 		log.Printf("[%s] Nothing to recover for %s", app.Name)		
 	},
 	MinParams: 1,
@@ -304,7 +304,7 @@ var addonApp = action.Action{
 		return CommandExecutor(&app)
 		},
 		Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)	
+		app := ctx.FWResult.(*App)		
 		log.Printf("[%s] Nothing to recover for %s", app.Name)	
 	},
 	MinParams: 1,
@@ -421,7 +421,7 @@ var nginxStart = action.Action{
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)
+	app := ctx.FWResult.(*App)
 		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
