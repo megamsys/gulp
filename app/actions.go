@@ -24,12 +24,14 @@ type DRBDM struct {
 		Remotehost  string `json:"remote_host"`
 		Sourcedir   string `json:"source_dir"`
 		Master      bool   `json:"master"`
+		Archive     string `json:"archive"`
 	}
 	
 type DRBDSlave struct { DRBD DRBDS `json:"drbd"` } 
 type DRBDS struct {
 		Remotehost  string  `json:"remote_host"`
 		Sourcedir   string	`json:"source_dir"`	
+		Archive     string  `json:"archive"`
 	   }
 
 const (
@@ -273,7 +275,8 @@ var addonApp = action.Action{
 	                   DRBDM {
 		                      Remotehost: app.AppConf.DRToHosts,
 		                      Sourcedir:  localRepo,
-		                      Master: true,		  
+		                      Master: true,	
+		                      Archive: app.AppConf.DRLocations,	  
 	                         },
 	                      }
 	         b, err := json.Marshal(group)
@@ -287,7 +290,8 @@ var addonApp = action.Action{
 	              group := DRBDSlave{
 	                        DRBDS{
 		                           Remotehost: app.AppConf.DRFromhost,
-		                           Sourcedir: localRepo,		    		  
+		                           Sourcedir: localRepo,
+		                           Archive: app.AppConf.DRLocations,			    		  
 	                            },
 	               }
 	           b, err := json.Marshal(group)
