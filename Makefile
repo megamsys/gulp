@@ -15,7 +15,7 @@
 # Makefile to compile gulpd.
 # lists all the dependencies for test, prod and we can run a go build aftermath.
 ###############################################################################
-                            
+
 
 GULPCODE_HOME = $(HOME)/code/megam/workspace/gulp
 
@@ -59,13 +59,13 @@ endif
 #endif
 
 clean:
-	@/bin/rm -f -r $(GULPCODE_HOME)/pkg	
+	@/bin/rm -f -r $(GULPCODE_HOME)/pkg
 	@go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | tr ' ' '\n' |\
-		grep '^.*\..*/.*$$' | grep -v 'github.com/indykish/gulp' |\
-		sort | uniq | xargs -I{} rm -f -r $(GULPCODE_HOME)/src/{}	
+		grep '^.*\..*/.*$$' | grep -v 'github.com/megamsys/gulp' |\
+		sort | uniq | xargs -I{} rm -f -r $(GULPCODE_HOME)/src/{}
 	@go list -f '{{range .Imports}}{{.}} {{end}}' ./... | tr ' ' '\n' |\
-		grep '^.*\..*/.*$$' | grep -v 'github.com/indykish/gulp' |\
-		sort | uniq | xargs -I{} rm -f -r $(GULPCODE_HOME)/src/{} 
+		grep '^.*\..*/.*$$' | grep -v 'github.com/megamsys/gulp' |\
+		sort | uniq | xargs -I{} rm -f -r $(GULPCODE_HOME)/src/{}
 	@/bin/echo "Clean ...ok"
 
 get: hg git bzr get-test get-prod
@@ -82,15 +82,15 @@ bzr:
 get-test:
 	@/bin/echo -n "Installing test dependencies... "
 	@go list -f '{{range .TestImports}}{{.}} {{end}}' ./... | tr ' ' '\n' |\
-		grep '^.*\..*/.*$$' | grep -v 'github.com/indykish/gulp' |\
-		sort | uniq | xargs go get -u >/tmp/.get-test 2>&1 || (cat /tmp/.get-test && exit 1)	
+		grep '^.*\..*/.*$$' | grep -v 'github.com/megamsys/gulp' |\
+		sort | uniq | xargs go get -u >/tmp/.get-test 2>&1 || (cat /tmp/.get-test && exit 1)
 	@/bin/echo "ok"
 	@rm -f /tmp/.get-test
 
 get-prod:
 	@/bin/echo -n "Installing production dependencies... "
 	@go list -f '{{range .Imports}}{{.}} {{end}}' ./... | tr ' ' '\n' |\
-		grep '^.*\..*/.*$$' | grep -v 'github.com/indykish/gulp' |\
+		grep '^.*\..*/.*$$' | grep -v 'github.com/megamsys/gulp' |\
 		sort | uniq | xargs go get -u >/tmp/.get-prod 2>&1 || (cat /tmp/.get-prod && exit 1)
 	@/bin/echo "ok"
 	@rm -f /tmp/.get-prod
@@ -110,4 +110,3 @@ test: _go_test _gulpd_dry
 client:
 	@go build -o gulpd ./cmd/gulpd
 	@echo "Done."
-

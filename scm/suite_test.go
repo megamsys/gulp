@@ -2,17 +2,17 @@ package scm
 
 import (
 	"github.com/tsuru/config"
-	"launchpad.net/gocheck"
+	"gopkg.in/check.v1"
 	"testing"
 )
 
-func Test(t *testing.T) { gocheck.TestingT(t) }
+func Test(t *testing.T) { check.TestingT(t) }
 
 type S struct{}
 
-var _ = gocheck.Suite(&S{})
+var _ = check.Suite(&S{})
 
-func (s *S) SetUpSuite(c *gocheck.C) {
+func (s *S) SetUpSuite(c *check.C) {
 	config.Set("scm:api_server", "api.github.com/v1")
 	config.Set("scm:local_repo", "/var/www/projects/aryabhata/current")
 	config.Set("scm:remote_repo", "https://github.com/indykish/aryabhata.git")

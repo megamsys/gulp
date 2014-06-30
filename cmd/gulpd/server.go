@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/indykish/gulp/amqp"
-	"github.com/indykish/gulp/app"
+	"github.com/megamsys/libgo/amqp"
+	"github.com/megamsys/gulp/app"
 	"log"
 	"os"
 	"os/signal"
@@ -15,7 +15,7 @@ import (
 
 const (
 	// queue actions
-	runningApp = "running"	
+	runningApp = "running"
 	startApp   = "start"
 	stopApp    = "stop"
 	buildApp   = "build"
@@ -97,14 +97,14 @@ func handle(msg *amqp.Message) {
 			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
 			return
 		}
-				
+
 		log.Printf("Handling message %#v", ap.GetAppReqs())
 		err := app.StopApp(&ap)
 		if err != nil {
 			log.Printf("Error handling %q. App failed to stop:\n%s.", msg.Action, err)
 			return
 		}
-		
+
 		err = app.StartApp(&ap)
 		if err != nil {
 			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
@@ -151,7 +151,7 @@ func handle(msg *amqp.Message) {
 		}
 
 		msg.Delete()
-		break	
+		break
 	case buildApp:
 		if len(msg.Args) < 1 {
 			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
@@ -187,18 +187,18 @@ func handle(msg *amqp.Message) {
 		}
 
 		msg.Delete()
-		break	
-    case addonApp: 
+		break
+    case addonApp:
        if len(msg.Args) < 1 {
 			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
 		}
 		ap := app.App{Name: "myapp", Id: "RIPAB", Type: "addon"}
-		
+
 		if err := ap.Get(msg.Id); err != nil {
 			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
 			return
 		}
-		
+
 		log.Printf("Handling message %#v", ap.GetAppConf())
 		err := app.AddonApp(&ap)
 		if err != nil {
@@ -206,8 +206,8 @@ func handle(msg *amqp.Message) {
 			return
 		}
 		msg.Delete()
-		break	
-		
+		break
+
 	default:
 		log.Printf("Error handling %q: invalid action.", msg.Action)
 		msg.Delete()
