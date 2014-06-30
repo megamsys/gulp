@@ -2,36 +2,36 @@
 package heal
 
 import (
-	"launchpad.net/gocheck"
+	"gopkg.in/check.v1"
 	"testing"
 )
 
-func Test(t *testing.T) { gocheck.TestingT(t) }
+func Test(t *testing.T) { check.TestingT(t) }
 
 type S struct{}
 
-var _ = gocheck.Suite(&S{})
+var _ = check.Suite(&S{})
 /*
-func (s *S) TestRegisterAndGetHealer(c *gocheck.C) {
+func (s *S) TestRegisterAndGetHealer(c *check.C) {
 	var h Healer
 	Register("my-provisioner", "my-healer", h)
 	got, err := Get("my-provisioner", "my-healer")
-	c.Assert(err, gocheck.IsNil)
-	c.Assert(got, gocheck.DeepEquals, h)
+	c.Assert(err, check.IsNil)
+	c.Assert(got, check.DeepEquals, h)
 	_, err = Get("my-provisioner", "unknown-healer")
-	c.Assert(err, gocheck.ErrorMatches, `Unknown healer "unknown-healer" for provisioner "my-provisioner".`)
+	c.Assert(err, check.ErrorMatches, `Unknown healer "unknown-healer" for provisioner "my-provisioner".`)
 }
 
-func (s *S) TestGetWithAbsentProvisioner(c *gocheck.C) {
+func (s *S) TestGetWithAbsentProvisioner(c *check.C) {
 	var h Healer
 	Register("provisioner", "healer1", h)
 	h, err := Get("otherprovisioner", "healer1")
-	c.Assert(err, gocheck.NotNil)
-	c.Assert(err.Error(), gocheck.Equals, `Unknown healer "healer1" for provisioner "otherprovisioner".`)
-	c.Assert(h, gocheck.IsNil)
+	c.Assert(err, check.NotNil)
+	c.Assert(err.Error(), check.Equals, `Unknown healer "healer1" for provisioner "otherprovisioner".`)
+	c.Assert(h, check.IsNil)
 }
 
-func (s *S) TestAllReturnsAllByCurrentProvisioner(c *gocheck.C) {
+func (s *S) TestAllReturnsAllByCurrentProvisioner(c *check.C) {
 	var h Healer
 	Register("provisioner", "healer1", h)
 	Register("provisioner", "healer2", h)
@@ -40,6 +40,6 @@ func (s *S) TestAllReturnsAllByCurrentProvisioner(c *gocheck.C) {
 		"healer1": h,
 		"healer2": h,
 	}
-	c.Assert(healers, gocheck.DeepEquals, expected)
+	c.Assert(healers, check.DeepEquals, expected)
 }
 */

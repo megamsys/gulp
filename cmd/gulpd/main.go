@@ -17,7 +17,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/indykish/gulp/cmd"
+	"github.com/megamsys/libgo/cmd"
 	"github.com/tsuru/config"
 	"log"
 	"os"
