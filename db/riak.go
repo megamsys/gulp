@@ -134,7 +134,7 @@ func (s *Storage) FetchStruct(key string, out interface{}) error {
 
 // StoreStruct returns the apps collection from MongoDB.
 func (s *Storage) StoreStruct(key string, data interface{}) error {
-	if _, err := s.coder_client.StoreStruct(s.bktname, key, data); err != nil {
+	if _, err := s.cc.StoreStruct(s.bktname, key, data); err != nil {
 		return fmt.Errorf("Convert fetched JSON to the Struct, and return it failed: %s", err)
 	}
 	return nil

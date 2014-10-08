@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/indykish/gulp/fs"
+	"github.com/megamsys/gulp/fs"
 	"io"
 	"launchpad.net/gnuflag"
 	"os"

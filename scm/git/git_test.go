@@ -144,7 +144,7 @@ func (s *S) TestOpenRepository(c *gocheck.C) {
 		expected string
 		err      error
 	}{
-		{"origin", "git@github.com:indykish/aryabhata.git", nil},
+		{"origin", "git@github.com:megamsys/aryabhata.git", nil},
 		{"megam", "git@github.com:nilavu.git", nil},
 		{"wut", "", errors.New(`Remote "wut" not found.`)},
 	}

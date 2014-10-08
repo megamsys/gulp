@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/indykish/gulp/amqp"
-	"github.com/indykish/gulp/app"
+	"github.com/megamsys/gulp/amqp"
+	"github.com/megamsys/gulp/app"
 	"log"
 	"os"
+	"encoding/json"
 	"os/signal"
 	"strings"
 	"regexp"
@@ -39,6 +40,7 @@ func RunServer(dry bool) {
 	signal.Notify(signalChannel, syscall.SIGINT)
 	handler().Start()
 	log.Printf("Gulpd at your service.")
+	updateStatus()
 	<-signalChannel
 	log.Println("Gulpd killed |_|.")
 }
@@ -213,3 +215,21 @@ func handle(msg *amqp.Message) {
 		msg.Delete()
 	}
 }
+
+
+func updateStatus() {
+	path, _ := config.GetString("etcd:path")
+	c := etcd.NewClient([]string{path+"/"})
+	dir, _ := config.GetString("etcd:directory")
+	id, _ := config.GetString("id")
+	name, _ := config.GetString("name")
+	mapD := map[string]string{"id": id, "status": "RUNNING"}
+    mapB, _ := json.Marshal(mapD)
+	_, err := c.Set("/"+dir+"/"+name, mapB, 1)
+	if err!= nil {
+		log.Error(err)
+	} 
+}
+
+
+

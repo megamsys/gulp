@@ -6,5 +6,5 @@
 	ignorecase = true
 	precomposeunicode = false
 [remote "origin"]
-	url = git@github.com:indykish/aryabhata.git
+	url = git@github.com:megamsys/aryabhata.git
 	fetch = +refs/heads/*:refs/remotes/origin/*

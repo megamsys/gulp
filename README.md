@@ -37,7 +37,7 @@ gulpd start
 
 We are glad to help if you have questions, or request for new features..
 
-[twitter](http://twitter.com/indykish) [email](<rajthilak@megam.co.in>)
+[twitter](http://twitter.com/megamsys) [email](<rajthilak@megam.co.in>)
 
 #### TO - DO
 

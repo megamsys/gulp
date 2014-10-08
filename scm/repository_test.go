@@ -15,7 +15,7 @@ func (s *S) TestGetPath(c *gocheck.C) {
 func (s *S) TestGetRemotePath(c *gocheck.C) {
 	path, err := GetRemotePath()
 	c.Assert(err, gocheck.IsNil)
-	expected := "https://github.com/indykish/aryabhata.git"
+	expected := "https://github.com/megamsys/aryabhata.git"
 	c.Assert(path, gocheck.Equals, expected)
 }
 
