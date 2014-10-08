@@ -2,51 +2,57 @@ package scm
 
 import (
 	"github.com/tsuru/config"
-	"launchpad.net/gocheck"
+	"gopkg.in/check.v1"
 )
 
-func (s *S) TestGetPath(c *gocheck.C) {
+func (s *S) TestGetPath(c *check.C) {
 	path, err := GetPath()
-	c.Assert(err, gocheck.IsNil)
+	c.Assert(err, check.IsNil)
 	expected := "/var/www/projects/aryabhata/current"
-	c.Assert(path, gocheck.Equals, expected)
+	c.Assert(path, check.Equals, expected)
 }
 
-func (s *S) TestGetRemotePath(c *gocheck.C) {
+func (s *S) TestGetRemotePath(c *check.C) {
 	path, err := GetRemotePath()
+<<<<<<< HEAD
 	c.Assert(err, gocheck.IsNil)
 	expected := "https://github.com/megamsys/aryabhata.git"
 	c.Assert(path, gocheck.Equals, expected)
+=======
+	c.Assert(err, check.IsNil)
+	expected := "https://github.com/indykish/aryabhata.git"
+	c.Assert(path, check.Equals, expected)
+>>>>>>> origin/master
 }
 
-func (s *S) TestProject(c *gocheck.C) {
+func (s *S) TestProject(c *check.C) {
 	path, err := Project()
-	c.Assert(err, gocheck.IsNil)
+	c.Assert(err, check.IsNil)
 	expected := "aryabhata"
-	c.Assert(path, gocheck.Equals, expected)
+	c.Assert(path, check.Equals, expected)
 }
 
-func (s *S) TestBuilder(c *gocheck.C) {
+func (s *S) TestBuilder(c *check.C) {
 	path, err := Builder()
-	c.Assert(err, gocheck.IsNil)
+	c.Assert(err, check.IsNil)
 	expected := "megam_builder_ruby"
-	c.Assert(path, gocheck.Equals, expected)
+	c.Assert(path, check.Equals, expected)
 }
 
-func (s *S) TestGetServerUri(c *gocheck.C) {
+func (s *S) TestGetServerUri(c *check.C) {
 	server, err := config.GetString("scm:api_server")
-	c.Assert(err, gocheck.IsNil)
+	c.Assert(err, check.IsNil)
 	uri := ServerURL()
-	c.Assert(uri, gocheck.Equals, server)
+	c.Assert(uri, check.Equals, server)
 }
 
-func (s *S) TestGetServerUriWithoutSetting(c *gocheck.C) {
+func (s *S) TestGetServerUriWithoutSetting(c *check.C) {
 	old, _ := config.Get("scm:api_server")
 	defer config.Set("scm:api_server", old)
 	config.Unset("scm:api_server")
 	defer func() {
 		r := recover()
-		c.Assert(r, gocheck.NotNil)
+		c.Assert(r, check.NotNil)
 	}()
 	ServerURL()
 }

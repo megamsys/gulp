@@ -6,8 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tsuru/config"
+<<<<<<< HEAD
 	"github.com/megamsys/gulp/action"
 	"github.com/megamsys/gulp/exec"
+=======
+	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/libgo/exec"
+>>>>>>> origin/master
 	"github.com/megamsys/gulp/scm"
 	"log"
 	"text/template"
@@ -19,18 +24,18 @@ import (
 	"bitbucket.org/kardianos/osext"
 )
 
-type DRBDMaster struct { DRBD DRBDM `json:"drbd"` } 
+type DRBDMaster struct { DRBD DRBDM `json:"drbd"` }
 type DRBDM struct {
 		Remotehost  string `json:"remote_host"`
 		Sourcedir   string `json:"source_dir"`
 		Master      bool   `json:"master"`
 		Archive     string `json:"archive"`
 	}
-	
-type DRBDSlave struct { DRBD DRBDS `json:"drbd"` } 
+
+type DRBDSlave struct { DRBD DRBDS `json:"drbd"` }
 type DRBDS struct {
 		Remotehost  string  `json:"remote_host"`
-		Sourcedir   string	`json:"source_dir"`	
+		Sourcedir   string	`json:"source_dir"`
 		Archive     string  `json:"archive"`
 	   }
 
@@ -39,13 +44,13 @@ const (
 	keylocal_repo  = "local_repo="
 	keyproject     = "project="
 	kibana         ="kibana"
-	kibanaTemplatePath = "conf/kibana"	
+	kibanaTemplatePath = "conf/kibana"
 	kibanaDashPath = "/var/www/kibana/app/dashboards"
 	nginx_restart = "/etc/init.d/service nginx restart"
 	nginx_stop = "/etc/init.d/service nginx stop"
 	nginx_start = "/etc/init.d/service nginx start"
 	rootPath  = "/tmp"
-	defaultEnvPath = "conf/env.sh"	
+	defaultEnvPath = "conf/env.sh"
 	drbd_mnt = "/drbd_mnt"
 )
 
@@ -67,7 +72,7 @@ func CommandExecutor(app *App) (action.Result, error) {
 			return nil, err
 		}
 	}
-   
+
 	log.Printf("%s", b)
 	return &app, nil
 }
@@ -84,15 +89,15 @@ func CToGoString(c []byte) string {
     return string(c[:n+1])
 }
 
-//create a new file in rootpath and write the data into that file using bufio package. 
+//create a new file in rootpath and write the data into that file using bufio package.
 func FileCreator(name string, json []byte) (action.Result, error) {
         filePath := path.Join(rootPath, name + ".json")
 		JsonFile, err := filesystem().Create(filePath)
-				
+
 		if err != nil {
 		   return nil, err
-		}	
-		
+		}
+
 		w := bufio.NewWriter(JsonFile)
 		res, err := w.WriteString(CToGoString(json[:]))
 		w.Flush()
@@ -116,11 +121,11 @@ var startApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		
+
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)	
+		app := ctx.FWResult.(*App)
 		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
@@ -139,12 +144,12 @@ var stopApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		
+
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)	
-		log.Printf("[%s] Nothing to recover for %s", app.Name)	
+		app := ctx.FWResult.(*App)
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
 }
@@ -189,12 +194,12 @@ var buildApp = action.Action{
 
 		build_parms := fmt.Sprintf("%s/%s %s %s %s", builder, app.AppReqs.LCApply, keyproject+project, keylocal_repo+local_repo, keyremote_repo+remote_repo)
 
-		app.AppReqs.LCApply = build_parms		
+		app.AppReqs.LCApply = build_parms
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-	app := ctx.FWResult.(*App)		
-		log.Printf("[%s] Nothing to recover for %s", app.Name)	
+	app := ctx.FWResult.(*App)
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
 }
@@ -211,40 +216,40 @@ var launchedApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		
+
 		log.Printf("Launched, attaching post install to %s", app.Name)
-		
+
 		tmpl, err := template.New(kibana).ParseFiles(kibanaTemplatePath)
-		
+
 		if err != nil {
 	      return nil, err
-		}	
-		
+		}
+
 		kibanaPath := path.Join(kibanaDashPath, app.Name + ".json")
 		kibanaFile, err := filesystem().Create(kibanaPath)
-				
+
 		if err != nil {
 		   return nil, err
-		}	
-		
+		}
+
 		w := bufio.NewWriter(kibanaFile)
 		err = tmpl.Execute(w, app)
 		w.Flush()
-		
+
 		tmpAppreq := &AppRequests{}
 		tmpAppreq.LCApply = nginx_restart
-		
+
 		app.AppReqs = tmpAppreq
-		
+
 		if err != nil {
 	      return nil, err
-		}	
-				
+		}
+
 		return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
-		log.Printf("[%s] Nothing to recover for %s", app.Name)		
+		app := ctx.FWResult.(*App)
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
 }
@@ -252,7 +257,7 @@ var launchedApp = action.Action{
 var addonApp = action.Action{
 	Name: "addonapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app App		
+		var app App
 		switch ctx.Params[0].(type) {
 		case App:
 			app = ctx.Params[0].(App)
@@ -261,22 +266,22 @@ var addonApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
 		}
-		
-		log.Printf("Addon, attaching post install to %s", app.Name)		
-		
+
+		log.Printf("Addon, attaching post install to %s", app.Name)
+
 	    if app.AppConf.DRFromhost != "" {
 	    instance_name, err := config.GetString("name")
 	    if err != nil {
 		     return nil, err
-	      }	     
+	      }
 	     localRepo, _ := config.GetString("scm:local_repo")
-	    if instance_name == app.AppConf.DRFromhost {	         
+	    if instance_name == app.AppConf.DRFromhost {
 	          group := DRBDMaster {
 	                   DRBDM {
 		                      Remotehost: app.AppConf.DRToHosts,
 		                      Sourcedir:  localRepo,
-		                      Master: true,	
-		                      Archive: app.AppConf.DRLocations,	  
+		                      Master: true,
+		                      Archive: app.AppConf.DRLocations,
 	                         },
 	                      }
 	         b, err := json.Marshal(group)
@@ -291,7 +296,7 @@ var addonApp = action.Action{
 	                        DRBDS{
 		                           Remotehost: app.AppConf.DRFromhost,
 		                           Sourcedir: localRepo,
-		                           Archive: app.AppConf.DRLocations,			    		  
+		                           Archive: app.AppConf.DRLocations,
 	                            },
 	               }
 	           b, err := json.Marshal(group)
@@ -303,13 +308,13 @@ var addonApp = action.Action{
 	        }
 	      tmpAppConf := &AppConfigurations{}
 		  tmpAppConf.LCApply = "chef-client -o '"+ app.AppConf.DRRecipe +"' -j /tmp/"+ instance_name + ".json"
-	      app.AppConf = tmpAppConf	
-	     }	    	    
+	      app.AppConf = tmpAppConf
+	     }
 		return CommandExecutor(&app)
 		},
 		Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
-		log.Printf("[%s] Nothing to recover for %s", app.Name)	
+		app := ctx.FWResult.(*App)
+		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
  }
@@ -325,57 +330,57 @@ var modifyEnv = action.Action{
 			app = *ctx.Params[0].(*App)
 		default:
 			return nil, errors.New("First parameter must be App or *App.")
-		}		
+		}
 		 var lines [][]string
          tmparray := make([]string, 10)
-         var i int 
+         var i int
 		folderPath, err := osext.ExecutableFolder()
-        if err != nil {           
-            return nil, err           
-         }    
+        if err != nil {
+            return nil, err
+         }
          Path := path.Join(folderPath + defaultEnvPath)
 		 file, err := os.Open(Path)
          if err != nil {
             return nil, err
-          }      
+          }
          scanner := bufio.NewScanner(file)
          i = 0
-         for scanner.Scan() {          
+         for scanner.Scan() {
             line := scanner.Text()
-            if line != "" {                   
-                    re, err := regexp.Compile(`MEGAM_APP_SERVICE_HOME=(.*)`) 
+            if line != "" {
+                    re, err := regexp.Compile(`MEGAM_APP_SERVICE_HOME=(.*)`)
                     if err != nil {
                         return nil, err
                     }
                     lines = re.FindAllStringSubmatch(line, -1)
-                    i = i+1            
-                    if len(lines) > 0 {                
-                         tmparray[i] = strings.Replace(line, lines[0][1], drbd_mnt, 1)              
-                    } else {              
+                    i = i+1
+                    if len(lines) > 0 {
+                         tmparray[i] = strings.Replace(line, lines[0][1], drbd_mnt, 1)
+                    } else {
                          tmparray[i] = line
                     }
               }
-		 }    	
+		 }
         defer file.Close()
         file1, err := filesystem().Create(Path)
-				
+
 		if err != nil {
 		   return nil, err
-		}	
+		}
         w := bufio.NewWriter(file1)
          for i := range tmparray {
             res, err := w.WriteString(tmparray[i]+"\n")
             if err != nil {
 		       return nil, err
-		     }	
+		     }
             log.Printf("Change to HA location successful --> %s", res)
-        }			
-		w.Flush()        
+        }
+		w.Flush()
 
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)
 		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
@@ -396,11 +401,11 @@ var nginxStart = action.Action{
 		tmpAppConf := &AppConfigurations{}
 		//start the nginx server
 		tmpAppConf.LCApply = nginx_start
-	    app.AppConf = tmpAppConf	   
+	    app.AppConf = tmpAppConf
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
-		app := ctx.FWResult.(*App)		
+		app := ctx.FWResult.(*App)
 		log.Printf("[%s] Nothing to recover for %s", app.Name)
 	},
 	MinParams: 1,
@@ -421,7 +426,7 @@ var nginxStart = action.Action{
 		tmpAppConf := &AppConfigurations{}
 		//stop the nginx server
 		tmpAppConf.LCApply = nginx_stop
-	    app.AppConf = tmpAppConf	   
+	    app.AppConf = tmpAppConf
 	   return CommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {

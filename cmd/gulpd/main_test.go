@@ -1,30 +1,30 @@
 package main
 
 import (
-	"github.com/megamsys/gulp/cmd"
-	"launchpad.net/gocheck"
+	"github.com/megamsys/libgo/cmd"
+	"gopkg.in/check.v1"
 )
 
-func (s *S) TestCommandsFromBaseManagerAreRegistered(c *gocheck.C) {
+func (s *S) TestCommandsFromBaseManagerAreRegistered(c *check.C) {
 	baseManager := cmd.BuildBaseManager("megam", version, header)
 	manager := buildManager("megam")
 	for name, instance := range baseManager.Commands {
 		command, ok := manager.Commands[name]
-		c.Assert(ok, gocheck.Equals, true)
-		c.Assert(command, gocheck.FitsTypeOf, instance)
+		c.Assert(ok, check.Equals, true)
+		c.Assert(command, check.FitsTypeOf, instance)
 	}
 }
 
-func (s *S) TestAppStartIsRegistered(c *gocheck.C) {
+func (s *S) TestAppStartIsRegistered(c *check.C) {
 	manager := buildManager("megam")
 	create, ok := manager.Commands["startapp"]
-	c.Assert(ok, gocheck.Equals, true)
-	c.Assert(create, gocheck.FitsTypeOf, &AppStart{})
+	c.Assert(ok, check.Equals, true)
+	c.Assert(create, check.FitsTypeOf, &AppStart{})
 }
 
-func (s *S) TestAppStopIsRegistered(c *gocheck.C) {
+func (s *S) TestAppStopIsRegistered(c *check.C) {
 	manager := buildManager("megam")
 	remove, ok := manager.Commands["stopapp"]
-	c.Assert(ok, gocheck.Equals, true)
-	c.Assert(remove, gocheck.FitsTypeOf, &AppStop{})
+	c.Assert(ok, check.Equals, true)
+	c.Assert(remove, check.FitsTypeOf, &AppStop{})
 }

@@ -3,10 +3,17 @@ package app
 import (
 	"encoding/json"
 	"log"
+<<<<<<< HEAD
 	"github.com/megamsys/gulp/fs"	
 	"github.com/megamsys/gulp/action"	
 	"github.com/megamsys/gulp/app/bind"
 	"github.com/megamsys/gulp/db"
+=======
+	"github.com/megamsys/libgo/fs"
+	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/libgo/db"
+	"github.com/megamsys/gulp/app/bind"
+>>>>>>> origin/master
 	"regexp"
 )
 
@@ -35,35 +42,35 @@ type App struct {
 }
 
 type AppRequests struct {
-   AppId             string    `json:"id"` 
-   NodeId         string   `json:"node_id"` 
-   NodeName       string   `json:"node_name"` 
-   AppDefnsId     string   `json:"appdefns_id"` 
-   ReqType        string   `json:"req_type"` 
-   LCApply        string   `json:"lc_apply"` 
-   LCAdditional   string   `json:"lc_additional"` 
-   LCWhen         string   `json:"lc_when"` 
-   CreatedAT      string   `json:"created_at"` 
+   AppId             string    `json:"id"`
+   NodeId         string   `json:"node_id"`
+   NodeName       string   `json:"node_name"`
+   AppDefnsId     string   `json:"appdefns_id"`
+   ReqType        string   `json:"req_type"`
+   LCApply        string   `json:"lc_apply"`
+   LCAdditional   string   `json:"lc_additional"`
+   LCWhen         string   `json:"lc_when"`
+   CreatedAT      string   `json:"created_at"`
    }
-   
+
    type AppConfigurations struct {
-   		ConfigId       		string   `json:"id"` 
-   		NodeId         		string   `json:"node_id"` 
-   		NodeName       		string   `json:"node_name"` 
-   		DRLocations    		string   
-   		DRFromhost     		string      
-   		DRToHosts      		string 
-   		DRRecipe            string  
-   		HAProxyhost    		string   
-   		LoadbalancedHosts 	string  
-   		LoadRecipe            string 
-   		CPUThreshhold    	string   
+   		ConfigId       		string   `json:"id"`
+   		NodeId         		string   `json:"node_id"`
+   		NodeName       		string   `json:"node_name"`
+   		DRLocations    		string
+   		DRFromhost     		string
+   		DRToHosts      		string
+   		DRRecipe            string
+   		HAProxyhost    		string
+   		LoadbalancedHosts 	string
+   		LoadRecipe            string
+   		CPUThreshhold    	string
    		MemThreshhold    	string
    		Noofinstances       string
-   		AutoRecipe            string   
-   		MonitoringAgent     string  
-   		MonitorRecipe            string   
-   		CreatedAT      		string   `json:"created_at"` 
+   		AutoRecipe            string
+   		MonitoringAgent     string
+   		MonitorRecipe            string
+   		CreatedAT      		string   `json:"created_at"`
    		LCApply             string
    }
 
@@ -90,30 +97,30 @@ func (a *AppConfigurations) UnmarshalJSON(b []byte) error {
     a.ConfigId = m["id"].(string)
     a.NodeId  = m["node_id"].(string)
     a.NodeName  = m["node_name"].(string)
-    
+
 	config := m["config"]
 	conf := config.(map[string]interface{})
-    
+
     dis := conf["disaster"]
     disaster := dis.(map[string]interface{})
     a.DRLocations = disaster["locations"].(string)
     a.DRFromhost  = disaster["fromhost"].(string)
     a.DRToHosts  = disaster["tohosts"].(string)
     a.DRRecipe   = disaster["recipe"].(string)
-    
+
     load := conf["loadbalancing"]
     loadbalance := load.(map[string]interface{})
     a.HAProxyhost = loadbalance["haproxyhost"].(string)
     a.LoadbalancedHosts  = loadbalance["loadbalancehost"].(string)
     a.LoadRecipe   = loadbalance["recipe"].(string)
-        
+
     scale := conf["autoscaling"]
     autoscale := scale.(map[string]interface{})
     a.CPUThreshhold  = autoscale["cputhreshold"].(string)
     a.MemThreshhold  = autoscale["memorythreshold"].(string)
     a.Noofinstances  = autoscale["noofinstances"].(string)
     a.AutoRecipe     = autoscale["recipe"].(string)
-    
+
     mon := conf["monitoring"]
     monitor := mon.(map[string]interface{})
     a.MonitoringAgent  = monitor["agent"].(string)
@@ -139,20 +146,20 @@ func (app *App) Get(reqId string) error {
 log.Printf("Get message %v", reqId)
 	if app.Type != "addon" {
 	conn, err := db.Conn("appreqs")
-	if err != nil {	
+	if err != nil {
 		return err
-	}	
+	}
 	appout := &AppRequests{}
-	conn.FetchStruct(reqId, appout)	
+	conn.FetchStruct(reqId, appout)
 	app.AppReqs = appout
 	defer conn.Close()
 	} else {
 	  conn, err := db.Conn("addonconfigs")
-	if err != nil {	
+	if err != nil {
 		return err
-	}	
+	}
 	appout := &AppConfigurations{}
-	conn.FetchStruct(reqId, appout)	
+	conn.FetchStruct(reqId, appout)
 	app.AppConf = appout
 	log.Printf("Get message from riak  %v", appout)
 	defer conn.Close()
@@ -219,10 +226,10 @@ func LaunchedApp(app *App) error {
 	return nil
 }
 
-//Addon action for App 
+//Addon action for App
 func AddonApp(app *App) error {
-    actions := []*action.Action{&stopApp, &addonApp, &modifyEnv, &startApp}  
- 
+    actions := []*action.Action{&stopApp, &addonApp, &modifyEnv, &startApp}
+
     pipeline := action.NewPipeline(actions...)
     err := pipeline.Execute(app)
     if err != nil {
@@ -267,7 +274,7 @@ func (app *App) GetAppReqs() *AppRequests {
 
 func (app *App) GetAppConf() *AppConfigurations {
     return app.AppConf
-}    
+}
 
 /* setEnv sets the given environment variable in the app.
 func (app *App) setEnv(env bind.EnvVar) {

@@ -15,7 +15,7 @@
 # Makefile to compile gulpd.
 # lists all the dependencies for test, prod and we can run a go build aftermath.
 ###############################################################################
-                            
+
 
 GOPATH  := $(GOPATH):$(shell pwd)/../../../../
 
@@ -53,6 +53,7 @@ ifndef GOPATH
 	@echo "       http://golang.org/cmd/go/#GOPATH_environment_variable"
 	@exit 1
 endif
+
 	@exit 0
 
 get: hg git bzr get-code godep
@@ -65,6 +66,7 @@ git:
 
 bzr:
 	$(if $(shell bzr), , $(error $(BZR_ERROR)))
+
 
 get-code:
 	go get $(GO_EXTRAFLAGS) -u -d -t ./...
@@ -93,6 +95,7 @@ test: _go_test _gulpd _gulpdr
 
 _install_deadcode: git
 	go get $(GO_EXTRAFLAGS) github.com/remyoudompheng/go-misc/deadcode
+
 
 deadcode: _install_deadcode
 	@go list ./... | sed -e 's;github.com/megamsys/gulp/;;' | xargs deadcode

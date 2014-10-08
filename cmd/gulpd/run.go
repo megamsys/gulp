@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/megamsys/gulp/cmd"
+	"github.com/megamsys/libgo/cmd"
 	"launchpad.net/gnuflag"
 	"strconv"
 	"net/http"
@@ -126,13 +126,13 @@ func (c *GulpUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
 		"new_node_name": "",
 	}
 
-//and this as well. 
+//and this as well.
 	jsonMsg, err := json.Marshal(tmpinp)
 
 	if err != nil {
 		return err
 	}
-	
+
 	authly, err := cmd.NewAuthly("/nodes/update", jsonMsg)
 	if err != nil {
 		return err
@@ -142,10 +142,10 @@ func (c *GulpUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
 	if err != nil {
 		return err
 	}
-	
+
 	fmt.Println("==> " + url)
 	authly.JSONBody = jsonMsg
-	
+
 	err = authly.AuthHeader()
 	if err != nil {
 		return err
