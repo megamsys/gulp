@@ -43,7 +43,7 @@ endef
 
 all: check-path get test
 
-build: check-path get _go_test _gulp
+build: check-path get _go_test _gulpd
 
 # It does not support GOPATH with multiple paths.
 check-path:
@@ -78,18 +78,18 @@ _go_test:
 	go test $(GO_EXTRAFLAGS) ./...
 
 _gulpd:
-	rm -f gulp
-	go build $(GO_EXTRAFLAGS) -o gulp ./cmd/gulp
+	rm -f gulpd
+	go build $(GO_EXTRAFLAGS) -o gulp ./cmd/gulpd
 	
 
 _gulpdr:
-	sudo ./gulp start
+	sudo ./gulpd start
 	rm -f gulpd
 
 _sh_tests:
 	@conf/trusty/megam/megam_test.sh
 
-test: _go_test _gulp _gulpr
+test: _go_test _gulpd _gulpdr
 
 _install_deadcode: git
 	go get $(GO_EXTRAFLAGS) github.com/remyoudompheng/go-misc/deadcode
