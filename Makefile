@@ -85,8 +85,8 @@ _gulpd:
 	
 
 _gulpdr:
-	sudo ./gulpd start
-	rm -f gulpd
+	sudo ./gulp start
+	rm -f gulp
 
 _sh_tests:
 	@conf/trusty/megam/megam_test.sh

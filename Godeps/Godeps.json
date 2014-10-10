@@ -1,0 +1,78 @@
+{
+	"ImportPath": "github.com/megamsys/gulp",
+	"GoVersion": "go1.3.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "bitbucket.org/kardianos/osext",
+			"Comment": "null-15",
+			"Rev": "44140c5fc69ecf1102c5ef451d73cd98ef59b178"
+		},
+		{
+			"ImportPath": "code.google.com/p/goprotobuf/proto",
+			"Comment": "go.r60-152",
+			"Rev": "36be16571e14f67e114bb0af619e5de2c1591679"
+		},
+		{
+			"ImportPath": "github.com/howeyc/fsnotify",
+			"Comment": "v0.9.0-11-g6b1ef89",
+			"Rev": "6b1ef893dc11e0447abda6da20a5203481878dda"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/action",
+			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/amqp",
+			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/cmd",
+			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/db",
+			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/exec",
+			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/fs",
+			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+		},
+		{
+			"ImportPath": "github.com/mrb/riakpbc",
+			"Rev": "b20607befda4bf864c4afd595a57b8f99754b885"
+		},
+		{
+			"ImportPath": "github.com/streadway/amqp",
+			"Rev": "7d6d1802c7710be39564a287f860360c6328f956"
+		},
+		{
+			"ImportPath": "github.com/tsuru/config",
+			"Rev": "96579b79a0a66b9b6c95a8ff7c344aa512b41288"
+		},
+		{
+			"ImportPath": "gopkg.in/check.v1",
+			"Rev": "91ae5f88a67b14891cfd43895b01164f6c120420"
+		},
+		{
+			"ImportPath": "gopkg.in/v1/yaml",
+			"Rev": "9f9df34309c04878acc86042b16630b0f696e1de"
+		},
+		{
+			"ImportPath": "launchpad.net/gnuflag",
+			"Comment": "13",
+			"Rev": "roger.peppe@canonical.com-20140716064605-pk32dnmfust02yab"
+		},
+		{
+			"ImportPath": "launchpad.net/gocheck",
+			"Comment": "87",
+			"Rev": "gustavo@niemeyer.net-20140225173054-xu9zlkf9kxhvow02"
+		}
+	]
+}

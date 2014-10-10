@@ -14,15 +14,9 @@ func (s *S) TestGetPath(c *check.C) {
 
 func (s *S) TestGetRemotePath(c *check.C) {
 	path, err := GetRemotePath()
-<<<<<<< HEAD
 	c.Assert(err, gocheck.IsNil)
 	expected := "https://github.com/megamsys/aryabhata.git"
 	c.Assert(path, gocheck.Equals, expected)
-=======
-	c.Assert(err, check.IsNil)
-	expected := "https://github.com/indykish/aryabhata.git"
-	c.Assert(path, check.Equals, expected)
->>>>>>> origin/master
 }
 
 func (s *S) TestProject(c *check.C) {

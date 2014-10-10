@@ -1,6 +1,6 @@
 *.class
 *.log
-
+Godeps/_workspace
 # sbt specific
 dist/*
 target/
@@ -12,3 +12,4 @@ project/plugins/project/
 # Scala-IDE specific
 bin/
 .scala_dependencies
+
