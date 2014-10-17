@@ -4,12 +4,7 @@
 	<comment>I luv bud weiser, heineken, kingfisher</comment>
 	<projects>
 	</projects>
-	<buildSpec>		
-		<buildCommand>
-			<name>com.googlecode.goclipse.goBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
+	<buildSpec>
 	</buildSpec>
 	<natures>
 		<nature>goclipse.goNature</nature>
