@@ -5,20 +5,19 @@ import (
 	"fmt"
 	"errors"
 	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/libgo/exec"
 	log "code.google.com/p/log4go"
-	"strings"
+	"strings" 
 )
 
 func CommandExecutor(app *policies.AssemblyResult) (action.Result, error) {
 	var e exec.OsExecutor
 	var b bytes.Buffer
 	
-	s1 := make([]string, 2)
-    s1[0] = "-la"
+	commandWords := strings.Fields("ls -la")
 	if len(commandWords) > 0 {
-		//if err := e.Execute(commandWords[0], commandWords[1:len(commandWords)], nil, &b, &b); err != nil {
-		if err := e.Execute("ls", s1, nil, &b, &b); err != nil {
+		if err := e.Execute(commandWords[0], commandWords[1:len(commandWords)], nil, &b, &b); err != nil {
 			fmt.Println(err)
 			return nil, err
 		}

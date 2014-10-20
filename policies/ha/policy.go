@@ -11,7 +11,7 @@ func Init() {
 
 type HAPolicy struct{}
 
-func (i *HAPolicy) Apply(id string) (string, error) {
+func (i *HAPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
 	
 	
 	return "", nil
