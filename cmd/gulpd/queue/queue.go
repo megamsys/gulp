@@ -4,6 +4,7 @@ import (
 	"github.com/megamsys/libgo/amqp"
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/policies"
+	"github.com/megamsys/gulp/app"
 	"encoding/json"
 )
 

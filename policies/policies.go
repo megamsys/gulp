@@ -40,9 +40,9 @@ type Component struct {
     ToscaType                      string    `json:“tosca_type”`
     Requirements                  *ComponentRequirements  
     Inputs                        *ComponentInputs  
-    ExternalManagementResource     string
+    ExternalManagementResource     string    `json:"external_management_resource"`
     Artifacts                     *Artifacts 
-    RelatedComponents              string
+    RelatedComponents              string    `json:"related_components"`
     Operations                    *ComponentOperations	
    	CreatedAt      		           string   `json:"created_at"` 
    }
@@ -94,7 +94,7 @@ type Message struct {
 // Every Tsuru IaaS must implement this interface.
 type Policies interface {
 	
-	Apply(id string) (string, error)
+	Apply(*AssemblyResult) (string, error)
 	
 }
 
@@ -157,6 +157,6 @@ func GetAssembly(id string) (*AssemblyResult, error) {
 		  arraycomponent[j] = &component
 		  }
 	    }
-	result := &policies.AssemblyResult{Id: asm.Id, Name: asm.Name,  Policies: asm.Policies, Components: arraycomponent, CreatedAt: asm.CreatedAt}
+	result := &AssemblyResult{Id: asm.Id, Name: asm.Name,  Policies: asm.Policies, Components: arraycomponent, CreatedAt: asm.CreatedAt}
 	return result, nil
 }
