@@ -157,6 +157,6 @@ func GetAssembly(id string) (*AssemblyResult, error) {
 		  arraycomponent[j] = &component
 		  }
 	    }
-	result := &policies.AssemblyResult{Id: asm.Id, Name: asm.Name,  Policies: asm.Policies, Components: arraycomponent, CreatedAt: asm.CreatedAt}
+	result := &AssemblyResult{Id: asm.Id, Name: asm.Name,  Policies: asm.Policies, Components: arraycomponent, CreatedAt: asm.CreatedAt}
 	return result, nil
 }
