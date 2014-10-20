@@ -6,14 +6,14 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "bitbucket.org/kardianos/osext",
-			"Comment": "null-15",
-			"Rev": "44140c5fc69ecf1102c5ef451d73cd98ef59b178"
+			"ImportPath": "code.google.com/p/goprotobuf/proto",
+			"Comment": "go.r60-157",
+			"Rev": "725eb0907b649c438e0e8f1601648597141fb66c"
 		},
 		{
-			"ImportPath": "code.google.com/p/goprotobuf/proto",
-			"Comment": "go.r60-152",
-			"Rev": "36be16571e14f67e114bb0af619e5de2c1591679"
+			"ImportPath": "code.google.com/p/log4go",
+			"Comment": "go.weekly.2012-02-22-1",
+			"Rev": "c3294304d93f48a37d3bed1d382882a9c2989f99"
 		},
 		{
 			"ImportPath": "github.com/howeyc/fsnotify",
@@ -22,27 +22,31 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/amqp",
-			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/etcd",
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "2484c7f141e6439f00e341a84b69e39e3d9555c4"
+			"Rev": "9676c5a18fcf9c129485773860d86b20c7984db1"
 		},
 		{
 			"ImportPath": "github.com/mrb/riakpbc",
@@ -50,7 +54,7 @@
 		},
 		{
 			"ImportPath": "github.com/streadway/amqp",
-			"Rev": "7d6d1802c7710be39564a287f860360c6328f956"
+			"Rev": "6ffc9248c4b16699477e7411084c2402f2f0c351"
 		},
 		{
 			"ImportPath": "github.com/tsuru/config",
