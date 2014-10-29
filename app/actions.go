@@ -15,7 +15,7 @@ func CommandExecutor(app *policies.AssemblyResult) (action.Result, error) {
 	var e exec.OsExecutor
 	var b bytes.Buffer
 	
-	commandWords := strings.Fields("ls -la")
+	commandWords := strings.Fields(app.Command)
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:len(commandWords)], nil, &b, &b); err != nil {
 			fmt.Println(err)

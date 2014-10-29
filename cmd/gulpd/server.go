@@ -83,8 +83,12 @@ func updateStatus() {
 
 func watcher() {
 	    name, _ := config.GetString("name")
-	    queueserver := queue.NewServer(name)
-		go queueserver.ListenAndServe()
+	    queueserver1 := queue.NewServer(name)
+		go queueserver1.ListenAndServe()
+		
+		updatename, _ := config.GetString("update_queue")
+	    queueserver2 := queue.NewServer(updatename)
+		go queueserver2.ListenAndServe()
 }
 
 
