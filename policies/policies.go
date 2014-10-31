@@ -91,6 +91,11 @@ type Message struct {
 	PolicyName  string  `json:"policy_name"`
 }
 
+type DockerJSON struct {
+	Image   string  `json:"Image"`
+	Started bool  `json:"Started"`
+}
+
 // Every Tsuru IaaS must implement this interface.
 type Policies interface {
 	
