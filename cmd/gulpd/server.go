@@ -5,7 +5,6 @@ import (
    "github.com/megamsys/gulp/cmd/gulpd/queue"
     "github.com/tsuru/config"
     "github.com/megamsys/libgo/etcd"
-    "github.com/megamsys/libgo/geard"
     log "code.google.com/p/log4go"
 	"os"
 	"encoding/json"

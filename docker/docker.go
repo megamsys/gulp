@@ -4,7 +4,8 @@ import (
 	log "code.google.com/p/log4go"
 	"encoding/json"
 	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/megamd/app"
+	"github.com/megamsys/libgo/geard"
+	"github.com/megamsys/gulp/policies"
 )
 
 type Message struct {
@@ -42,7 +43,6 @@ type PredefAccess struct {
 }
 
 type Request struct {
-	Env              map[string]bind.EnvVar
 	Id	             string     `json:"id"`
 	AssembliesId     string     `json:"node_id"`
 	AssembliesName   string     `json:"node_name"` 
@@ -83,7 +83,7 @@ func Handler(chann []byte) error{
 	switch req.ReqType {
 	case "create":
 		
-		asm, asmerr := policies.GetAssembly(res.Id)
+		asm, asmerr := policies.GetAssembly(req.Id)
 	              if asmerr!= nil {
 		              log.Error("Error: Riak didn't cooperate:\n%s.", asmerr)
 		              return asmerr
@@ -102,7 +102,7 @@ func Handler(chann []byte) error{
                           json.Unmarshal([]byte(string(mapC)), requirements)
                           
                           inputs := &policies.ComponentInputs{}
-	    		          mapC, _ := json.Marshal(com.Inputs)                
+	    		          mapC, _ = json.Marshal(com.Inputs)                
                           json.Unmarshal([]byte(string(mapC)), inputs)
                           
                        //   psc, _ := getPredefClouds(requirements.Host)
@@ -110,17 +110,19 @@ func Handler(chann []byte) error{
                        //   mapP, _ := json.Marshal(psc.Spec)
                        //   json.Unmarshal([]byte(string(mapP)), spec)   
                        
-                          js := &policies.DockerJSON{Image: inputs.Source, Started: true }
+                          jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
+                          js, _ := json.Marshal(jso) 
 			        	  c := geard.NewClient("localhost", "43273")
-			        	  resp, err := c.Install(inputs.Source, js)
+			        	  _, err := c.Install(inputs.Source, string(js))
 			        	  if err != nil { 
 			        	    log.Error(err)
 			        	    return err
 			        	  }
 			         }
                 }
-	    		return nil
+	    		
 	    	}
+	return nil
 	}
 
 func getPredefClouds(id string) (*PredefClouds, error) {

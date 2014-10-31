@@ -8,12 +8,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"github.com/megamsys/libgo/cmd"
 )
 
 type Client struct {
 	HTTPClient     *http.Client
 	context        *Context
-	Authly         *Authly
+	Authly         *cmd.Authly
 	progname       string
 	currentVersion string
 	versionHeader  string
@@ -23,7 +24,7 @@ func NewClient(client *http.Client, context *Context, manager *Manager) *Client 
 	return &Client{
 		HTTPClient:     client,
 		context:        context,
-		Authly:         &Authly{},
+		Authly:         &cmd.Authly{},
 		progname:       manager.name,
 		currentVersion: manager.version,
 		versionHeader:  manager.versionHeader,

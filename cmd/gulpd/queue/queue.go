@@ -5,7 +5,9 @@ import (
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
+	"github.com/megamsys/gulp/docker"
 	"encoding/json"
+	"github.com/tsuru/config"
 )
 
 type QueueServer struct {
@@ -42,9 +44,9 @@ func (self *QueueServer) ListenAndServe() {
 	msgChan, _ := pubsub.Sub()
 	for msg := range msgChan {
 			log.Info(" [x] %q", msg)
-			docker, _ := config.GetString("docker_queue")
-			if self.ListenAddress == docker {
-				_, derr := docker.Handler(msg)
+			dockerq, _ := config.GetString("docker_queue")
+			if self.ListenAddress == dockerq {
+				derr := docker.Handler(msg)
 				if derr != nil {
 	               log.Error("Error: Policy :\n%s.", derr)
 	              }

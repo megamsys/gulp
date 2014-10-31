@@ -1,17 +1,22 @@
 package policies
 
 import (
-	"launchpad.net/gocheck"
+	"gopkg.in/check.v1"
+	"testing"
 )
 
-func (s *S) TestRegisterPolicies(c *gocheck.C) {
-	provider, err := GetPolicy("abc")
-	c.Assert(err, gocheck.ErrorMatches, "policy \"abc\" not registered")
-	c.Assert(provider, gocheck.IsNil)
-	policy := TestIaaS{}
-	RegisterPolicy("abc", policy)
-	p, err = getIaasProvider("abc")
-	c.Assert(err, gocheck.IsNil)
-	c.Assert(p, gocheck.Equals, policy)
+func Test(t *testing.T) {
+	check.TestingT(t)
+}
+
+type S struct{}
+
+
+var _ = check.Suite(&S{})
+
+
+func (s *S) TestRegisterPolicies(c *check.C) {
+	provider, _ := GetPolicy("abc")
+	c.Assert(provider, check.IsNil)
 }
 
