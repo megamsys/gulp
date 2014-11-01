@@ -5,7 +5,9 @@ import (
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
+	"github.com/megamsys/gulp/docker"
 	"encoding/json"
+	"github.com/tsuru/config"
 )
 
 type QueueServer struct {
@@ -20,7 +22,7 @@ func NewServer(listenAddress string) *QueueServer {
 
 	self.ListenAddress = listenAddress
 	self.shutdown = make(chan bool, 1)
-     log.Info(self)
+    log.Info(self)
 	return self
 }
 
@@ -42,23 +44,30 @@ func (self *QueueServer) ListenAndServe() {
 	msgChan, _ := pubsub.Sub()
 	for msg := range msgChan {
 			log.Info(" [x] %q", msg)
-			json.Unmarshal([]byte(msg), res)
-			policy, err1 := policies.GetPolicy("bind")
-            if err1 != nil {
-	           log.Error("Error: Policy :\n%s.", err1)
-	         }
+			dockerq, _ := config.GetString("docker_queue")
+			if self.ListenAddress == dockerq {
+				derr := docker.Handler(msg)
+				if derr != nil {
+	               log.Error("Error: Policy :\n%s.", derr)
+	              }
+			} else {
+			     json.Unmarshal([]byte(msg), res)
+			     policy, err1 := policies.GetPolicy("bind")
+                 if err1 != nil {
+	               log.Error("Error: Policy :\n%s.", err1)
+	              }
             
-            asm, err := policies.GetAssembly(res.Id)
-	        if err!= nil {
-		       log.Error(err)
-	        }
+                 asm, err := policies.GetAssembly(res.Id)
+	              if err!= nil {
+		              log.Error(err)
+	               }
             
-	        _, err2 := policy.Apply(asm)
-	        if err2 != nil {
-	            log.Error("Error: Policy doesn't apply :\n%s.", err2)
-	         }
-	         go app.RestartApp(asm)
-			
+	               _, err2 := policy.Apply(asm)
+	                if err2 != nil {
+	                   log.Error("Error: Policy doesn't apply :\n%s.", err2)
+	                 }
+	               go app.RestartApp(asm)
+			  }
 		}
 	log.Info("Handling message %v", msgChan)
 	self.chann = msgChan

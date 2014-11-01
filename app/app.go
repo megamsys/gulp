@@ -6,7 +6,6 @@ import (
 )
 
 
-
 // StartsApp creates a new app.
 //
 // Starts the app :
@@ -20,6 +19,3 @@ func RestartApp(app *policies.AssemblyResult) error {
 	}
 	return nil
 }
-
-
-

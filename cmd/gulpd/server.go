@@ -43,6 +43,7 @@ func RunServer(dry bool) {
 	signal.Notify(signalChannel, syscall.SIGINT)
 //	handler().Start() 
     watcher()
+    
 	log.Info("Gulpd at your service.")
 	updateStatus()
 	<-signalChannel
@@ -89,6 +90,10 @@ func watcher() {
 		updatename, _ := config.GetString("update_queue")
 	    queueserver2 := queue.NewServer(updatename)
 		go queueserver2.ListenAndServe()
+		
+		docker, _ := config.GetString("docker_queue")
+	    queueserver3 := queue.NewServer(docker)
+		go queueserver3.ListenAndServe()
 }
 
 
