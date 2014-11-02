@@ -1,5 +1,6 @@
 *.class
 *.log
+gulpd
 Godeps/_workspace
 # sbt specific
 dist/*
