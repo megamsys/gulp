@@ -50,6 +50,33 @@ type Request struct {
 	CreatedAt        string     `json:"created_at"`
 }
 
+type Assemblies struct {
+   Id             string    `json:"id"` 
+   AccountsId     string    `json:"accounts_id"`
+   JsonClaz       string   `json:"json_claz"` 
+   Name           string   `json:"name"` 
+   Assemblies     []string   `json:"assemblies"` 
+   Inputs         *AssembliesInputs   `json:"inputs"` 
+   CreatedAt      string   `json:"created_at"` 
+   }
+
+type AssembliesInputs struct {
+   Id                   string    `json:"id"` 
+   AssembliesType       string    `json:"assemblies_type"` 
+   Label                string    `json:"label"` 
+   CloudSettings        []*CloudSettings    `json:"cloudsettings"`
+   }
+
+type CloudSettings struct {
+	Id                 string       `json:"id"`
+    CSType             string        `json:"cstype"`
+    CloudSettings      string       `json:"cloudsettings"`
+    X                  string        `json:"x"`
+    Y                  string        `json:"y"`
+    Z                  string        `json:"z"`
+    Wires              []string    `json:“wires”`
+}
+
 func (req *Request) Get(reqId string) (*Request, error) {
     log.Info("Get Request message %v", reqId)
     conn, err := db.Conn("requests")
@@ -64,6 +91,23 @@ func (req *Request) Get(reqId string) (*Request, error) {
 	defer conn.Close()
 	
 	return req, nil
+
+}
+
+func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
+    log.Info("Get Assemblies message %v", asmId)
+    conn, err := db.Conn("assemblies")
+	if err != nil {	
+		return asm, err
+	}	
+	//appout := &Requests{}
+	ferr := conn.FetchStruct(asmId, asm)
+	if ferr != nil {	
+		return asm, ferr
+	}	
+	defer conn.Close()
+	
+	return asm, nil
 
 }
 
@@ -82,21 +126,29 @@ func Handler(chann []byte) error{
 	}
 	switch req.ReqType {
 	case "create":
-		
-		asm, asmerr := policies.GetAssembly(req.Id)
+		assemblies := Assemblies{Id: req.AssembliesId}
+		asm, err := assemblies.Get(req.AssembliesId)
+		if err != nil {
+			log.Error("Error: Riak didn't cooperate:\n%s.", err)
+			return err
+		}
+		for i := range asm.Assemblies {
+			log.Debug("Assemblies: [%s]", asm.Assemblies[i])
+			if len(asm.Assemblies[i]) > 1 {
+				assemblyID := asm.Assemblies[i]
+				log.Debug("Assemblies id: [%s]", assemblyID)
+				
+		         asm, asmerr := policies.GetAssembly(assemblyID)
 	              if asmerr!= nil {
 		              log.Error("Error: Riak didn't cooperate:\n%s.", asmerr)
 		              return asmerr
-	               }		
-		
-	    		for c := range asm.Components {
-	    			
+	               }				
+	    		   for c := range asm.Components {
 	    		       com := &policies.Component{}
 	    		       mapB, _ := json.Marshal(asm.Components[c])                
                        json.Unmarshal([]byte(string(mapB)), com)
                       
                        if com.Name != "" {
-                       	
                           requirements := &policies.ComponentRequirements{}
 	    		          mapC, _ := json.Marshal(com.Requirements)                
                           json.Unmarshal([]byte(string(mapC)), requirements)
@@ -119,11 +171,12 @@ func Handler(chann []byte) error{
 			        	    return err
 			        	  }
 			         }
-                }
-	    		
+                   }
+	    		}
 	    	}
+		}
 	return nil
-	}
+}
 
 func getPredefClouds(id string) (*PredefClouds, error) {
 	pre := &PredefClouds{}
