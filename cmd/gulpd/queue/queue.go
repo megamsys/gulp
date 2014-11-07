@@ -6,6 +6,7 @@ import (
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/docker"
+	"github.com/megamsys/gulp/coordinator"
 	"encoding/json"
 	"github.com/tsuru/config"
 )
@@ -50,7 +51,9 @@ func (self *QueueServer) ListenAndServe() {
 				if derr != nil {
 	               log.Error("Error: Policy :\n%s.", derr)
 	              }
-			} else {
+			} 
+			queue1, _ := config.GetString("name")
+			if self.ListenAddress == queue1 {
 			     json.Unmarshal([]byte(msg), res)
 			     policy, err1 := policies.GetPolicy("bind")
                  if err1 != nil {
@@ -67,6 +70,11 @@ func (self *QueueServer) ListenAndServe() {
 	                   log.Error("Error: Policy doesn't apply :\n%s.", err2)
 	                 }
 	               go app.RestartApp(asm)
+			  }
+			
+			queue2, _ := config.GetString("update_queue")
+			if self.ListenAddress == queue2 {
+			    coordinator.Handler(msg)
 			  }
 		}
 	log.Info("Handling message %v", msgChan)

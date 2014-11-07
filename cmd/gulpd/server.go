@@ -1,8 +1,6 @@
 package main
 
 import (
-
-   "github.com/megamsys/gulp/cmd/gulpd/queue"
     "github.com/tsuru/config"
     "github.com/megamsys/libgo/etcd"
     log "code.google.com/p/log4go"
@@ -13,6 +11,7 @@ import (
 	"syscall"
 	"time"
 	"github.com/megamsys/gulp/policies/bind"
+	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
 )
 
@@ -42,7 +41,14 @@ func RunServer(dry bool) {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
 //	handler().Start() 
-    watcher()
+    name, _ := config.GetString("name")
+    Watcher(name)
+    
+    updatename, _ := config.GetString("update_queue")
+   Watcher(updatename)
+    
+    docker, _ := config.GetString("docker_queue")
+   Watcher(docker)
     
 	log.Info("Gulpd at your service.")
 	updateStatus()
@@ -82,18 +88,9 @@ func updateStatus() {
 }
 
 
-func watcher() {
-	    name, _ := config.GetString("name")
-	    queueserver1 := queue.NewServer(name)
+func Watcher(queue_name string) {    
+	    queueserver1 := queue.NewServer(queue_name)
 		go queueserver1.ListenAndServe()
-		
-		updatename, _ := config.GetString("update_queue")
-	    queueserver2 := queue.NewServer(updatename)
-		go queueserver2.ListenAndServe()
-		
-		docker, _ := config.GetString("docker_queue")
-	    queueserver3 := queue.NewServer(docker)
-		go queueserver3.ListenAndServe()
 }
 
 
