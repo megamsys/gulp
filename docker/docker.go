@@ -4,111 +4,12 @@ import (
 	log "code.google.com/p/log4go"
 	"encoding/json"
 	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/libgo/geard"
+	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 )
 
 type Message struct {
 	Id string `json:"id"`
-}
-
-type PredefClouds struct {
-	Id            string   `json:"id"`
-	Name          string   `json:"name"`
-	AccountsId    string   `json:"accounts_id"`
-	Jsonclaz      string   `json:"json_claz"`
-	Spec          *PredefSpec 
-	Access        *PredefAccess 
-	Ideal         string   `json:"ideal"`
-	CreatedAT     string   `json:"created_at"`
-	Performance   string   `json:"performance"`
-}
-
-type PredefSpec struct {
-	TypeName     string   `json:"type_name"` 
-	Groups       string   `json:"groups"`
-	Image        string   `json:"image"`
-	Flavor       string   `json:"flavor"`
-	TenantId     string   `json:"tenant_id"`
-}
-
-type PredefAccess struct {
-	SshKey        string    `json:"ssh_key"`
-	IdentityFile  string    `json:"identity_file"`
-	SshUser       string    `json:"ssh_user"`
-	VaultLocation string    `json:"vault_location"`
-	SshPubLocation string   `json:"sshpub_location"`
-	Zone           string   `json:"zone"`
-	Region         string   `json:"region"`
-}
-
-type Request struct {
-	Id	             string     `json:"id"`
-	AssembliesId     string     `json:"node_id"`
-	AssembliesName   string     `json:"node_name"` 
-	ReqType          string     `json:"req_type"`
-	CreatedAt        string     `json:"created_at"`
-}
-
-type Assemblies struct {
-   Id             string    `json:"id"` 
-   AccountsId     string    `json:"accounts_id"`
-   JsonClaz       string   `json:"json_claz"` 
-   Name           string   `json:"name"` 
-   Assemblies     []string   `json:"assemblies"` 
-   Inputs         *AssembliesInputs   `json:"inputs"` 
-   CreatedAt      string   `json:"created_at"` 
-   }
-
-type AssembliesInputs struct {
-   Id                   string    `json:"id"` 
-   AssembliesType       string    `json:"assemblies_type"` 
-   Label                string    `json:"label"` 
-   CloudSettings        []*CloudSettings    `json:"cloudsettings"`
-   }
-
-type CloudSettings struct {
-	Id                 string       `json:"id"`
-    CSType             string        `json:"cstype"`
-    CloudSettings      string       `json:"cloudsettings"`
-    X                  string        `json:"x"`
-    Y                  string        `json:"y"`
-    Z                  string        `json:"z"`
-    Wires              []string    `json:“wires”`
-}
-
-func (req *Request) Get(reqId string) (*Request, error) {
-    log.Info("Get Request message %v", reqId)
-    conn, err := db.Conn("requests")
-	if err != nil {	
-		return req, err
-	}	
-	//appout := &Requests{}
-	ferr := conn.FetchStruct(reqId, req)
-	if ferr != nil {	
-		return req, ferr
-	}	
-	defer conn.Close()
-	
-	return req, nil
-
-}
-
-func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
-    log.Info("Get Assemblies message %v", asmId)
-    conn, err := db.Conn("assemblies")
-	if err != nil {	
-		return asm, err
-	}	
-	//appout := &Requests{}
-	ferr := conn.FetchStruct(asmId, asm)
-	if ferr != nil {	
-		return asm, ferr
-	}	
-	defer conn.Close()
-	
-	return asm, nil
-
 }
 
 func Handler(chann []byte) error{
@@ -118,7 +19,7 @@ func Handler(chann []byte) error{
 		log.Error("Error: Message parsing error:\n%s.", parse_err)
 		return parse_err
 	}
-	request := Request{Id: m.Id}
+	request := global.Request{Id: m.Id}
 	req, err := request.Get(m.Id)
 	if err != nil {
 		log.Error("Error: Riak didn't cooperate:\n%s.", err)
@@ -126,8 +27,8 @@ func Handler(chann []byte) error{
 	}
 	switch req.ReqType {
 	case "create":
-		assemblies := Assemblies{Id: req.AssembliesId}
-		asm, err := assemblies.Get(req.AssembliesId)
+		assemblies := global.Assemblies{Id: req.NodeId}
+		asm, err := assemblies.Get(req.NodeId)
 		if err != nil {
 			log.Error("Error: Riak didn't cooperate:\n%s.", err)
 			return err
@@ -162,14 +63,16 @@ func Handler(chann []byte) error{
                        //   mapP, _ := json.Marshal(psc.Spec)
                        //   json.Unmarshal([]byte(string(mapP)), spec)   
                        
-                          jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
-                          js, _ := json.Marshal(jso) 
-			        	  c := geard.NewClient("localhost", "43273")
-			        	  _, err := c.Install(inputs.Source, string(js))
-			        	  if err != nil { 
-			        	    log.Error(err)
-			        	    return err
-			        	  }
+                        //  jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
+                        //  js, _ := json.Marshal(jso) 
+			        	 // c := geard.NewClient("localhost", "43273")
+			        	//  _, err := c.Install(com.Name, string(js))
+			        	//  if err != nil { 
+			        	//    log.Error(err)
+			        	//    return err
+			        	//  }
+			        	   queueserver1 := NewServer(com.Name)
+		                   go queueserver1.ListenAndServe()
 			         }
                    }
 	    		}
@@ -178,8 +81,8 @@ func Handler(chann []byte) error{
 	return nil
 }
 
-func getPredefClouds(id string) (*PredefClouds, error) {
-	pre := &PredefClouds{}
+func getPredefClouds(id string) (*global.PredefClouds, error) {
+	pre := &global.PredefClouds{}
 	conn, err := db.Conn("predefclouds")
 	if err != nil {	
 		return pre, err
