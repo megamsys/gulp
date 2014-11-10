@@ -10,7 +10,10 @@ import (
 	"regexp"
 	"syscall"
 	"time"
+	"fmt"
 	"github.com/megamsys/gulp/policies/bind"
+	"github.com/megamsys/libgo/amqp"
+	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
 )
@@ -41,6 +44,7 @@ func RunServer(dry bool) {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
 //	handler().Start() 
+    Checker()
     name, _ := config.GetString("name")
     Watcher(name)
     
@@ -63,10 +67,50 @@ func StopServer(bark bool) {
 	log.Info("Gulpd finished |-|.")
 }
 
+func Checker() {
+	log.Info("Dialing Rabbitmq.......")
+	factor, err := amqp.Factory()
+	if err != nil {
+		log.Error("Failed to get the queue instance: %s", err)
+	}
+	
+	conn, connerr := factor.Dial()
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    if connerr != nil {
+    	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start Rabbitmq service.\n", connerr)
+         os.Exit(1)
+    }
+    log.Info("Rabbitmq connected")
+    
+    log.Info("Dialing Riak.......")
+ 
+	 rconn, rerr := db.Conn("connection")
+	 if rerr != nil {
+		 fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", connerr)
+         os.Exit(1)
+	 }
+
+	 data := "sampledata"
+	 ferr := rconn.StoreObject("sampleobject", data)
+	 if ferr != nil {
+	 	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", ferr)
+         os.Exit(1)
+	 }
+	 defer rconn.Close()
+    log.Info("Riak connected")
+	
+}
 
 func updateStatus() {
 	path, _ := config.GetString("etcd:path")
 	c := etcd.NewClient(path+"/")
+	conn, connerr := c.Dial("tcp", "127.0.0.1:4001")
+    log.Debug("client %v", c)
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    
+    if conn != nil {
 	dir, _ := config.GetString("etcd:directory")
 	id, _ := config.GetString("id")
 	name, _ := config.GetString("name")
@@ -84,7 +128,10 @@ func updateStatus() {
 	if err != nil {
 		log.Error("===========",err)
 	}
-
+   } else {
+  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
+         os.Exit(1)
+  }
 }
 
 
