@@ -131,6 +131,31 @@ func (req *Request) Get(reqId string) (*Request, error) {
 
 }
 
+type AppRequest struct {
+	Id	             string     `json:"id"`
+	AppId            string     `json:"app_id"`
+	AppName          string     `json:"app_name"`
+	Action           string     `json:"action"`
+	CreatedAt        string     `json:"created_at"`
+}
+
+func (req *AppRequest) Get(reqId string) (*AppRequest, error) {
+    log.Info("Get AppRequest message %v", reqId)
+    conn, err := db.Conn("appreqs")
+	if err != nil {	
+		return req, err
+	}	
+	//appout := &Requests{}
+	ferr := conn.FetchStruct(reqId, req)
+	if ferr != nil {	
+		return req, ferr
+	}	
+	defer conn.Close()
+	
+	return req, nil
+
+}
+
 func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
     log.Info("Get Assemblies message %v", asmId)
     conn, err := db.Conn("assemblies")
