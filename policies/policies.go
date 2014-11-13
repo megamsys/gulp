@@ -87,8 +87,9 @@ type ComponentOperations struct {
 }
 
 type Message struct {
-	Id    string   `json:"id"`
-	PolicyName  string  `json:"policy_name"`
+	Id          string     `json:"id"`
+	Action  string         `json:"Action"`
+	Args        string     `json:"Args"`
 }
 
 type DockerJSON struct {

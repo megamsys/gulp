@@ -52,36 +52,38 @@ func (self *QueueServer) ListenAndServe() {
 	               log.Error("Error: Policy :\n%s.", derr)
 	              }
 			} 
-			queue1, _ := config.GetString("name")
+			
+			queue1, _ := config.GetString("update_queue")
 			if self.ListenAddress == queue1 {
 			     json.Unmarshal([]byte(msg), res)
-			     policy, err1 := policies.GetPolicy("bind")
-                 if err1 != nil {
-	               log.Error("Error: Policy :\n%s.", err1)
-	              }
+			     if res.Action == "bind policy" {
+			         policy, err1 := policies.GetPolicy("bind")
+                     if err1 != nil {
+	                   log.Error("Error: Policy :\n%s.", err1)
+	                  }
             
-                 asm, err := policies.GetAssembly(res.Id)
-	              if err!= nil {
-		              log.Error(err)
-	               }
+                     asm, err := policies.GetAssembly(res.Id)
+	                  if err!= nil {
+		                 log.Error(err)
+	                   }
             
-	               _, err2 := policy.Apply(asm)
-	                if err2 != nil {
-	                   log.Error("Error: Policy doesn't apply :\n%s.", err2)
-	                 }
+	                  _, err2 := policy.Apply(asm)
+	                   if err2 != nil {
+	                     log.Error("Error: Policy doesn't apply :\n%s.", err2)
+	                   }
 	               go app.RestartApp(asm)
-			  }
-			
-			queue2, _ := config.GetString("update_queue")
-			if self.ListenAddress == queue2 {
-			    coordinator.Handler(msg)
-			  }
+			  } else {
+		            //queue2, _ := config.GetString("update_queue")
+		            //	if self.ListenAddress == queue2 {
+			       coordinator.Handler(msg)
+			     //  }
+			}
 		}
 	log.Info("Handling message %v", msgChan)
 	self.chann = msgChan
 	
 	//self.Serve()
 }
-
+}
 
 
