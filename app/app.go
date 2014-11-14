@@ -78,3 +78,49 @@ func StopComponent(app *global.Component) error {
 	}
 	return nil
 }
+
+func RestartContainer(app *global.Component) error {
+	actions := []*action.Action{&restartContainer}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+
+func StartContainer(app *global.Component) error {
+	actions := []*action.Action{&startContainer}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func StopContainer(app *global.Component) error {
+	actions := []*action.Action{&stopContainer}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func LogFile(app *global.Component) error {
+	actions := []*action.Action{&logFile}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+

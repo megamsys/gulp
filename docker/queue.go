@@ -4,7 +4,7 @@ import (
 	"github.com/megamsys/libgo/amqp"
 	log "code.google.com/p/log4go"
 	//"github.com/megamsys/gulp/policies"
-	//"github.com/megamsys/gulp/coordinator"
+	"github.com/megamsys/gulp/coordinator"
 )
 
 type DockerQueueServer struct {
@@ -41,7 +41,7 @@ func (self *DockerQueueServer) ListenAndServe() {
 	msgChan, _ := pubsub.Sub()
 	for msg := range msgChan {
 		log.Info(" [x] %q", msg)
-		//coordinator.Handler(msg)
+		coordinator.Handler(msg)
 	}
 	log.Info("Handling message %v", msgChan)
 	self.chann = msgChan
