@@ -128,13 +128,13 @@ func Handler(chann []byte) {
 			return
 		}     
 		log.Info(com)
-		//c := geard.NewClient(geard_host, geard_port)
-		//_, gerr := c.Stop(com.Name)
-		//if gerr != nil { 
-		//	  log.Error(gerr)
-		//	  return 
-		//}
-		go app.LogFile(com)
+		c := geard.NewClient(geard_host, geard_port)
+		_, gerr := c.Stop(com.Name)
+		if gerr != nil { 
+			  log.Error(gerr)
+			  return 
+		}
+		//go app.LogFile(com)
 		break
 	case "containerrestart":
 	log.Debug("============container Restart entry======")
