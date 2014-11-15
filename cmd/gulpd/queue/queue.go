@@ -73,6 +73,7 @@ func (self *QueueServer) ListenAndServe() {
 	                   }
 	               go app.RestartApp(asm)
 			  } else {
+			  	log.Info("---------------else entry------------------")
 		            //queue2, _ := config.GetString("update_queue")
 		            //	if self.ListenAddress == queue2 {
 			       coordinator.Handler(msg)

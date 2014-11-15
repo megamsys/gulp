@@ -4,6 +4,7 @@ import (
 	log "code.google.com/p/log4go"
 	"encoding/json"
 	"github.com/megamsys/libgo/db"
+	"github.com/megamsys/libgo/geard"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 )
@@ -58,21 +59,23 @@ func Handler(chann []byte) error{
 	    		          mapC, _ = json.Marshal(com.Inputs)                
                           json.Unmarshal([]byte(string(mapC)), inputs)
                           
-                       //   psc, _ := getPredefClouds(requirements.Host)
-                       //   spec := PredefSpec{}
-                       //   mapP, _ := json.Marshal(psc.Spec)
-                       //   json.Unmarshal([]byte(string(mapP)), spec)   
+                          psc, _ := getPredefClouds(requirements.Host)
+                          spec := &global.PDCSpec{}
+                          mapP, _ := json.Marshal(psc.Spec)
+                          json.Unmarshal([]byte(string(mapP)), spec)   
                        
-                        //  jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
-                        //  js, _ := json.Marshal(jso) 
-			        	 // c := geard.NewClient("localhost", "43273")
-			        	//  _, err := c.Install(com.Name, string(js))
-			        	//  if err != nil { 
-			        	//    log.Error(err)
-			        	//    return err
-			        	//  }
-			        	   queueserver1 := NewServer(com.Name)
-		                   go queueserver1.ListenAndServe()
+                          jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
+                          js, _ := json.Marshal(jso) 
+			        	  c := geard.NewClient("localhost", "43273")
+			        	  _, err := c.Install(com.Name, string(js))
+			        	  if err != nil { 
+			        	    log.Error(err)
+			        	    return err
+			        	  }
+			        	//  fname := getFileName(com.Name)
+			        	//  go app.LogFile(com)
+			        	  // queueserver1 := NewServer(com.Name)
+		                 //  go queueserver1.ListenAndServe()
 			         }
                    }
 	    		}
