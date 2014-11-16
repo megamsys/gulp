@@ -181,6 +181,8 @@ type Assemblies struct {
    Assemblies     []string   `json:"assemblies"` 
    Inputs         *AssembliesInputs   `json:"inputs"` 
    CreatedAt      string   `json:"created_at"` 
+   ShipperArguments  string
+   Command string
    }
 
 type AssembliesInputs struct {

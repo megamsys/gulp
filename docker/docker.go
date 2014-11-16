@@ -3,10 +3,13 @@ package docker
 import (
 	log "code.google.com/p/log4go"
 	"encoding/json"
+	"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/geard"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
+	"github.com/megamsys/gulp/app"
+	"strings"
 )
 
 type Message struct {
@@ -26,6 +29,14 @@ func Handler(chann []byte) error{
 		log.Error("Error: Riak didn't cooperate:\n%s.", err)
 		return err
 	}
+	
+	_, gerr := config.GetString("geard:host")
+	if gerr != nil {
+		return gerr
+	}
+	s := strings.Split(gear, ":")
+    geard_host, geard_port := s[0], s[1]
+	
 	switch req.ReqType {
 	case "create":
 		assemblies := global.Assemblies{Id: req.NodeId}
@@ -34,6 +45,7 @@ func Handler(chann []byte) error{
 			log.Error("Error: Riak didn't cooperate:\n%s.", err)
 			return err
 		}
+		var shipperstr string
 		for i := range asm.Assemblies {
 			log.Debug("Assemblies: [%s]", asm.Assemblies[i])
 			if len(asm.Assemblies[i]) > 1 {
@@ -66,20 +78,20 @@ func Handler(chann []byte) error{
                        
                           jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
                           js, _ := json.Marshal(jso) 
-			        	  c := geard.NewClient("localhost", "43273")
+			        	  c := geard.NewClient(geard_host, geard_port)
 			        	  _, err := c.Install(com.Name, string(js))
-			        	  if err != nil { 
+			        	 if err != nil { 
 			        	    log.Error(err)
 			        	    return err
 			        	  }
-			        	//  fname := getFileName(com.Name)
-			        	//  go app.LogFile(com)
-			        	  // queueserver1 := NewServer(com.Name)
-		                 //  go queueserver1.ListenAndServe()
+			        	  shipperstr += " -c "+ com.Name 
 			         }
                    }
 	    		}
 	    	}
+		   asm.ShipperArguments = shipperstr
+		   go app.Shipper(asm)
+		   break
 		}
 	return nil
 }
