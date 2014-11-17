@@ -16,6 +16,8 @@ import (
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
+	"net"
+	"net/url"
 )
 
 const (
@@ -102,10 +104,65 @@ func Checker() {
 	
 }
 
-func updateStatus() {
+/*func updateStatus() {
 	path, _ := config.GetString("etcd:path")
 	c := etcd.NewClient(path+"/")
 	conn, connerr := c.Dial("tcp", "127.0.0.1:4001")
+    log.Debug("client %v", c)
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    
+    if conn != nil {
+	dir, _ := config.GetString("etcd:directory")
+	id, _ := config.GetString("id")
+	name, _ := config.GetString("name")
+	mapD := map[string]string{"id": id, "status": "RUNNING"}
+    mapB, _ := json.Marshal(mapD)
+   	
+   	log.Info(c)
+   	log.Info(name)
+   	log.Info(dir)
+   	log.Info(mapB)
+   	
+	//c := etcd.NewClient(nil)
+	_, err := c.Create("/"+dir+"/"+name, string(mapB))
+  
+	if err != nil {
+		log.Error("===========",err)
+	}
+   } else {
+  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
+         os.Exit(1)
+  }
+}*/
+
+func updateStatus() {
+	path, _ := config.GetString("etcd:path")
+	c := etcd.NewClient([]string{path})
+	success := c.SyncCluster()
+	if !success {
+		log.Debug("cannot sync machines")
+	}
+
+	for _, m := range c.GetCluster() {
+		u, err := url.Parse(m)
+		if err != nil {
+			log.Debug(err)
+		}
+		if u.Scheme != "http" {
+			log.Debug("scheme must be http")
+		}
+
+		host, _, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			log.Debug(err)
+		}
+		if host != "127.0.0.1" {
+			log.Debug("Host must be 127.0.0.1")
+		}
+	}
+	etcdNetworkPath, _ := config.GetString("etcd:networkpath")
+    conn, connerr := c.Dial("tcp", etcdNetworkPath)
     log.Debug("client %v", c)
     log.Debug("connection %v", conn)
     log.Debug("connection error %v", connerr)
