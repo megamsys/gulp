@@ -30,7 +30,7 @@ func Handler(chann []byte) error{
 		return err
 	}
 	
-	_, gerr := config.GetString("geard:host")
+	gear, gerr := config.GetString("geard:host")
 	if gerr != nil {
 		return gerr
 	}
