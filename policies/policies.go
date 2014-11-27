@@ -12,14 +12,21 @@ type Policy struct {
 	Members   []string `json:"members"`
 }
 
+type Output struct {
+	Key     string   `json:"key"`
+	Value   string   `json:"value"`
+}
+
 type Assembly struct {
    Id             string    `json:"id"` 
    JsonClaz       string   `json:"json_claz"` 
    Name           string   `json:"name"` 
    Components     []string   `json:"components"` 
    Policies       []*Policy   `json:"policies"`
-   inputs         string    `json:"inputs"`
-   operations     string    `json:"operations"` 
+   Inputs         string    `json:"inputs"`
+   Operations     string    `json:"operations"` 
+   Outputs        []*Output  `json:"outputs"`
+   Status         string    `json:"status"`
    CreatedAt      string   `json:"created_at"` 
    }
 
@@ -30,6 +37,7 @@ type AssemblyResult struct {
    Policies       []*Policy         `json:"policies"`
    inputs         string            `json:"inputs"`
    operations     string            `json:"operations"` 
+   status         string            `json:"status"`
    Command        string
    CreatedAt      string            `json:"created_at"` 
    }

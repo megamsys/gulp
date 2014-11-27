@@ -16,6 +16,7 @@ import (
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
+	"github.com/megamsys/gulp/policies"
 	"net"
 	"net/url"
 )
@@ -152,7 +153,7 @@ func updateStatus() {
 		if u.Scheme != "http" {
 			log.Debug("scheme must be http")
 		}
-
+        log.Info(u.Host)
 		host, _, err := net.SplitHostPort(u.Host)
 		if err != nil {
 			log.Debug(err)
@@ -172,12 +173,8 @@ func updateStatus() {
 	id, _ := config.GetString("id")
 	name, _ := config.GetString("name")
 	mapD := map[string]string{"id": id, "status": "RUNNING"}
-    mapB, _ := json.Marshal(mapD)
-   	
-   	log.Info(c)
-   	log.Info(name)
-   	log.Info(dir)
-   	log.Info(mapB)
+    mapB, _ := json.Marshal(mapD)	
+  
    	
 	//c := etcd.NewClient(nil)
 	_, err := c.Create("/"+dir+"/"+name, string(mapB))
@@ -185,6 +182,10 @@ func updateStatus() {
 	if err != nil {
 		log.Error("===========",err)
 	}
+	
+	aid, _ := config.GetString("id")
+	UpdateRiakStatus(aid)
+	
    } else {
   	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
          os.Exit(1)
@@ -195,6 +196,35 @@ func updateStatus() {
 func Watcher(queue_name string) {    
 	    queueserver1 := queue.NewServer(queue_name)
 		go queueserver1.ListenAndServe()
+}
+
+func UpdateRiakStatus(id string) error {
+	asm := &policies.Assembly{}
+	conn, err := db.Conn("assembly")
+	if err != nil {	
+		return err
+	}	
+	//appout := &Requests{}
+	ferr := conn.FetchStruct(id, asm)
+	if ferr != nil {	
+		return ferr
+	}	
+	
+	update := policies.Assembly{
+		Id:           asm.Id, 
+        JsonClaz:      asm.JsonClaz, 
+        Name:          asm.Name, 
+        Components:    asm.Components ,
+        Policies:      asm.Policies,
+        Inputs:        asm.Inputs,
+        Operations:    asm.Operations,
+        Outputs:       asm.Outputs,
+        Status:        "Running",
+        CreatedAt:     asm.CreatedAt,
+	}
+	err = conn.StoreStruct(asm.Id, &update)
+	
+	return err
 }
 
 

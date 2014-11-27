@@ -30,6 +30,7 @@ const (
 )
 
 const defaultConfigPath = "conf/gulpd.conf"
+//const defaultConfigPath = "/root/megam/conf/gulpd.conf"
 
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)

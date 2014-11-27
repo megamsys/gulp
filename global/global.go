@@ -176,8 +176,8 @@ func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
 type Assemblies struct {
    Id             string    `json:"id"` 
    AccountsId     string    `json:"accounts_id"`
-   JsonClaz       string   `json:"json_claz"` 
-   Name           string   `json:"name"` 
+   JsonClaz       string    `json:"json_claz"` 
+   Name           string    `json:"name"` 
    Assemblies     []string   `json:"assemblies"` 
    Inputs         *AssembliesInputs   `json:"inputs"` 
    CreatedAt      string   `json:"created_at"` 
