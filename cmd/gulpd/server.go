@@ -1,21 +1,29 @@
 package main
 
 import (
-	"github.com/indykish/gulp/amqp"
-	"github.com/indykish/gulp/app"
-	"log"
+    "github.com/tsuru/config"
+    "github.com/megamsys/libgo/etcd"
+    log "code.google.com/p/log4go"
 	"os"
+	"encoding/json"
 	"os/signal"
-	"strings"
 	"regexp"
-	"sync"
 	"syscall"
 	"time"
+	"fmt"
+	"github.com/megamsys/gulp/policies/bind"
+	"github.com/megamsys/libgo/amqp"
+	"github.com/megamsys/libgo/db"
+	"github.com/megamsys/gulp/cmd/gulpd/queue"
+	"github.com/megamsys/gulp/policies/ha"
+	"github.com/megamsys/gulp/policies"
+	"net"
+	"net/url"
 )
 
 const (
 	// queue actions
-	runningApp = "running"	
+	runningApp = "running"
 	startApp   = "start"
 	stopApp    = "stop"
 	buildApp   = "build"
@@ -25,191 +33,198 @@ const (
 )
 
 var (
-	qfactory      amqp.QFactory
-	_queue        amqp.Q
-	_handler      amqp.Handler
-	o             sync.Once
 	signalChannel chan<- os.Signal
 	nameRegexp    = regexp.MustCompile(`^[a-z][a-z0-9-]{0,62}$`)
 )
 
+func init() {
+	bind.Init()
+	ha.Init()
+}
+
 func RunServer(dry bool) {
-	log.Printf("Gulpd starting at %s", time.Now())
+	log.Info("Gulpd starting at %s", time.Now())
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
-	handler().Start()
-	log.Printf("Gulpd at your service.")
+//	handler().Start() 
+    Checker()
+    name, _ := config.GetString("name")
+    Watcher(name)
+    
+    updatename, _ := config.GetString("update_queue")
+   Watcher(updatename)
+    
+    docker, _ := config.GetString("docker_queue")
+   Watcher(docker)
+    
+	log.Info("Gulpd at your service.")
+	updateStatus()
 	<-signalChannel
-	log.Println("Gulpd killed |_|.")
+	log.Info("Gulpd killed |_|.")
 }
 
 func StopServer(bark bool) {
-	log.Printf("Gulpd stopping at %s", time.Now())
-	handler().Stop()
+	log.Info("Gulpd stopping at %s", time.Now())
+	//handler().Stop()
 	close(signalChannel)
-	log.Println("Gulpd finished |-|.")
+	log.Info("Gulpd finished |-|.")
 }
 
-func setQueue() {
-	var err error
-	qfactory, err = amqp.Factory()
-
+func Checker() {
+	log.Info("Dialing Rabbitmq.......")
+	factor, err := amqp.Factory()
 	if err != nil {
-		log.Fatalf("Failed to get the queue instance: %s", err)
+		log.Error("Failed to get the queue instance: %s", err)
 	}
-	_handler, err = qfactory.Handler(handle, queueName)
+	
+	conn, connerr := factor.Dial()
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    if connerr != nil {
+    	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start Rabbitmq service.\n", connerr)
+         os.Exit(1)
+    }
+    log.Info("Rabbitmq connected")
+    
+    log.Info("Dialing Riak.......")
+ 
+	 rconn, rerr := db.Conn("connection")
+	 if rerr != nil {
+		 fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", connerr)
+         os.Exit(1)
+	 }
+
+	 data := "sampledata"
+	 ferr := rconn.StoreObject("sampleobject", data)
+	 if ferr != nil {
+	 	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", ferr)
+         os.Exit(1)
+	 }
+	 defer rconn.Close()
+    log.Info("Riak connected")
+	
+}
+
+/*func updateStatus() {
+	path, _ := config.GetString("etcd:path")
+	c := etcd.NewClient(path+"/")
+	conn, connerr := c.Dial("tcp", "127.0.0.1:4001")
+    log.Debug("client %v", c)
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    
+    if conn != nil {
+	dir, _ := config.GetString("etcd:directory")
+	id, _ := config.GetString("id")
+	name, _ := config.GetString("name")
+	mapD := map[string]string{"id": id, "status": "RUNNING"}
+    mapB, _ := json.Marshal(mapD)
+   	
+   	log.Info(c)
+   	log.Info(name)
+   	log.Info(dir)
+   	log.Info(mapB)
+   	
+	//c := etcd.NewClient(nil)
+	_, err := c.Create("/"+dir+"/"+name, string(mapB))
+  
 	if err != nil {
-		log.Fatalf("Failed to create the queue handler: %s", err)
+		log.Error("===========",err)
+	}
+   } else {
+  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
+         os.Exit(1)
+  }
+}*/
+
+func updateStatus() {
+	path, _ := config.GetString("etcd:path")
+	c := etcd.NewClient([]string{path})
+	success := c.SyncCluster()
+	if !success {
+		log.Debug("cannot sync machines")
 	}
 
-	_queue, err = qfactory.Get(queueName)
-
+	for _, m := range c.GetCluster() {
+		u, err := url.Parse(m)
+		if err != nil {
+			log.Debug(err)
+		}
+		if u.Scheme != "http" {
+			log.Debug("scheme must be http")
+		}
+        log.Info(u.Host)
+		host, _, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			log.Debug(err)
+		}
+		if host != "127.0.0.1" {
+			log.Debug("Host must be 127.0.0.1")
+		}
+	}
+	etcdNetworkPath, _ := config.GetString("etcd:networkpath")
+    conn, connerr := c.Dial("tcp", etcdNetworkPath)
+    log.Debug("client %v", c)
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    
+    if conn != nil {
+	dir, _ := config.GetString("etcd:directory")
+	id, _ := config.GetString("id")
+	name, _ := config.GetString("name")
+	mapD := map[string]string{"id": id, "status": "RUNNING"}
+    mapB, _ := json.Marshal(mapD)	
+  
+   	
+	//c := etcd.NewClient(nil)
+	_, err := c.Create("/"+dir+"/"+name, string(mapB))
+  
 	if err != nil {
-		log.Fatalf("Failed to get the queue instance: %s", err)
+		log.Error("===========",err)
 	}
+	
+	aid, _ := config.GetString("id")
+	UpdateRiakStatus(aid)
+	
+   } else {
+  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
+         os.Exit(1)
+  }
 }
 
-func aqueue() amqp.Q {
-	o.Do(setQueue)
-	return _queue
+
+func Watcher(queue_name string) {    
+	    queueserver1 := queue.NewServer(queue_name)
+		go queueserver1.ListenAndServe()
 }
 
-func handler() amqp.Handler {
-	o.Do(setQueue)
-	return _handler
-}
-
-
-// handle is the function called by the queue handler on each message.
-//This is getting bulky. We need to move it out to apps and others.
-func handle(msg *amqp.Message) {
-	log.Printf("Handling message %v", msg)
-
-	switch strings.ToLower(msg.Action) {
-	case restartApp:
-		if len(msg.Args) < 1 {
-			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-		}
-		//stick the id from msg.
-		ap := app.App{Name: "myapp", Id: "RIPAB"}
-
-		if err := ap.Get(msg.Id); err != nil {
-			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
-			return
-		}
-				
-		log.Printf("Handling message %#v", ap.GetAppReqs())
-		err := app.StopApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. App failed to stop:\n%s.", msg.Action, err)
-			return
-		}
-		
-		err = app.StartApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
-			return
-		}
-
-		msg.Delete()
-		break
-	case startApp:
-		if len(msg.Args) < 1 {
-			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-		}
-		//stick the id from msg.
-		ap := app.App{Name: "myapp", Id: "RIPAB"}
-
-		if err := ap.Get(msg.Id); err != nil {
-			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
-			return
-		}
-		log.Printf("Handling message %#v", ap.GetAppReqs())
-		err := app.StartApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. App failed to start:\n%s.", msg.Action, err)
-			return
-		}
-		msg.Delete()
-		break
-	case stopApp:
-		if len(msg.Args) < 1 {
-			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-		}
-		//stick the id from msg.
-		ap := app.App{Name: "myapp", Id: "RIPAB"}
-
-		if err := ap.Get(msg.Id); err != nil {
-			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
-			return
-		}
-		log.Printf("Handling message %#v", ap.GetAppReqs())
-		err := app.StopApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. App failed to stop:\n%s.", msg.Action, err)
-			return
-		}
-
-		msg.Delete()
-		break	
-	case buildApp:
-		if len(msg.Args) < 1 {
-			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-		}
-		//stick the id from msg.
-		ap := app.App{Name: "myapp", Id: "RIPAB"}
-
-		if err := ap.Get(msg.Id); err != nil {
-			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
-			return
-		}
-		log.Printf("Handling message %#v", ap.GetAppReqs())
-		err := app.BuildApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. App failed to build:\n%s.", msg.Action, err)
-			return
-		}
-
-		msg.Delete()
-		break
-	case runningApp:
-		if len(msg.Args) < 1 {
-			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-		}
-		//stick the i
-		ap := app.App{Name: msg.Id, Id: "RIPAB"}
-
-		log.Printf("Handling message %#v", ap.Name)
-		err := app.LaunchedApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. App failed to launch:\n%s.", msg.Action, err)
-			return
-		}
-
-		msg.Delete()
-		break	
-    case addonApp: 
-       if len(msg.Args) < 1 {
-			log.Printf("Error handling %q: this action requires at least 1 argument.", msg.Action)
-		}
-		ap := app.App{Name: "myapp", Id: "RIPAB", Type: "addon"}
-		
-		if err := ap.Get(msg.Id); err != nil {
-			log.Printf("Error handling %q: Riak didn't cooperate:\n%s.", msg.Action, err)
-			return
-		}
-		
-		log.Printf("Handling message %#v", ap.GetAppConf())
-		err := app.AddonApp(&ap)
-		if err != nil {
-			log.Printf("Error handling %q. Addon failed to App:\n%s.", msg.Action, err)
-			return
-		}
-		msg.Delete()
-		break	
-		
-	default:
-		log.Printf("Error handling %q: invalid action.", msg.Action)
-		msg.Delete()
+func UpdateRiakStatus(id string) error {
+	asm := &policies.Assembly{}
+	conn, err := db.Conn("assembly")
+	if err != nil {	
+		return err
+	}	
+	//appout := &Requests{}
+	ferr := conn.FetchStruct(id, asm)
+	if ferr != nil {	
+		return ferr
+	}	
+	
+	update := policies.Assembly{
+		Id:           asm.Id, 
+        JsonClaz:      asm.JsonClaz, 
+        Name:          asm.Name, 
+        Components:    asm.Components ,
+        Policies:      asm.Policies,
+        Inputs:        asm.Inputs,
+        Operations:    asm.Operations,
+        Outputs:       asm.Outputs,
+        Status:        "Running",
+        CreatedAt:     asm.CreatedAt,
 	}
+	err = conn.StoreStruct(asm.Id, &update)
+	
+	return err
 }
+
+

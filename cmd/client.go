@@ -8,12 +8,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"github.com/megamsys/libgo/cmd"
 )
 
 type Client struct {
 	HTTPClient     *http.Client
 	context        *Context
-	Authly         *Authly
+	Authly         *cmd.Authly
 	progname       string
 	currentVersion string
 	versionHeader  string
@@ -23,7 +24,7 @@ func NewClient(client *http.Client, context *Context, manager *Manager) *Client 
 	return &Client{
 		HTTPClient:     client,
 		context:        context,
-		Authly:         &Authly{},
+		Authly:         &cmd.Authly{},
 		progname:       manager.name,
 		currentVersion: manager.version,
 		versionHeader:  manager.versionHeader,
@@ -79,34 +80,5 @@ and download the last version.
 	}
 	return response, nil
 
-	/*
-			import (
-		    "bytes"
-		    "fmt"
-		    "net/http"
-		    "net/url"
-		)
-
-		func main() {
-		    apiUrl := "https://api.com"
-		    resource := "/user/"
-		    data := url.Values{}
-		    data.Set("name", "foo")
-		    data.Add("surname", "bar")
-
-		    u, _ := url.ParseRequestURI(apiUrl)
-		    u.Path = resource
-		    urlStr := fmt.Sprintf("%v", u) // "https://api.com/user/"
-
-		    client := &http.Client{}
-		    r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode())) // <-- URL-encoded payload
-		    r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
-		    r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		    r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-		    resp, _ := client.Do(r)
-		    fmt.Println(resp.Status)
-		}
-	*/
-
+	
 }

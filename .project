@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>gulpd</name>
+	<comment>I luv bud weiser, heineken, kingfisher</comment>
+	<projects>
+	</projects>
+	<buildSpec>
+	</buildSpec>
+	<natures>
+		<nature>goclipse.goNature</nature>
+	</natures>
+</projectDescription>

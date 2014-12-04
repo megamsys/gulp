@@ -17,7 +17,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/indykish/gulp/cmd"
+	"github.com/megamsys/libgo/cmd"
 	"github.com/tsuru/config"
 	"log"
 	"os"
@@ -30,15 +30,16 @@ const (
 )
 
 const defaultConfigPath = "conf/gulpd.conf"
+//const defaultConfigPath = "/root/megam/conf/gulpd.conf"
 
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
 	m.Register(&GulpStart{m, nil, false}) //start the gulpd daemon
 	m.Register(&GulpStop{})               //stop  the gulpd daemon
 	m.Register(&GulpUpdate{})             //stop  the gulpd daemon
-	m.Register(&AppStart{})               //sudo service <appname> start
+	/*m.Register(&AppStart{})               //sudo service <appname> start
 	m.Register(&AppStop{})                //sudo service <appname> stop
-	/*m.Register(&AppRestart{}) //sudo service <apppname> restart
+	m.Register(&AppRestart{}) //sudo service <apppname> restart
 	m.Register(&AppBuild{})   //git fetch -q
 	m.Register(&gulp.AppMaintain{})//sudo service nginx maintain ?
 	m.Register(&gulp.SSLAdd{})     //download node_name.pub, crt from S3, mk ssl_template, cp to sites_available, ln to sites_enabled. && AppRestart

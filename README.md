@@ -1,48 +1,48 @@
+====================
 Gulpd
 =================
 
-Gulpd is a node daemon for megam cloud. Builders supported are sbt, mvn, npm, bundler). 
-
-* `sbt `
-* `mvn`
-* `bundler`
-* `npm`
-
+Gulpd is a agent for Megam PaaS 
 
 ### Requirements
 
 > 
-[Golang 1.2o > +](http://www.golang.org)
-
-#### Tested on Ubuntu 13.04, AWS - EC2, GCE
-
+[Golang 1.4 > +](http://www.golang.org/dl)
 
 
 ## Usage
 
-gulpd start 
+``gulpd start`` 
  
-gulpd start
+
+### Compile from source 
 
 
-###
+```
+mkdir -p code/megam/go/src/github.com/megamsys
 
+cd code/megam/go/src/github.com/megamsys
 
+git clone https://github.com/megamsys/gulp.git
 
-### Prepare your program
+cd gulp
 
+make
 
-   
+```
+  
+
+### Documentation
+
+Refer [documentation] (http://www.gomegam.com/docs)
+
 
 
 We are glad to help if you have questions, or request for new features..
 
-[twitter](http://twitter.com/indykish) [email](<rajthilak@megam.co.in>)
+[twitter @megamsys](http://twitter.com/megamsys) [email support@megam.co.in](<support@megam.co.in>)
 
-#### TO - DO
 
-* 
-* 
 
 	
 # License
@@ -51,8 +51,8 @@ We are glad to help if you have questions, or request for new features..
 |                      |                                          |
 |:---------------------|:-----------------------------------------|
 | **Author:**          | Rajthilak (<rajthilak@megam.co.in>)
-|		               | KishorekumarNeelamegam (<nkishore@megam.co.in>)
-| **Copyright:**       | Copyright (c) 2012-2013 Megam Systems.
+| 	                   | KishorekumarNeelamegam (<nkishore@megam.co.in>)
+| **Copyright:**       | Copyright (c) 2012-2014 Megam Systems.
 | **License:**         | Apache License, Version 2.0
 
 Licensed under the Apache License, Version 2.0 (the "License");
