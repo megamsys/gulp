@@ -40,7 +40,7 @@ type Component struct {
 	Name                       string `json:"name"`
 	ToscaType                  string `json:"tosca_type"`
 	Requirements               *ComponentRequirements
-	Inputs                     *CompomentInputs
+	Inputs                     *ComponentInputs
 	ExternalManagementResource string
 	Artifacts                  *Artifacts
 	RelatedComponents          string
@@ -51,11 +51,11 @@ type Component struct {
 
 func (asm *Component) Get(asmId string) (*Component, error) {
     log.Info("Get Component message %v", asmId)
+   // asm := &Component{}
     conn, err := db.Conn("components")
 	if err != nil {	
 		return asm, err
 	}	
-	//appout := &Requests{}
 	ferr := conn.FetchStruct(asmId, asm)
 	if ferr != nil {	
 		return asm, ferr
@@ -72,7 +72,7 @@ type ComponentRequirements struct {
 	Dummy string `json:"dummy"`
 }
 
-type CompomentInputs struct {
+type ComponentInputs struct {
 	Domain        string `json:"domain"`
 	Port          string `json:"port"`
 	UserName      string `json:"username"`

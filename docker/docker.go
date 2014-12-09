@@ -58,16 +58,16 @@ func Handler(chann []byte) error{
 		              return asmerr
 	               }				
 	    		   for c := range asm.Components {
-	    		       com := &policies.Component{}
+	    		       com := &global.Component{}
 	    		       mapB, _ := json.Marshal(asm.Components[c])                
                        json.Unmarshal([]byte(string(mapB)), com)
                       
                        if com.Name != "" {
-                          requirements := &policies.ComponentRequirements{}
+                          requirements := &global.ComponentRequirements{}
 	    		          mapC, _ := json.Marshal(com.Requirements)                
                           json.Unmarshal([]byte(string(mapC)), requirements)
                           
-                          inputs := &policies.ComponentInputs{}
+                          inputs := &global.ComponentInputs{}
 	    		          mapC, _ = json.Marshal(com.Inputs)                
                           json.Unmarshal([]byte(string(mapC)), inputs)
                           

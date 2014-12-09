@@ -15,8 +15,8 @@ import (
 	"bufio"
 )
 
-func CommandExecutor(app *policies.AssemblyResult) (action.Result, error) {
-	 var e exec.OsExecutor
+func CommandExecutor(command string, app *policies.AssemblyResult) (action.Result, error) {
+	/* var e exec.OsExecutor
     var commandWords []string
 
     commandWords = strings.Fields(app.Command)
@@ -63,7 +63,20 @@ func CommandExecutor(app *policies.AssemblyResult) (action.Result, error) {
 			fmt.Println(err)
 			return nil, err
 		}
-	}
+	}*/
+	
+	for i := range app.Components {
+		  ctype := strings.Split(app.Components[i].ToscaType, ".")
+		  if command != "restart" {			   	
+		      app.Components[i].Command = command + " " + ctype[2]
+		   } else {
+		   	  app.Components[i].Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
+		   }
+		   _, err := ComponentCommandExecutor(app.Components[i])
+		   if err != nil {
+		   	 return nil, err
+		   }
+		}
 
 	return &app, nil
 }
@@ -187,8 +200,7 @@ var restartApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
 		}
-       
-		return CommandExecutor(&app)
+		return CommandExecutor("restart", &app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -208,8 +220,7 @@ var startApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
 		}
-       
-		return CommandExecutor(&app)
+		return CommandExecutor("start", &app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -230,7 +241,7 @@ var stopApp = action.Action{
 			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
 		}
        
-		return CommandExecutor(&app)
+		return CommandExecutor("stop", &app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -250,7 +261,8 @@ var restartComponent = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-       
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -271,7 +283,8 @@ var startComponent = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-       
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "start " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -292,7 +305,8 @@ var stopComponent = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-       
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "stop " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
