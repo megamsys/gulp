@@ -6,6 +6,7 @@ import (
 	"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/geard"
+	"github.com/megamsys/libgo/dockerapi"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
@@ -84,10 +85,26 @@ func Handler(chann []byte) error{
 			        	    log.Error(err)
 			        	    return err
 			        	  }
-			        	 _,starterr := c.Start(com.Name)
-			        	 if starterr != nil {
-			        	 	 log.Error(starterr)
-			        	 	 return starterr
+			        	 
+			        	 res,listerr := c.List(com.Name)
+			 //need to add a struct and call one value from th returned json to validate 
+			        	 if res    {
+			        	    _,starterr := c.Start(com.Name)
+			        	   if starterr != nil {
+			        	   	  log.Error(starterr)
+			        	   	  return starterr
+			        	   	}    
+			        	      return res
+			        	    }
+			        	 else if listerr != nil {
+			        	 	   log.Error(listerr)
+			        	 	   return listerr
+			        	 	   }
+			        	 else {
+			        	 	log.Error("Images did not get pulled")
+			        	 	
+			        	 	}
+			        	 
 			        	 }
 			        	  shipperstr += " -c "+ com.Name 
 			         }
