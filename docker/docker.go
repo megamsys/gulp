@@ -84,6 +84,11 @@ func Handler(chann []byte) error{
 			        	    log.Error(err)
 			        	    return err
 			        	  }
+			        	 _,starterr := c.Start(com.Name)
+			        	 if starterr != nil {
+			        	 	 log.Error(starterr)
+			        	 	 return starterr
+			        	 }
 			        	  shipperstr += " -c "+ com.Name 
 			         }
                    }
