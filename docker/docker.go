@@ -6,7 +6,12 @@ import (
 	"encoding/json"
 	//"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
+<<<<<<< HEAD
 	//"github.com/megamsys/libgo/geard"
+=======
+	"github.com/megamsys/libgo/geard"
+	"github.com/megamsys/libgo/dockerapi"
+>>>>>>> master/master
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
@@ -92,10 +97,12 @@ func Handler(chann []byte) error{
 			        	    return err
 			        	  }
 			        	 
+
  fmt.Println("-----------============================-----------")			        	
 			        	 
                   
 			        	 
+
 			        	  shipperstr += " -c "+ com.Name 
 			         }
                    }
