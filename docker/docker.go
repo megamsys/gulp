@@ -4,14 +4,7 @@ import (
 	"fmt"
 	log "code.google.com/p/log4go"
 	"encoding/json"
-	//"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
-<<<<<<< HEAD
-	//"github.com/megamsys/libgo/geard"
-=======
-	"github.com/megamsys/libgo/geard"
-	"github.com/megamsys/libgo/dockerapi"
->>>>>>> master/master
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
