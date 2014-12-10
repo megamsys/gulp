@@ -1,15 +1,17 @@
 package docker
 
 import (
+	"fmt"
 	log "code.google.com/p/log4go"
 	"encoding/json"
-	"github.com/tsuru/config"
+	//"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/libgo/geard"
+	//"github.com/megamsys/libgo/geard"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
-	"strings"
+	"github.com/fsouza/go-dockerclient"
+	//"strings"
 )
 
 type Message struct {
@@ -30,13 +32,14 @@ func Handler(chann []byte) error{
 		return err
 	}
 	
-	gear, gerr := config.GetString("geard:host")
+	/*gear, gerr := config.GetString("geard:host")
 	if gerr != nil {
 		return gerr
 	}
+	
 	s := strings.Split(gear, ":")
     geard_host, geard_port := s[0], s[1]
-	
+	*/
 	switch req.ReqType {
 	case "create":
 		assemblies := global.Assemblies{Id: req.NodeId}
@@ -76,19 +79,23 @@ func Handler(chann []byte) error{
                           mapP, _ := json.Marshal(psc.Spec)
                           json.Unmarshal([]byte(string(mapP)), spec)   
                        
-                          jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
-                          js, _ := json.Marshal(jso) 
-			        	  c := geard.NewClient(geard_host, geard_port)
-			        	  _, err := c.Install(com.Name, string(js))
+                          jso := &docker.Config{Image: inputs.Source}
+                          
+                          
+                          opts := docker.CreateContainerOptions{Name: com.Name, Config: jso}
+                          endpoint := "unix:///var/run/docker.sock"
+			        	  c,_ := docker.NewClient(endpoint)
+			        	  _, err := c.CreateContainer(opts)
+			        	 
 			        	 if err != nil { 
 			        	    log.Error(err)
 			        	    return err
 			        	  }
-			        	 _,starterr := c.Start(com.Name)
-			        	 if starterr != nil {
-			        	 	 log.Error(starterr)
-			        	 	 return starterr
-			        	 }
+			        	 
+ fmt.Println("-----------============================-----------")			        	
+			        	 
+                  
+			        	 
 			        	  shipperstr += " -c "+ com.Name 
 			         }
                    }
