@@ -142,17 +142,19 @@ func createContainer(com *global.Component) error {
 
     config := docker.Config{Image: "gomegam/megamgateway:0.5.0"}
 	copts := docker.CreateContainerOptions{Name: "redis", Config: &config}
-	container, conerr := client.CreateContainer(copts)
+	cont, conerr := client.CreateContainer(copts)
     fmt.Println("++++++++++++++++++++++++++++++++++++++++++++")
-    fmt.Println(container)
+     container := &docker.Container{}
+     mapP, _ := json.Marshal(cont)
+     json.Unmarshal([]byte(string(mapP)), container) 
 	if conerr != nil {
 	     log.Error(conerr)
-	}
-	
+	} 
+	fmt.Println(container.ID)
 	serr := client.StartContainer(container.ID, &docker.HostConfig{})
 	if serr != nil {
 		log.Error(serr)
-	}
+	} 
 	   
     contt, _ := client.ListContainers(docker.ListContainersOptions{})
     fmt.Println("--------------------------");
