@@ -3,13 +3,16 @@ package docker
 import (
 	log "code.google.com/p/log4go"
 	"encoding/json"
-	"github.com/tsuru/config"
+//	"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/libgo/geard"
+//	"github.com/megamsys/libgo/geard"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
+	"github.com/fsouza/go-dockerclient"
 	"strings"
+	"fmt"
+	"bytes"
 )
 
 type Message struct {
@@ -30,12 +33,12 @@ func Handler(chann []byte) error{
 		return err
 	}
 	
-	gear, gerr := config.GetString("geard:host")
-	if gerr != nil {
-		return gerr
-	}
-	s := strings.Split(gear, ":")
-    geard_host, geard_port := s[0], s[1]
+	//gear, gerr := config.GetString("geard:host")
+	//if gerr != nil {
+	//	return gerr
+	//}
+	//s := strings.Split(gear, ":")
+   // geard_host, geard_port := s[0], s[1]
 	
 	switch req.ReqType {
 	case "create":
@@ -78,7 +81,8 @@ func Handler(chann []byte) error{
                        
                           jso := &policies.DockerJSON{Image: inputs.Source, Started: true }
                           js, _ := json.Marshal(jso) 
-			        	  c := geard.NewClient(geard_host, geard_port)
+			        	  fmt.Println(js)
+			        	/*  c := geard.NewClient(geard_host, geard_port)
 			        	  _, err := c.Install(com.Name, string(js))
 			        	 if err != nil { 
 			        	    log.Error(err)
@@ -88,7 +92,9 @@ func Handler(chann []byte) error{
 			        	 if starterr != nil {
 			        	 	 log.Error(starterr)
 			        	 	 return starterr
-			        	 }
+			        	 } */
+			        	
+			        	  go createContainer(com)
 			        	  shipperstr += " -c "+ com.Name 
 			         }
                    }
@@ -116,4 +122,41 @@ func getPredefClouds(id string) (*global.PredefClouds, error) {
 	return pre, nil
 }
 
+func createContainer(com *global.Component) error {
+	endpoint := "unix:///var/run/docker.sock"
+	client, _ := docker.NewClient(endpoint)
+                        
+    var buf bytes.Buffer
+    source := strings.Split(com.Inputs.Source, ":")
+    
+	opts := docker.PullImageOptions{
+	                    Repository:   source[0],
+	                    Registry:     "",
+	                    Tag:          source[1],
+	                    OutputStream: &buf,
+	                   }
+	pullerr := client.PullImage(opts, docker.AuthConfiguration{})
+	if pullerr != nil {
+	     log.Error(pullerr)
+    }
+
+    config := docker.Config{Image: "gomegam/megamgateway:0.5.0"}
+	copts := docker.CreateContainerOptions{Name: "redis", Config: &config}
+	container, conerr := client.CreateContainer(copts)
+    fmt.Println("++++++++++++++++++++++++++++++++++++++++++++")
+    fmt.Println(container)
+	if conerr != nil {
+	     log.Error(conerr)
+	}
+	
+	serr := client.StartContainer(container.ID, &docker.HostConfig{})
+	if serr != nil {
+		log.Error(serr)
+	}
+	   
+    contt, _ := client.ListContainers(docker.ListContainersOptions{})
+    fmt.Println("--------------------------");
+    fmt.Println(contt)	
+    return nil
+}
 
