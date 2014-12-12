@@ -16,8 +16,10 @@ import (
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
-	"github.com/megamsys/gulp/policies"
+	"github.com/megamsys/gulp/docker"
+	"github.com/megamsys/gulp/global"
 	"net"
+	"strings"
 	"net/url"
 )
 
@@ -58,7 +60,11 @@ func RunServer(dry bool) {
    Watcher(docker)
     
 	log.Info("Gulpd at your service.")
-	updateStatus()
+	id, _ := config.GetString("id")
+	dir, _ := config.GetString("etcd:directory")
+	global.UpdateStatus(dir, id, name, "")
+	global.UpdateRiakStatus(id)
+	EtcdWatcher()
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
 }
@@ -105,41 +111,17 @@ func Checker() {
 	
 }
 
-/*func updateStatus() {
-	path, _ := config.GetString("etcd:path")
-	c := etcd.NewClient(path+"/")
-	conn, connerr := c.Dial("tcp", "127.0.0.1:4001")
-    log.Debug("client %v", c)
-    log.Debug("connection %v", conn)
-    log.Debug("connection error %v", connerr)
-    
-    if conn != nil {
-	dir, _ := config.GetString("etcd:directory")
-	id, _ := config.GetString("id")
-	name, _ := config.GetString("name")
-	mapD := map[string]string{"id": id, "status": "RUNNING"}
-    mapB, _ := json.Marshal(mapD)
-   	
-   	log.Info(c)
-   	log.Info(name)
-   	log.Info(dir)
-   	log.Info(mapB)
-   	
-	//c := etcd.NewClient(nil)
-	_, err := c.Create("/"+dir+"/"+name, string(mapB))
-  
-	if err != nil {
-		log.Error("===========",err)
-	}
-   } else {
-  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
-         os.Exit(1)
-  }
-}*/
 
-func updateStatus() {
-	path, _ := config.GetString("etcd:path")
-	c := etcd.NewClient([]string{path})
+func Watcher(queue_name string) {    
+	    queueserver1 := queue.NewServer(queue_name)
+		go queueserver1.ListenAndServe()
+}
+
+func EtcdWatcher() {
+	rootPrefix := "/"
+	etcdPath, _ := config.GetString("etcd:path")
+
+	c := etcd.NewClient([]string{etcdPath})
 	success := c.SyncCluster()
 	if !success {
 		log.Debug("cannot sync machines")
@@ -153,7 +135,7 @@ func updateStatus() {
 		if u.Scheme != "http" {
 			log.Debug("scheme must be http")
 		}
-        log.Info(u.Host)
+
 		host, _, err := net.SplitHostPort(u.Host)
 		if err != nil {
 			log.Debug(err)
@@ -162,69 +144,98 @@ func updateStatus() {
 			log.Debug("Host must be 127.0.0.1")
 		}
 	}
+	
 	etcdNetworkPath, _ := config.GetString("etcd:networkpath")
-    conn, connerr := c.Dial("tcp", etcdNetworkPath)
+	conn, connerr := c.Dial("tcp", etcdNetworkPath)
     log.Debug("client %v", c)
     log.Debug("connection %v", conn)
     log.Debug("connection error %v", connerr)
     
     if conn != nil {
-	dir, _ := config.GetString("etcd:directory")
-	id, _ := config.GetString("id")
-	name, _ := config.GetString("name")
-	mapD := map[string]string{"id": id, "status": "RUNNING"}
-    mapB, _ := json.Marshal(mapD)	
-  
-   	
-	//c := etcd.NewClient(nil)
-	_, err := c.Create("/"+dir+"/"+name, string(mapB))
-  
-	if err != nil {
-		log.Error("===========",err)
-	}
 	
-	aid, _ := config.GetString("id")
-	UpdateRiakStatus(aid)
+	   log.Info(" [x] Etcd client %s", etcdPath, rootPrefix)
+
+	   dir, _ := config.GetString("update_queue")
+	   log.Info(" [x] Etcd Directory %s", dir)
+
+	   stop := make(chan bool, 0)
+
+	   go func() {
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+			   _, err1 := c.CreateDir(dir)
+
+	           if err1 != nil {
+		         //  log.Error(err1)
+	           }
+				etreschan := make(chan *etcd.Response, 1)
+			     go receiverEtcd(etreschan, stop) 
+			 	_, err := c.Watch(rootPrefix+dir, 0, true, etreschan, stop)
+
+				if err != nil {
+				}
+				
+				if err != etcd.ErrWatchStoppedByUser {
+				}
+
+				time.Sleep(time.Second)
+			}
+		} 
+
+	}()
 	
-   } else {
+	} else {
   	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
          os.Exit(1)
   }
 }
 
-
-func Watcher(queue_name string) {    
-	    queueserver1 := queue.NewServer(queue_name)
-		go queueserver1.ListenAndServe()
+/**
+In this goroutine received the message from channel then to export the message to handler, 
+and this goroutine is close when the message is nil. 
+**/
+func receiverEtcd(c chan *etcd.Response, stop chan bool) {
+	for {
+		select {
+		case msg := <-c:
+			if msg != nil {
+				handlerEtcd(msg)
+			} else {
+				return
+			}
+		}
+	}
+	stop <- false
 }
 
-func UpdateRiakStatus(id string) error {
-	asm := &policies.Assembly{}
-	conn, err := db.Conn("assembly")
-	if err != nil {	
-		return err
-	}	
-	//appout := &Requests{}
-	ferr := conn.FetchStruct(id, asm)
-	if ferr != nil {	
-		return ferr
-	}	
+func handlerEtcd(msg *etcd.Response) {
+	log.Info(" [x] Really Handle etcd response (%s)", msg.Node.Key)
+
+	res := &global.Status{}
+	json.Unmarshal([]byte(msg.Node.Value), &res)
+
+	comp := &global.Component{}
 	
-	update := policies.Assembly{
-		Id:           asm.Id, 
-        JsonClaz:      asm.JsonClaz, 
-        Name:          asm.Name, 
-        Components:    asm.Components ,
-        Policies:      asm.Policies,
-        Inputs:        asm.Inputs,
-        Operations:    asm.Operations,
-        Outputs:       asm.Outputs,
-        Status:        "Running",
-        CreatedAt:     asm.CreatedAt,
+	conn1, err1 := db.Conn("components")
+	if err1 != nil {
+		log.Error(err1)
 	}
-	err = conn.StoreStruct(asm.Id, &update)
+
+	ferr1 := conn1.FetchStruct(res.Id, comp)
+	if ferr1 != nil {
+		log.Error(ferr1)
+	}
 	
-	return err
+	ttype := strings.Split(comp.ToscaType, ".") 
+    if ttype[1] == "service" {
+     	if comp.RelatedComponents != "" {
+    	  docker.CreateBindContainer(res) 
+	   }
+	 }     
+	
 }
 
 
