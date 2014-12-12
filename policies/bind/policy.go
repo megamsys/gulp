@@ -8,6 +8,7 @@ import (
     "fmt"
     "github.com/tsuru/config"
 	"path"
+	"github.com/megamsys/gulp/global"
 )
 
 func Init() {
@@ -23,17 +24,17 @@ func (bind *BindPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
 	    	for i := range asm.Policies[k].Members {
 	    		for c := range asm.Components {
 	    			
-	    		       com := &policies.Component{}
+	    		       com := &global.Component{}
 	    		       mapB, _ := json.Marshal(asm.Components[c])                
                        json.Unmarshal([]byte(string(mapB)), com)
                       
                        if com.Name != "" {
                        	
-                          inputs := &policies.ComponentInputs{}
+                          inputs := &global.ComponentInputs{}
 	    		          mapC, _ := json.Marshal(com.Inputs)                
                           json.Unmarshal([]byte(string(mapC)), inputs)
                        
-                          dinputs := &policies.DesignInputs{}
+                          dinputs := &global.DesignInputs{}
 	    		          mapD, _ := json.Marshal(inputs.DesignInputs)                
                           json.Unmarshal([]byte(string(mapD)), dinputs)
                                if asm.Policies[k].Members[i] == com.RelatedComponents {
@@ -52,7 +53,7 @@ func (bind *BindPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
 }
 
 
-func uploadENVVariables(asm *policies.AssemblyResult, name string, inp *policies.ComponentInputs) error {
+func uploadENVVariables(asm *policies.AssemblyResult, name string, inp *global.ComponentInputs) error {
 	megam_home, ckberr := config.GetString("MEGAM_HOME")
 	if ckberr != nil {
 		return ckberr
@@ -74,11 +75,11 @@ func uploadENVVariables(asm *policies.AssemblyResult, name string, inp *policies
 			}
 		}
 	    
-	    dinputs := &policies.DesignInputs{}
+	    dinputs := &global.DesignInputs{}
 	    mapD, _ := json.Marshal(inp.DesignInputs)                
         json.Unmarshal([]byte(string(mapD)), dinputs)
         
-        sinputs := &policies.ServiceInputs{}
+        sinputs := &global.ServiceInputs{}
 	    mapS, _ := json.Marshal(inp.ServiceInputs)                
         json.Unmarshal([]byte(string(mapS)), sinputs)
 	    

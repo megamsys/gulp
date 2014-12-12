@@ -4,14 +4,15 @@ package docker
 import (
 	log "code.google.com/p/log4go"
 	"encoding/json"
-//	"github.com/tsuru/config"
+	"github.com/tsuru/config"
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/app"
 	"github.com/fsouza/go-dockerclient"
 	"strings"
-	"fmt"
+//	"fmt"
+    "strconv"
 	"bytes"
 )
 
@@ -65,11 +66,19 @@ func Handler(chann []byte) error{
 	    		       mapB, _ := json.Marshal(asm.Components[c])                
                        json.Unmarshal([]byte(string(mapB)), com)
                       
-                       if com.Name != "" {
-                          
-			        	
-			        	  go createContainer(com)
-			        	  shipperstr += " -c "+ com.Name 
+                       if com.Name != "" {	
+                       	  dockerName, _ := config.GetString("update_queue")
+                       	  ttype := strings.Split(com.ToscaType, ".") 
+                       	  if ttype[1] == "service" {
+                       	  	go createContainer(com, i, dockerName, req.NodeId, []string{})
+                       	  }	else {
+                       	  	if com.RelatedComponents == "" {
+                       	  	   	go createContainer(com, i, dockerName, req.NodeId, []string{})
+			        	    }
+			        	  } 
+                       	
+                     //  	go createContainer(com, i, dockerName)
+			        	shipperstr += " -c "+ com.Name 
 			         }
                    }
 	    		}
@@ -96,7 +105,7 @@ func getPredefClouds(id string) (*global.PredefClouds, error) {
 	return pre, nil
 }
 
-func createContainer(com *global.Component) error {
+func createContainer(com *global.Component, i int, dockerName string, assembliesID string, links []string) {
 	endpoint := "unix:///var/run/docker.sock"
 	client, _ := docker.NewClient(endpoint)
                         
@@ -110,8 +119,8 @@ func createContainer(com *global.Component) error {
      } else {
     	 tag = ""
     } 
-    
-    
+ 
+    /* pull the image from docker hub */
 	opts := docker.PullImageOptions{
 	                    Repository:   source[0],
 	                    Registry:     "",
@@ -122,27 +131,101 @@ func createContainer(com *global.Component) error {
 	if pullerr != nil {
 	     log.Error(pullerr)
     }
-
-    config := docker.Config{Image: "gomegam/megamgateway:0.5.0"}
-	copts := docker.CreateContainerOptions{Name: "redis", Config: &config}
+    
+    /* get image details */
+    image, _ := client.InspectImage(com.Inputs.Source)
+    img := &docker.Image{}
+    mapI, _ := json.Marshal(image)
+    json.Unmarshal([]byte(string(mapI)), img)  
+    
+    /* get image config */
+    conf := &docker.Config{}
+    mapC, _ := json.Marshal(img.Config)
+    json.Unmarshal([]byte(string(mapC)), conf)
+    
+    /* export network port from docker */
+    mapA := map[docker.Port][]docker.PortBinding{}
+    for k, _ := range conf.ExposedPorts {
+    	port := strings.Split(string(k), "/")
+    	porti, _ := strconv.Atoi(port[0])
+        res2 := docker.PortBinding{HostIP: "0.0.0.0", HostPort: string(porti+i)}
+    	mapA[k] = append(mapA[k], res2)
+    }
+    
+    /* create the container for docker image */
+    config := docker.Config{Image: com.Inputs.Source}
+	copts := docker.CreateContainerOptions{Name: com.Name, Config: &config}
 	container, conerr := client.CreateContainer(copts)
-    fmt.Println("++++++++++++++++++++++++++++++++++++++++++++")
 	if conerr != nil {
-	     log.Error(conerr)
+	   log.Error(conerr)
 	}
 	
-	   cont := &docker.Container{}
-           mapP, _ := json.Marshal(container)
-           json.Unmarshal([]byte(string(mapP)), cont)  
+	cont := &docker.Container{}
+    mapP, _ := json.Marshal(container)
+    json.Unmarshal([]byte(string(mapP)), cont)  
 	
-	
-	serr := client.StartContainer(cont.ID, &docker.HostConfig{})
+	/* start the created container */
+	serr := client.StartContainer(cont.ID, &docker.HostConfig{PortBindings: mapA, Links: links})
 	if serr != nil {
-		log.Error(serr)
+	   log.Error(serr)
 	}
-	   
-    contt, _ := client.ListContainers(docker.ListContainersOptions{})
-    fmt.Println("--------------------------");
-    fmt.Println(contt)	
-    return nil
+	
+	global.UpdateStatus(dockerName, com.Id, com.Name, assembliesID)   
+   
+    return
 }
+
+
+func CreateBindContainer(res *global.Status) error {
+	
+	component := &global.Component{}
+	
+	conn1, err1 := db.Conn("components")
+	if err1 != nil {
+		log.Error(err1)
+	}
+
+	ferr1 := conn1.FetchStruct(res.Id, component)
+	if ferr1 != nil {
+		log.Error(ferr1)
+	}
+	
+	assemblies := global.Assemblies{Id: res.AssembliesID}
+		asm, err := assemblies.Get(res.AssembliesID)
+		if err != nil {
+			log.Error("Error: Riak didn't cooperate:\n%s.", err)
+			return err
+		}
+		
+		for i := range asm.Assemblies {
+			log.Debug("Assemblies: [%s]", asm.Assemblies[i])
+			if len(asm.Assemblies[i]) > 1 {
+				assemblyID := asm.Assemblies[i]
+				log.Debug("Assemblies id: [%s]", assemblyID)
+		      	 assembly, asmerr := policies.GetAssembly(assemblyID)
+	             if asmerr!= nil {
+		             log.Error("Error: Riak didn't cooperate:\n%s.", asmerr)
+		             return asmerr
+	              }		
+	    		   for c := range assembly.Components {
+	    		       com := &global.Component{}
+	    		       mapB, _ := json.Marshal(assembly.Components[c])                
+                       json.Unmarshal([]byte(string(mapB)), com)
+                      	                   
+	                   if len(com.Id) > 1 {
+                       rcomponent := strings.Split(component.RelatedComponents, "/")
+                       if rcomponent[1] == com.Name {	
+                       	  dockerName, _ := config.GetString("update_queue") 
+                       	    bind := []string{component.Name+":"+com.Name}
+                       	  	go createContainer(com, i, dockerName, res.AssembliesID, bind)
+                       	  	return nil
+                        }
+                       }
+                   }
+	    	}
+	  	}
+		return nil        	
+} 
+
+
+

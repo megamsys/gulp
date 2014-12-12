@@ -3,6 +3,13 @@ package global
 import (
 	"github.com/megamsys/libgo/db"
 	log "code.google.com/p/log4go"
+	"github.com/tsuru/config"
+    "github.com/megamsys/libgo/etcd"
+    "fmt"
+    "os"
+    "net"
+	"net/url"
+	"encoding/json"
 )
 
 type PredefClouds struct {
@@ -36,26 +43,26 @@ type PDCAccess struct {
 }
 
 type Component struct {
-	Id                         string `json:"id"`
-	Name                       string `json:"name"`
-	ToscaType                  string `json:"tosca_type"`
-	Requirements               *ComponentRequirements
-	Inputs                     *CompomentInputs
-	ExternalManagementResource string
-	Artifacts                  *Artifacts
-	RelatedComponents          string
-	Operations                 *ComponentOperations
-	CreatedAt                  string `json:"created_at"`
+	Id                         string                   `json:"id"`
+	Name                       string                   `json:"name"`
+	ToscaType                  string                   `json:"tosca_type"`
+	Requirements               *ComponentRequirements   `json:"requirements"`
+	Inputs                     *ComponentInputs         `json:"inputs"`
+	ExternalManagementResource string                   `json:"external_management_resource"`
+	Artifacts                  *Artifacts               `json:"artifacts"`
+	RelatedComponents          string                   `json:"related_components"`
+	Operations                 *ComponentOperations     `json:"operations"`
+	CreatedAt                  string                   `json:"created_at"`
 	Command        string
 }
 
 func (asm *Component) Get(asmId string) (*Component, error) {
     log.Info("Get Component message %v", asmId)
+   // asm := &Component{}
     conn, err := db.Conn("components")
 	if err != nil {	
 		return asm, err
 	}	
-	//appout := &Requests{}
 	ferr := conn.FetchStruct(asmId, asm)
 	if ferr != nil {	
 		return asm, ferr
@@ -72,7 +79,7 @@ type ComponentRequirements struct {
 	Dummy string `json:"dummy"`
 }
 
-type CompomentInputs struct {
+type ComponentInputs struct {
 	Domain        string `json:"domain"`
 	Port          string `json:"port"`
 	UserName      string `json:"username"`
@@ -200,4 +207,114 @@ type CloudSettings struct {
     Y                  string        `json:"y"`
     Z                  string        `json:"z"`
     Wires              []string    `json:“wires”`
+}
+
+type Policy struct {
+	Name      string   `json:"name"`
+	Ptype     string   `json:"ptype"`
+	Members   []string `json:"members"`
+}
+
+type Output struct {
+	Key     string   `json:"key"`
+	Value   string   `json:"value"`
+}
+
+type Assembly struct {
+   Id             string    `json:"id"` 
+   JsonClaz       string   `json:"json_claz"` 
+   Name           string   `json:"name"` 
+   Components     []string   `json:"components"` 
+   Policies       []*Policy   `json:"policies"`
+   Inputs         string    `json:"inputs"`
+   Operations     string    `json:"operations"` 
+   Outputs        []*Output  `json:"outputs"`
+   Status         string    `json:"status"`
+   CreatedAt      string   `json:"created_at"` 
+   }
+
+type Status struct {
+	Id     string `json:"id"`
+	Status string `json:"status"`
+	AssembliesID string `json:"assemblies_id"`
+}
+
+func UpdateStatus(dir string, id string, name string, assembliesID string) {
+	path, _ := config.GetString("etcd:path")
+	c := etcd.NewClient([]string{path})
+	success := c.SyncCluster()
+	if !success {
+		log.Debug("cannot sync machines")
+	}
+
+	for _, m := range c.GetCluster() {
+		u, err := url.Parse(m)
+		if err != nil {
+			log.Debug(err)
+		}
+		if u.Scheme != "http" {
+			log.Debug("scheme must be http")
+		}
+        log.Info(u.Host)
+		host, _, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			log.Debug(err)
+		}
+		if host != "127.0.0.1" {
+			log.Debug("Host must be 127.0.0.1")
+		}
+	}
+	etcdNetworkPath, _ := config.GetString("etcd:networkpath")
+    conn, connerr := c.Dial("tcp", etcdNetworkPath)
+    log.Debug("client %v", c)
+    log.Debug("connection %v", conn)
+    log.Debug("connection error %v", connerr)
+    
+    if conn != nil {	
+	mapD := map[string]string{"id": id, "status": "RUNNING", "assemblies_id": assembliesID}
+    mapB, _ := json.Marshal(mapD)	
+  
+   	
+	//c := etcd.NewClient(nil)
+	_, err := c.Create("/"+dir+"/"+name, string(mapB))
+  
+	if err != nil {
+		log.Error("===========",err)
+	}
+	
+   } else {
+  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
+         os.Exit(1)
+  }
+}
+
+
+func UpdateRiakStatus(id string) error {
+	
+	asm := &Assembly{}
+	conn, err := db.Conn("assembly")
+	if err != nil {	
+		return err
+	}	
+	//appout := &Requests{}
+	ferr := conn.FetchStruct(id, asm)
+	if ferr != nil {	
+		return ferr
+	}	
+	
+	update := Assembly{
+		Id:            asm.Id, 
+        JsonClaz:      asm.JsonClaz, 
+        Name:          asm.Name, 
+        Components:    asm.Components ,
+        Policies:      asm.Policies,
+        Inputs:        asm.Inputs,
+        Operations:    asm.Operations,
+        Outputs:       asm.Outputs,
+        Status:        "Running",
+        CreatedAt:     asm.CreatedAt,
+	}
+	err = conn.StoreStruct(asm.Id, &update)
+	
+	return err
 }

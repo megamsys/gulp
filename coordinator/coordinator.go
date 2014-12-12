@@ -23,27 +23,34 @@ type Message struct {
 }
 
 func Handler(chann []byte) {
+	log.Info("============handler entry======")
 	gear, gerr := config.GetString("geard:host")
 	if gerr != nil {
+		log.Info(gerr)
 		return 
 	}
 	s := strings.Split(gear, ":")
+	log.Info(s)
     geard_host, geard_port := s[0], s[1]
 	m := &Message{}
 	parse_err := json.Unmarshal(chann, &m)
+	log.Info(parse_err)
 	if parse_err != nil {
 		log.Error("Error: Message parsing error:\n%s.", parse_err)
 		return
 	}
+	log.Info("============Request entry======")
 	apprequest := global.AppRequest{Id: m.Id}
 	req, err := apprequest.Get(m.Id)
+	log.Info(req)
 	if err != nil {
 		log.Error("Error: Riak didn't cooperate:\n%s.", err)
 		return
 	}
+	log.Info("============Switch case entry======")
 	switch req.Action {
 	case "start":
-	log.Debug("============Start entry======")
+	log.Info("============Start entry======")
 	   
       asm, err := policies.GetAssembly(req.AppId)
 	   if err!= nil {
@@ -57,7 +64,7 @@ func Handler(chann []byte) {
 		go app.StartApp(asm)
 		break
 	case "stop":
-	log.Debug("============Stop entry======")
+	log.Info("============Stop entry======")
 		asm, err := policies.GetAssembly(req.AppId)
 		if err != nil {
 			log.Error("Error: Riak didn't cooperate:\n%s.", err)
@@ -66,7 +73,7 @@ func Handler(chann []byte) {
 		go app.StopApp(asm)
 		break
 	case "restart":
-	log.Debug("============Restart entry======")
+	log.Info("============Restart entry======")
 		asm, err := policies.GetAssembly(req.AppId)
 		if err != nil {
 			log.Error("Error: Riak didn't cooperate:\n%s.", err)
@@ -75,7 +82,7 @@ func Handler(chann []byte) {
 		go app.RestartApp(asm)
 		break		
 	case "componentstart":
-	log.Debug("============Component Start entry======")
+	log.Info("============Component Start entry======")
 		comp := global.Component{Id: req.AppId}
 		asm, err := comp.Get(req.AppId)
 		if err != nil {
@@ -85,7 +92,7 @@ func Handler(chann []byte) {
 		go app.StartComponent(asm)
 		break
 	case "componentstop":
-	log.Debug("============Component Stop entry======")
+	log.Info("============Component Stop entry======")
 		comp := global.Component{Id: req.AppId}
 		asm, err := comp.Get(req.AppId)
 		if err != nil {
@@ -95,7 +102,7 @@ func Handler(chann []byte) {
 		go app.StopComponent(asm)
 		break
 	case "componentrestart":
-	log.Debug("============Component Restart entry======")
+	log.Info("============Component Restart entry======")
 		comp := global.Component{Id: req.AppId}
 		asm, err := comp.Get(req.AppId)
 		if err != nil {
@@ -105,7 +112,7 @@ func Handler(chann []byte) {
 		go app.RestartComponent(asm)
 		break	
     case "containerstart":
-	log.Debug("============container Start entry======")
+	log.Info("============container Start entry======")
 		comp := global.Component{Id: req.AppId}
 		com, err := comp.Get(req.AppId)
 		if err != nil {
@@ -120,7 +127,7 @@ func Handler(chann []byte) {
 		}
 		break
 	case "containerstop":
-	log.Debug("============container Stop entry======")
+	log.Info("============container Stop entry======")
 		comp := global.Component{Id: req.AppId}
 		com, err := comp.Get(req.AppId)
 		if err != nil {
@@ -137,7 +144,7 @@ func Handler(chann []byte) {
 		//go app.LogFile(com)
 		break
 	case "containerrestart":
-	log.Debug("============container Restart entry======")
+	log.Info("============container Restart entry======")
 		comp := global.Component{Id: req.AppId}
 		com, err := comp.Get(req.AppId)
 		if err != nil {
