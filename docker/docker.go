@@ -132,8 +132,8 @@ func createContainer(com *global.Component) error {
 	}
 	
 	   cont := &docker.Container{}
-           mapP, _ := json.Marshal(container)
-           json.Unmarshal([]byte(string(mapP)), cont)  
+       mapP, _ := json.Marshal(container)
+       json.Unmarshal([]byte(string(mapP)), cont)  
 	
 	
 	serr := client.StartContainer(cont.ID, &docker.HostConfig{})
