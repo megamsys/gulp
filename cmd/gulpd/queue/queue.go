@@ -53,9 +53,9 @@ func (self *QueueServer) ListenAndServe() {
 	              }
 			} 
 			
-			queue1, _ := config.GetString("update_queue")
-			if self.ListenAddress == queue1 {
-			     json.Unmarshal([]byte(msg), res)
+			queue1, _ := config.GetString("update_queue")				
+			if self.ListenAddress == queue1 {		
+			     json.Unmarshal([]byte(msg), res)		     
 			     if res.Action == "bind policy" {
 			         policy, err1 := policies.GetPolicy("bind")
                      if err1 != nil {
@@ -72,6 +72,10 @@ func (self *QueueServer) ListenAndServe() {
 	                     log.Error("Error: Policy doesn't apply :\n%s.", err2)
 	                   }
 	               go app.RestartApp(asm)
+	             } else if res.Action ==  "build" {
+	                 log.Info("==================build entry==================")
+	                 
+	             }  
 			  } else {
 			  	log.Info("---------------else entry------------------")
 		            //queue2, _ := config.GetString("update_queue")
@@ -85,6 +89,6 @@ func (self *QueueServer) ListenAndServe() {
 	
 	//self.Serve()
 }
-}
+
 
 
