@@ -28,7 +28,10 @@ func NewServer(listenAddress string) *QueueServer {
 }
 
 
-
+/**
+** subscribe the all connected queues from queue server
+** and to be connect the channel and serve the messages to handlers
+**/
 func (self *QueueServer) ListenAndServe() {
 	factor, err := amqp.Factory()
 	if err != nil {
@@ -74,7 +77,7 @@ func (self *QueueServer) ListenAndServe() {
 	               go app.RestartApp(asm)
 	             } else if res.Action ==  "build" {
 	                 log.Info("==================build entry==================")
-	                 
+	                 coordinator.EventsHandler(msg)
 	             }  
 			  } else {
 			  	log.Info("---------------else entry------------------")

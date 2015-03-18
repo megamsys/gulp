@@ -337,5 +337,25 @@ var shipper = action.Action{
 	MinParams: 1,
 }
 
-
+var buildApp = action.Action{
+	Name: "buildApp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app global.Component
+		switch ctx.Params[0].(type) {
+		case global.Component:
+			app = ctx.Params[0].(global.Component)
+		case *global.Component:
+			app = *ctx.Params[0].(*global.Component)
+		default:
+			return nil, errors.New("First parameter must be App or *global.Component.")
+		}
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "build_" + ctype[2] + ".sh"
+		return ComponentCommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
 

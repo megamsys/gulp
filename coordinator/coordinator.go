@@ -161,7 +161,29 @@ func Handler(chann []byte) {
 	}
 }
 
-func eventsHandler(chann []byte) {
-
+/**
+** It handles all events from megam engine 
+**/
+func EventsHandler(chann []byte) {
+	m := &Message{}
+	parse_err := json.Unmarshal(chann, &m)
+	log.Info(parse_err)
+	if parse_err != nil {
+		log.Error("Error: Message parsing error:\n%s.", parse_err)
+		return
+	}
+	
+	switch m.Action {
+	case "build":
+	log.Info("============Build entry======")
+	   comp := global.Component{Id: m.Id}
+	   com, err := comp.Get(m.Id)
+	   if err != nil {
+	   	log.Error("Error: Riak didn't cooperate:\n%s.", err)
+	   	return
+	   }
+	   go app.BuildApp(com)
+	break
+	}
 }
 
