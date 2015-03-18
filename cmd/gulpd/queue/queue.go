@@ -28,7 +28,10 @@ func NewServer(listenAddress string) *QueueServer {
 }
 
 
-
+/**
+** subscribe the all connected queues from queue server
+** and to be connect the channel and serve the messages to handlers
+**/
 func (self *QueueServer) ListenAndServe() {
 	factor, err := amqp.Factory()
 	if err != nil {
@@ -53,9 +56,9 @@ func (self *QueueServer) ListenAndServe() {
 	              }
 			} 
 			
-			queue1, _ := config.GetString("update_queue")
-			if self.ListenAddress == queue1 {
-			     json.Unmarshal([]byte(msg), res)
+			queue1, _ := config.GetString("update_queue")				
+			if self.ListenAddress == queue1 {		
+			     json.Unmarshal([]byte(msg), res)		     
 			     if res.Action == "bind policy" {
 			         policy, err1 := policies.GetPolicy("bind")
                      if err1 != nil {
@@ -72,6 +75,10 @@ func (self *QueueServer) ListenAndServe() {
 	                     log.Error("Error: Policy doesn't apply :\n%s.", err2)
 	                   }
 	               go app.RestartApp(asm)
+	             } else if res.Action ==  "build" {
+	                 log.Info("==================build entry==================")
+	                 coordinator.EventsHandler(msg)
+	             }  
 			  } else {
 			  	log.Info("---------------else entry------------------")
 		            //queue2, _ := config.GetString("update_queue")
@@ -85,6 +92,6 @@ func (self *QueueServer) ListenAndServe() {
 	
 	//self.Serve()
 }
-}
+
 
 

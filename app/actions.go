@@ -187,7 +187,9 @@ func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
   return &app, nil
 }
 
-
+/**
+** restart the virtual machine 
+**/
 var restartApp = action.Action{
 	Name: "restartapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -208,6 +210,9 @@ var restartApp = action.Action{
 	MinParams: 1,
 }
 
+/**
+** start the virtual machine 
+**/
 var startApp = action.Action{
 	Name: "startapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -228,6 +233,9 @@ var startApp = action.Action{
 	MinParams: 1,
 }
 
+/**
+** stop the virtual machine 
+**/
 var stopApp = action.Action{
 	Name: "stopapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -249,6 +257,9 @@ var stopApp = action.Action{
 	MinParams: 1,
 }
 
+/**
+** restart the application or service 
+**/
 var restartComponent = action.Action{
 	Name: "restartcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -271,6 +282,9 @@ var restartComponent = action.Action{
 	MinParams: 1,
 }
 
+/**
+** start the application or service 
+**/
 var startComponent = action.Action{
 	Name: "startcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -293,6 +307,9 @@ var startComponent = action.Action{
 	MinParams: 1,
 }
 
+/**
+** stop the application or service 
+**/
 var stopComponent = action.Action{
 	Name: "stopcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -337,5 +354,33 @@ var shipper = action.Action{
 	MinParams: 1,
 }
 
-
+/**
+** build the application 
+** that means fetch and merge the application from scm and restart the application 
+**/
+var buildApp = action.Action{
+	Name: "buildApp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app global.Component
+		switch ctx.Params[0].(type) {
+		case global.Component:
+			app = ctx.Params[0].(global.Component)
+		case *global.Component:
+			app = *ctx.Params[0].(*global.Component)
+		default:
+			return nil, errors.New("First parameter must be App or *global.Component.")
+		}
+		ctype := strings.Split(app.ToscaType, ".")
+		megam_home, perr := config.GetString("MEGAM_HOME")
+		if perr != nil {
+			return nil, perr
+		}
+        app.Command = megam_home + "/megam_" + ctype[2] + "_builder/build.sh"
+		return ComponentCommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
 
