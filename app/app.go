@@ -2,7 +2,6 @@ package app
 
 import (
 	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/global"
 )
 
@@ -10,7 +9,7 @@ import (
 // StartsApp creates a new app.
 //
 // Starts the app :
-func RestartApp(app *policies.AssemblyResult) error {
+func RestartApp(app *global.AssemblyWithComponents) error {
 	actions := []*action.Action{&restartApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -22,7 +21,7 @@ func RestartApp(app *policies.AssemblyResult) error {
 }
 
 
-func StartApp(app *policies.AssemblyResult) error {
+func StartApp(app *global.AssemblyWithComponents) error {
 	actions := []*action.Action{&startApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -33,7 +32,7 @@ func StartApp(app *policies.AssemblyResult) error {
 	return nil
 }
 
-func StopApp(app *policies.AssemblyResult) error {
+func StopApp(app *global.AssemblyWithComponents) error {
 	actions := []*action.Action{&stopApp}
 
 	pipeline := action.NewPipeline(actions...)

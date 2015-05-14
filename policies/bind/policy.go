@@ -1,6 +1,7 @@
 package bind
 
 import (
+log "code.google.com/p/log4go"
   "github.com/megamsys/gulp/policies"
   "io/ioutil"
     "os"
@@ -18,33 +19,18 @@ func Init() {
 
 type BindPolicy struct{}
 
-func (bind *BindPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
+func (bind *BindPolicy) Apply(asm *global.AssemblyWithComponents) (string, error) {
 	for k := range asm.Policies {
 		if asm.Policies[k].Name == "bind policy" {
-	    	for i := range asm.Policies[k].Members {
 	    		for c := range asm.Components {
 	    			
 	    		       com := &global.Component{}
 	    		       mapB, _ := json.Marshal(asm.Components[c])                
                        json.Unmarshal([]byte(string(mapB)), com)
                       
-                       if com.Name != "" {
-                       	
-                          inputs := &global.ComponentInputs{}
-	    		          mapC, _ := json.Marshal(com.Inputs)                
-                          json.Unmarshal([]byte(string(mapC)), inputs)
-                       
-                          dinputs := &global.DesignInputs{}
-	    		          mapD, _ := json.Marshal(inputs.DesignInputs)                
-                          json.Unmarshal([]byte(string(mapD)), dinputs)
-                               if asm.Policies[k].Members[i] == com.RelatedComponents {
-                       	            uploadENVVariables(asm, com.Name, inputs)
-	    		                }
-                               if asm.Policies[k].Members[i] == dinputs.Id {
-                       	            uploadENVVariables(asm, com.Name, inputs)
-	    		                }
+                       if com.Name != "" {                       	
+                       	   uploadENVVariables(asm, com)
 	    	             }
-	            	}
 	            }		
 		  }
 	}
@@ -53,14 +39,14 @@ func (bind *BindPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
 }
 
 
-func uploadENVVariables(asm *policies.AssemblyResult, name string, inp *global.ComponentInputs) error {
+func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Component) error {
 	megam_home, ckberr := config.GetString("MEGAM_HOME")
 	if ckberr != nil {
 		return ckberr
 	}
 
 	 basePath :=  megam_home
-	 dir := path.Join(basePath, name)
+	 dir := path.Join(basePath, com.Name)
         filePath := path.Join(dir, "env.sh") 
 	    if _, err := os.Stat(dir); os.IsNotExist(err) {
 			fmt.Printf("no such file or directory: %s", dir)
@@ -74,19 +60,24 @@ func uploadENVVariables(asm *policies.AssemblyResult, name string, inp *global.C
 				return err
 			}
 		}
-	    
-	    dinputs := &global.DesignInputs{}
-	    mapD, _ := json.Marshal(inp.DesignInputs)                
-        json.Unmarshal([]byte(string(mapD)), dinputs)
-        
-        sinputs := &global.ServiceInputs{}
-	    mapS, _ := json.Marshal(inp.ServiceInputs)                
-        json.Unmarshal([]byte(string(mapS)), sinputs)
-	    
-	    str := "BINDED_HOST_NAME = "+name+"\n"+"HOST = "+asm.Name+"."+inp.Domain+"/"+name+"\n"+"PORT = "+inp.Port+"\nUSERNAME = "+inp.UserName+"\nPASSWORD = "+inp.Password+"\nDBNAME = "+sinputs.DBName+"\nDBPASSWORD = "+sinputs.DBPassword+"\n"
+	       
+	       
+	    str := "BINDED_HOST_NAME = "+com.Name+"\n"+"HOST = "+asm.Name+"."+GetParsedValue(asm.Inputs, "domain")+"/"+com.Name+"\n"+"PORT = "+GetParsedValue(com.Inputs, "port")+"\nUSERNAME = "+GetParsedValue(com.Inputs, "username")+"\nPASSWORD = "+GetParsedValue(com.Inputs, "password")+"\nDBNAME = "+GetParsedValue(com.Inputs, "dbname")+"\nDBPASSWORD = "+GetParsedValue(com.Inputs, "dbpassword")+"\n"
 	    errf := ioutil.WriteFile(filePath, []byte(str), 0644)
 	    if errf != nil {
             return errf
          }
 	    return nil
 }
+
+func GetParsedValue(keyvaluepair []*global.KeyValuePair, searchkey string) string {
+
+     pair, err := global.ParseKeyValuePair(keyvaluepair, searchkey)
+		if err != nil {
+			log.Error("Failed to get the value : %s", err)
+			return ""
+		} else {
+		    return pair.Value
+		}
+}
+

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"errors"
 	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/libgo/exec"
 	log "code.google.com/p/log4go"
@@ -15,7 +14,7 @@ import (
 	"bufio"
 )
 
-func CommandExecutor(command string, app *policies.AssemblyResult) (action.Result, error) {
+func CommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
 	/* var e exec.OsExecutor
     var commandWords []string
 
@@ -193,14 +192,14 @@ func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
 var restartApp = action.Action{
 	Name: "restartapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app policies.AssemblyResult
+		var app global.AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case policies.AssemblyResult:
-			app = ctx.Params[0].(policies.AssemblyResult)
-		case *policies.AssemblyResult:
-			app = *ctx.Params[0].(*policies.AssemblyResult)
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
 		return CommandExecutor("restart", &app)
 	},
@@ -216,14 +215,14 @@ var restartApp = action.Action{
 var startApp = action.Action{
 	Name: "startapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app policies.AssemblyResult
+		var app global.AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case policies.AssemblyResult:
-			app = ctx.Params[0].(policies.AssemblyResult)
-		case *policies.AssemblyResult:
-			app = *ctx.Params[0].(*policies.AssemblyResult)
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
 		return CommandExecutor("start", &app)
 	},
@@ -239,14 +238,14 @@ var startApp = action.Action{
 var stopApp = action.Action{
 	Name: "stopapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app policies.AssemblyResult
+		var app global.AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case policies.AssemblyResult:
-			app = ctx.Params[0].(policies.AssemblyResult)
-		case *policies.AssemblyResult:
-			app = *ctx.Params[0].(*policies.AssemblyResult)
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
        
 		return CommandExecutor("stop", &app)

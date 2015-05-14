@@ -4,8 +4,8 @@ import (
 	"github.com/megamsys/libgo/amqp"
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/policies"
+	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/app"
-	"github.com/megamsys/gulp/docker"
 	"github.com/megamsys/gulp/coordinator"
 	"encoding/json"
 	"github.com/tsuru/config"
@@ -43,19 +43,12 @@ func (self *QueueServer) ListenAndServe() {
 		log.Error("Failed to get the queue instance: %s", err)
 	}
 	
-	res := &policies.Message{}    
+	res := &global.Message{}    
 	
 	msgChan, _ := pubsub.Sub()
 	for msg := range msgChan {
 			log.Info(" [x] %q", msg)
-			dockerq, _ := config.GetString("docker_queue")
-			if self.ListenAddress == dockerq {
-				derr := docker.Handler(msg)
-				if derr != nil {
-	               log.Error("Error: Policy :\n%s.", derr)
-	              }
-			} 
-			
+				
 			queue1, _ := config.GetString("update_queue")				
 			if self.ListenAddress == queue1 {		
 			     json.Unmarshal([]byte(msg), res)		     
@@ -64,10 +57,12 @@ func (self *QueueServer) ListenAndServe() {
                      if err1 != nil {
 	                   log.Error("Error: Policy :\n%s.", err1)
 	                  }
-            
-                     asm, err := policies.GetAssembly(res.Id)
+	                  
+            		assembly := global.Assembly{Id: res.Id}
+					asm, err := assembly.GetAssemblyWithComponents(res.Id)
 	                  if err!= nil {
-		                 log.Error(err)
+		                 log.Error("Error: Riak didn't cooperate:\n%s.", err)
+						 return
 	                   }
             
 	                  _, err2 := policy.Apply(asm)

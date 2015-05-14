@@ -2,6 +2,7 @@ package ha
 
 import (
   "github.com/megamsys/gulp/policies"
+  "github.com/megamsys/gulp/global"
 )
 
 func Init() {
@@ -11,7 +12,7 @@ func Init() {
 
 type HAPolicy struct{}
 
-func (i *HAPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
+func (i *HAPolicy) Apply(asm *global.AssemblyWithComponents) (string, error) {
 	
 	
 	return "", nil
