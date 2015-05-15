@@ -15,6 +15,7 @@ import (
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
 	"github.com/megamsys/gulp/global"
+	"github.com/megamsys/gulp/coordinator"
 )
 
 const (
@@ -43,16 +44,14 @@ func RunServer(dry bool) {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
 //	handler().Start() 
-    Checker()
+    ConnectionChecker()
     name, _ := config.GetString("name")
-    Watcher(name)
-    
-    updatename, _ := config.GetString("update_queue")
-    Watcher(updatename)      
+    QueueWatcher(name)       
     
 	log.Info("Gulpd at your service.")
 	id, _ := config.GetString("id")
 	global.UpdateRiakStatus(id)
+	coordinator.PolicyHandler()
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
 }
@@ -64,7 +63,7 @@ func StopServer(bark bool) {
 	log.Info("Gulpd finished |-|.")
 }
 
-func Checker() {
+func ConnectionChecker() {
 	log.Info("Dialing Rabbitmq.......")
 	factor, err := amqp.Factory()
 	if err != nil {
@@ -100,7 +99,7 @@ func Checker() {
 }
 
 
-func Watcher(queue_name string) {    
+func QueueWatcher(queue_name string) {    
 	    queueserver1 := queue.NewServer(queue_name)
 		go queueserver1.ListenAndServe()
 }

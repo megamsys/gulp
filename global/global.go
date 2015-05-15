@@ -3,15 +3,10 @@ package global
 import (
 	"github.com/megamsys/libgo/db"
 	log "code.google.com/p/log4go"
-	"github.com/tsuru/config"
-    "github.com/megamsys/libgo/etcd"
-    "fmt"
-    "os"
-    "net"
-	"net/url"
 	"strings"
 	"errors"
-	"encoding/json"
+	"reflect"
+	"unsafe"
 )
 
 type Assembly struct {
@@ -248,6 +243,18 @@ func (req *AppRequest) Get(reqId string) (*AppRequest, error) {
 
 }
 
+type Assemblies struct {
+   Id             string  	    	`json:"id"` 
+   AccountsId     string    		`json:"accounts_id"`
+   JsonClaz       string   			`json:"json_claz"` 
+   Name           string   			`json:"name"` 
+   Assemblies     []string   		`json:"assemblies"` 
+   Inputs         []*KeyValuePair   `json:"inputs"` 
+   CreatedAt      string   			`json:"created_at"` 
+   ShipperArguments  string
+   Command string
+   }
+
 func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
     log.Info("Get Assemblies message %v", asmId)
     conn, err := db.Conn("assemblies")
@@ -264,71 +271,11 @@ func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
 	return asm, nil
 }
 
-type Assemblies struct {
-   Id             string  	    	`json:"id"` 
-   AccountsId     string    		`json:"accounts_id"`
-   JsonClaz       string   			`json:"json_claz"` 
-   Name           string   			`json:"name"` 
-   Assemblies     []string   		`json:"assemblies"` 
-   Inputs         []*KeyValuePair   `json:"inputs"` 
-   CreatedAt      string   			`json:"created_at"` 
-   ShipperArguments  string
-   Command string
-   }
-
 type Status struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
 	AssembliesID string `json:"assemblies_id"`
 }
-
-func UpdateStatus(dir string, id string, name string, assembliesID string) {
-	path, _ := config.GetString("etcd:path")
-	c := etcd.NewClient([]string{path})
-	success := c.SyncCluster()
-	if !success {
-		log.Debug("cannot sync machines")
-	}
-
-	for _, m := range c.GetCluster() {
-		u, err := url.Parse(m)
-		if err != nil {
-			log.Debug(err)
-		}
-		if u.Scheme != "http" {
-			log.Debug("scheme must be http")
-		}
-        log.Info(u.Host)
-		host, _, err := net.SplitHostPort(u.Host)
-		if err != nil {
-			log.Debug(err)
-		}
-		if host != "127.0.0.1" {
-			log.Debug("Host must be 127.0.0.1")
-		}
-	}
-	etcdNetworkPath, _ := config.GetString("etcd:networkpath")
-    conn, connerr := c.Dial("tcp", etcdNetworkPath)
-    log.Debug("client %v", c)
-    log.Debug("connection %v", conn)
-    log.Debug("connection error %v", connerr)
-    
-    if conn != nil {	
-	mapD := map[string]string{"id": id, "status": "RUNNING", "assemblies_id": assembliesID}
-    mapB, _ := json.Marshal(mapD)	
-    	
-	_, err := c.Create("/"+dir+"/"+name, string(mapB))
-  
-	if err != nil {
-		log.Error("===========",err)
-	}
-	
-   } else {
-  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
-         os.Exit(1)
-  }
-}
-
 
 func UpdateRiakStatus(id string) error {
 	
@@ -361,3 +308,11 @@ func UpdateRiakStatus(id string) error {
 	
 	return err
 }
+
+func BytesToString(b []byte) string {
+    bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+    sh := reflect.StringHeader{bh.Data, bh.Len}
+    return *(*string)(unsafe.Pointer(&sh))
+}
+
+

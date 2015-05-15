@@ -4,7 +4,9 @@ import (
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/app"
+	"github.com/megamsys/gulp/policies"
 	"encoding/json"
+	"github.com/tsuru/config"
 )
 
 type Coordinator struct {
@@ -104,4 +106,22 @@ func EventsHandler(chann []byte) {
 	break
 	}
 }
+
+
+func PolicyHandler() {
+  log.Info("==>Policy Handler entry==")
+	id, err := config.GetString("id")
+	if err != nil {
+		return
+	}
+	
+	assembly := global.Assembly{Id: id}
+	asm, asmerr := assembly.GetAssemblyWithComponents(id)
+	if asmerr != nil {
+	    log.Error("Error: Riak didn't cooperate:\n%s.", asmerr)
+		return
+	}   	
+	policies.ApplyPolicies(asm)	  
+}
+
 
