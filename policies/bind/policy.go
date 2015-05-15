@@ -1,6 +1,7 @@
 package bind
 
 import (
+  log "code.google.com/p/log4go"
   "github.com/megamsys/gulp/policies"
   "io/ioutil"
     "os"
@@ -8,85 +9,134 @@ import (
     "fmt"
     "github.com/tsuru/config"
 	"path"
+	"strings"
 	"github.com/megamsys/gulp/global"
+	"github.com/megamsys/libgo/db"
 )
 
 func Init() {
 	policies.RegisterPolicy("bind", &BindPolicy{})
 }
 
+const ( 
+   APP = "app"
+   SERVICE = "service"   
+   ASSEMBLIESINDEX = "assemblies_bin"
+)
+
 
 type BindPolicy struct{}
 
-func (bind *BindPolicy) Apply(asm *policies.AssemblyResult) (string, error) {
+func (bind *BindPolicy) Apply(asm *global.AssemblyWithComponents) (string, error) {
+   log.Info("==========Bind policy entry=============")
 	for k := range asm.Policies {
 		if asm.Policies[k].Name == "bind policy" {
-	    	for i := range asm.Policies[k].Members {
-	    		for c := range asm.Components {
-	    			
+	    		for c := range asm.Components {	    			
 	    		       com := &global.Component{}
 	    		       mapB, _ := json.Marshal(asm.Components[c])                
                        json.Unmarshal([]byte(string(mapB)), com)
                       
-                       if com.Name != "" {
-                       	
-                          inputs := &global.ComponentInputs{}
-	    		          mapC, _ := json.Marshal(com.Inputs)                
-                          json.Unmarshal([]byte(string(mapC)), inputs)
-                       
-                          dinputs := &global.DesignInputs{}
-	    		          mapD, _ := json.Marshal(inputs.DesignInputs)                
-                          json.Unmarshal([]byte(string(mapD)), dinputs)
-                               if asm.Policies[k].Members[i] == com.RelatedComponents {
-                       	            uploadENVVariables(asm, com.Name, inputs)
-	    		                }
-                               if asm.Policies[k].Members[i] == dinputs.Id {
-                       	            uploadENVVariables(asm, com.Name, inputs)
-	    		                }
-	    	             }
-	            	}
+                       if com.Name != "" && strings.Split(com.ToscaType, ".")[1] == APP {                       	
+                       	   err := uploadENVVariables(asm, com)
+                       	   if err != nil {
+                       	      return "", err
+                       	   }
+	    	           }
 	            }		
-		  }
-	}
-	
+    	  }
+  }	
 	return "", nil
 }
 
 
-func uploadENVVariables(asm *policies.AssemblyResult, name string, inp *global.ComponentInputs) error {
+func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Component) error {
 	megam_home, ckberr := config.GetString("MEGAM_HOME")
 	if ckberr != nil {
 		return ckberr
 	}
-
-	 basePath :=  megam_home
-	 dir := path.Join(basePath, name)
-        filePath := path.Join(dir, "env.sh") 
-	    if _, err := os.Stat(dir); os.IsNotExist(err) {
-			fmt.Printf("no such file or directory: %s", dir)
-			
-			if errm := os.MkdirAll(dir, 0777); errm != nil {
-                return errm
-            }
-			// open output file			
-			_, err := os.Create(filePath)
-			if err != nil {
-				return err
-			}
+	
+	conn, err := db.Conn("assemblies")
+	if err != nil {	
+		return err
+	}		
+    
+    act_id, actberr := config.GetString("account_id")
+	if actberr != nil {
+		return actberr
+	}
+    
+    arr, ferr := conn.FetchObjectByIndex("assemblies", ASSEMBLIESINDEX, act_id, "", "")
+    if ferr != nil {	
+		return ferr
+	}	
+	
+	for i := range arr {
+		s := global.BytesToString(arr[i])
+		rassemblies := &global.Assemblies{}
+		rams, ramserr := rassemblies.Get(s)
+		if ramserr != nil {
+			return ramserr
 		}
-	    
-	    dinputs := &global.DesignInputs{}
-	    mapD, _ := json.Marshal(inp.DesignInputs)                
-        json.Unmarshal([]byte(string(mapD)), dinputs)
-        
-        sinputs := &global.ServiceInputs{}
-	    mapS, _ := json.Marshal(inp.ServiceInputs)                
-        json.Unmarshal([]byte(string(mapS)), sinputs)
-	    
-	    str := "BINDED_HOST_NAME = "+name+"\n"+"HOST = "+asm.Name+"."+inp.Domain+"/"+name+"\n"+"PORT = "+inp.Port+"\nUSERNAME = "+inp.UserName+"\nPASSWORD = "+inp.Password+"\nDBNAME = "+sinputs.DBName+"\nDBPASSWORD = "+sinputs.DBPassword+"\n"
-	    errf := ioutil.WriteFile(filePath, []byte(str), 0644)
-	    if errf != nil {
-            return errf
-         }
+		for l := range rams.Assemblies {
+			if len(rams.Assemblies[l]) > 0 {
+				assembly := global.Assembly{Id: rams.Assemblies[l]}
+				rasm, rasmerr := assembly.GetAssemblyWithComponents(rams.Assemblies[l])
+				if rasmerr != nil {
+	    			log.Error("Error: Riak didn't cooperate:\n%s.", rasmerr)
+					return rasmerr
+				}     
+				
+				for j := range com.RelatedComponents {
+					if len(com.RelatedComponents[j]) > 0 {
+    					rasmname := strings.Split(com.RelatedComponents[j], "/")
+    					assemblyname := strings.Split(rasmname[0], ".")[0]
+    					if rasm.Name == assemblyname {
+    						for rc := range rasm.Components {    						
+    							if rasm.Components[rc] != nil {    							  
+    								if rasmname[1] == rasm.Components[rc].Name {
+    									basePath :=  megam_home
+	 									dir := path.Join(basePath, rasm.Components[rc].Name)
+        								filePath := path.Join(dir, "env.sh") 
+	    								if _, err := os.Stat(dir); os.IsNotExist(err) {
+											fmt.Printf("no such file or directory: %s", dir)
+			
+											if errm := os.MkdirAll(dir, 0777); errm != nil {
+                								return errm
+            								}
+											// open output file			
+											_, err := os.Create(filePath)
+											if err != nil {
+												return err
+												}
+										}       
+	       
+	    								str := "BINDED_HOST_NAME = "+rasm.Components[rc].Name+"\n"+"HOST = "+rasm.Name+"."+GetParsedValue(rasm.Inputs, "domain")+"/"+rasm.Components[rc].Name+"\n"+"PORT = "+GetParsedValue(rasm.Components[rc].Inputs, "port")+"\nUSERNAME = "+GetParsedValue(rasm.Components[rc].Inputs, "username")+"\nPASSWORD = "+GetParsedValue(rasm.Components[rc].Inputs, "password")+"\nDBNAME = "+GetParsedValue(rasm.Components[rc].Inputs, "dbname")+"\nDBPASSWORD = "+GetParsedValue(rasm.Components[rc].Inputs, "dbpassword")+"\n"
+	    								errf := ioutil.WriteFile(filePath, []byte(str), 0644)
+	    								if errf != nil {
+            								return errf
+         								}
+         								//return nil
+         							}
+         						}
+    						}
+    					}
+    				}
+    			}
+    		}
+		}
+	}
+	
 	    return nil
 }
+
+func GetParsedValue(keyvaluepair []*global.KeyValuePair, searchkey string) string {
+
+     pair, err := global.ParseKeyValuePair(keyvaluepair, searchkey)
+		if err != nil {
+			log.Error("Failed to get the value : %s", err)
+			return ""
+		} else {
+		    return pair.Value
+		}
+}
+

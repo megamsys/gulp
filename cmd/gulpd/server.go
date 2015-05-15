@@ -2,10 +2,8 @@ package main
 
 import (
     "github.com/tsuru/config"
-    "github.com/megamsys/libgo/etcd"
     log "code.google.com/p/log4go"
 	"os"
-	"encoding/json"
 	"os/signal"
 	"regexp"
 	"syscall"
@@ -16,11 +14,8 @@ import (
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/policies/ha"
-	"github.com/megamsys/gulp/docker"
 	"github.com/megamsys/gulp/global"
-	"net"
-	"strings"
-	"net/url"
+	"github.com/megamsys/gulp/coordinator"
 )
 
 const (
@@ -49,22 +44,14 @@ func RunServer(dry bool) {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
 //	handler().Start() 
-    Checker()
+    ConnectionChecker()
     name, _ := config.GetString("name")
-    Watcher(name)
-    
-    updatename, _ := config.GetString("update_queue")
-   Watcher(updatename)
-    
-    docker, _ := config.GetString("docker_queue")
-   Watcher(docker)
+    QueueWatcher(name)       
     
 	log.Info("Gulpd at your service.")
 	id, _ := config.GetString("id")
-	dir, _ := config.GetString("etcd:directory")
-	global.UpdateStatus(dir, id, name, "")
 	global.UpdateRiakStatus(id)
-	EtcdWatcher()
+	coordinator.PolicyHandler()
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
 }
@@ -76,7 +63,7 @@ func StopServer(bark bool) {
 	log.Info("Gulpd finished |-|.")
 }
 
-func Checker() {
+func ConnectionChecker() {
 	log.Info("Dialing Rabbitmq.......")
 	factor, err := amqp.Factory()
 	if err != nil {
@@ -112,130 +99,11 @@ func Checker() {
 }
 
 
-func Watcher(queue_name string) {    
+func QueueWatcher(queue_name string) {    
 	    queueserver1 := queue.NewServer(queue_name)
 		go queueserver1.ListenAndServe()
 }
 
-func EtcdWatcher() {
-	rootPrefix := "/"
-	etcdPath, _ := config.GetString("etcd:path")
 
-	c := etcd.NewClient([]string{etcdPath})
-	success := c.SyncCluster()
-	if !success {
-		log.Debug("cannot sync machines")
-	}
-
-	for _, m := range c.GetCluster() {
-		u, err := url.Parse(m)
-		if err != nil {
-			log.Debug(err)
-		}
-		if u.Scheme != "http" {
-			log.Debug("scheme must be http")
-		}
-
-		host, _, err := net.SplitHostPort(u.Host)
-		if err != nil {
-			log.Debug(err)
-		}
-		if host != "127.0.0.1" {
-			log.Debug("Host must be 127.0.0.1")
-		}
-	}
-	
-	etcdNetworkPath, _ := config.GetString("etcd:networkpath")
-	conn, connerr := c.Dial("tcp", etcdNetworkPath)
-    log.Debug("client %v", c)
-    log.Debug("connection %v", conn)
-    log.Debug("connection error %v", connerr)
-    
-    if conn != nil {
-	
-	   log.Info(" [x] Etcd client %s", etcdPath, rootPrefix)
-
-	   dir, _ := config.GetString("update_queue")
-	   log.Info(" [x] Etcd Directory %s", dir)
-
-	   stop := make(chan bool, 0)
-
-	   go func() {
-		for {
-			select {
-			case <-stop:
-				return
-			default:
-			   _, err1 := c.CreateDir(dir)
-
-	           if err1 != nil {
-		         //  log.Error(err1)
-	           }
-				etreschan := make(chan *etcd.Response, 1)
-			     go receiverEtcd(etreschan, stop) 
-			 	_, err := c.Watch(rootPrefix+dir, 0, true, etreschan, stop)
-
-				if err != nil {
-				}
-				
-				if err != etcd.ErrWatchStoppedByUser {
-				}
-
-				time.Sleep(time.Second)
-			}
-		} 
-
-	}()
-	
-	} else {
-  	 fmt.Fprintf(os.Stderr, "Error: %v\n Please start etcd deamon.\n", connerr)
-         os.Exit(1)
-  }
-}
-
-/**
-In this goroutine received the message from channel then to export the message to handler, 
-and this goroutine is close when the message is nil. 
-**/
-func receiverEtcd(c chan *etcd.Response, stop chan bool) {
-	for {
-		select {
-		case msg := <-c:
-			if msg != nil {
-				handlerEtcd(msg)
-			} else {
-				return
-			}
-		}
-	}
-	stop <- false
-}
-
-func handlerEtcd(msg *etcd.Response) {
-	log.Info(" [x] Really Handle etcd response (%s)", msg.Node.Key)
-
-	res := &global.Status{}
-	json.Unmarshal([]byte(msg.Node.Value), &res)
-
-	comp := &global.Component{}
-	
-	conn1, err1 := db.Conn("components")
-	if err1 != nil {
-		log.Error(err1)
-	}
-
-	ferr1 := conn1.FetchStruct(res.Id, comp)
-	if ferr1 != nil {
-		log.Error(ferr1)
-	}
-	
-	ttype := strings.Split(comp.ToscaType, ".") 
-    if ttype[1] == "service" {
-     	if comp.RelatedComponents != "" {
-    	  docker.CreateBindContainer(res) 
-	   }
-	 }     
-	
-}
 
 
