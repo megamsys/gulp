@@ -210,9 +210,9 @@ func ParseKeyValuePair(keyvaluepair []*KeyValuePair, searchkey string) (*KeyValu
 
 type Request struct {
 	Id	             string     `json:"id"`
-	NodeId           string     `json:"node_id"`
-	NodeName         string     `json:"node_name"` 
-	ReqType          string     `json:"req_type"`
+	NodeId           string     `json:"cat_id"`
+	NodeName         string     `json:"name"` 
+	ReqType          string     `json:"cattype"`
 	CreatedAt        string     `json:"created_at"`
 }
 
