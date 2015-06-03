@@ -35,7 +35,7 @@ func CommandExecutor(command string, app *global.AssemblyWithComponents) (action
 
     commandWords = strings.Fields(app.Command)
     log.Debug("Command Executor entry: %s\n", app)
-    megam_home, ckberr := config.GetString("MEGAM_HOME")
+    megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
 	}
@@ -101,7 +101,7 @@ func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
 
     commandWords = strings.Fields(app.Command)
     log.Debug("Command Executor entry: %s\n", app)
-    megam_home, ckberr := config.GetString("MEGAM_HOME")
+    megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
 	}
@@ -154,7 +154,7 @@ func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
 
     commandWords = strings.Fields(app.Command)
     log.Debug("Command Executor entry: %s\n", app)
-    megam_home, ckberr := config.GetString("MEGAM_HOME")
+    megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
 	}
@@ -385,7 +385,7 @@ var buildApp = action.Action{
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
 		ctype := strings.Split(app.ToscaType, ".")
-		megam_home, perr := config.GetString("MEGAM_HOME")
+		megam_home, perr := config.GetString("megam_home")
 		if perr != nil {
 			return nil, perr
 		}
