@@ -1,10 +1,24 @@
+/* 
+** Copyright [2013-2015] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
 package app
 
 import (
 	"fmt"
 	"errors"
 	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/policies"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/libgo/exec"
 	log "code.google.com/p/log4go"
@@ -15,8 +29,8 @@ import (
 	"bufio"
 )
 
-func CommandExecutor(app *policies.AssemblyResult) (action.Result, error) {
-	 var e exec.OsExecutor
+func CommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
+	/* var e exec.OsExecutor
     var commandWords []string
 
     commandWords = strings.Fields(app.Command)
@@ -63,7 +77,20 @@ func CommandExecutor(app *policies.AssemblyResult) (action.Result, error) {
 			fmt.Println(err)
 			return nil, err
 		}
-	}
+	}*/
+	
+	for i := range app.Components {
+		  ctype := strings.Split(app.Components[i].ToscaType, ".")
+		  if command != "restart" {			   	
+		      app.Components[i].Command = command + " " + ctype[2]
+		   } else {
+		   	  app.Components[i].Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
+		   }
+		   _, err := ComponentCommandExecutor(app.Components[i])
+		   if err != nil {
+		   	 return nil, err
+		   }
+		}
 
 	return &app, nil
 }
@@ -174,21 +201,22 @@ func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
   return &app, nil
 }
 
-
+/**
+** restart the virtual machine 
+**/
 var restartApp = action.Action{
 	Name: "restartapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app policies.AssemblyResult
+		var app global.AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case policies.AssemblyResult:
-			app = ctx.Params[0].(policies.AssemblyResult)
-		case *policies.AssemblyResult:
-			app = *ctx.Params[0].(*policies.AssemblyResult)
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
-       
-		return CommandExecutor(&app)
+		return CommandExecutor("restart", &app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -196,20 +224,22 @@ var restartApp = action.Action{
 	MinParams: 1,
 }
 
+/**
+** start the virtual machine 
+**/
 var startApp = action.Action{
 	Name: "startapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app policies.AssemblyResult
+		var app global.AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case policies.AssemblyResult:
-			app = ctx.Params[0].(policies.AssemblyResult)
-		case *policies.AssemblyResult:
-			app = *ctx.Params[0].(*policies.AssemblyResult)
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
-       
-		return CommandExecutor(&app)
+		return CommandExecutor("start", &app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -217,20 +247,23 @@ var startApp = action.Action{
 	MinParams: 1,
 }
 
+/**
+** stop the virtual machine 
+**/
 var stopApp = action.Action{
 	Name: "stopapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app policies.AssemblyResult
+		var app global.AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case policies.AssemblyResult:
-			app = ctx.Params[0].(policies.AssemblyResult)
-		case *policies.AssemblyResult:
-			app = *ctx.Params[0].(*policies.AssemblyResult)
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *policies.AssemblyResult.")
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
        
-		return CommandExecutor(&app)
+		return CommandExecutor("stop", &app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -238,6 +271,9 @@ var stopApp = action.Action{
 	MinParams: 1,
 }
 
+/**
+** restart the application or service 
+**/
 var restartComponent = action.Action{
 	Name: "restartcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -250,7 +286,8 @@ var restartComponent = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-       
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -259,6 +296,9 @@ var restartComponent = action.Action{
 	MinParams: 1,
 }
 
+/**
+** start the application or service 
+**/
 var startComponent = action.Action{
 	Name: "startcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -271,7 +311,8 @@ var startComponent = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-       
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "start " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -280,6 +321,9 @@ var startComponent = action.Action{
 	MinParams: 1,
 }
 
+/**
+** stop the application or service 
+**/
 var stopComponent = action.Action{
 	Name: "stopcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -292,7 +336,8 @@ var stopComponent = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-       
+		ctype := strings.Split(app.ToscaType, ".")
+        app.Command = "stop " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -323,5 +368,33 @@ var shipper = action.Action{
 	MinParams: 1,
 }
 
-
+/**
+** build the application 
+** that means fetch and merge the application from scm and restart the application 
+**/
+var buildApp = action.Action{
+	Name: "buildApp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app global.Component
+		switch ctx.Params[0].(type) {
+		case global.Component:
+			app = ctx.Params[0].(global.Component)
+		case *global.Component:
+			app = *ctx.Params[0].(*global.Component)
+		default:
+			return nil, errors.New("First parameter must be App or *global.Component.")
+		}
+		ctype := strings.Split(app.ToscaType, ".")
+		megam_home, perr := config.GetString("MEGAM_HOME")
+		if perr != nil {
+			return nil, perr
+		}
+        app.Command = megam_home + "/megam_" + ctype[2] + "_builder/build.sh"
+		return ComponentCommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
 
