@@ -38,10 +38,10 @@ func (c *Client) detectClientError(err error) error {
 	}
 	switch urlErr.Err.(type) {
 	case x509.UnknownAuthorityError:
-		target, _ := config.GetString("api:server")
+		target, _ := config.GetString("api:host")
 		return fmt.Errorf("Failed to connect to api server (%s): %s", target, urlErr.Err)
 	}
-	target, _ := config.GetString("api:server")
+	target, _ := config.GetString("api:host")
 	return fmt.Errorf("Failed to connect to api server (%s): %s.", target, urlErr.Err)
 }
 
