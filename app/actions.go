@@ -96,7 +96,7 @@ func CommandExecutor(command string, app *global.AssemblyWithComponents) (action
 }
 
 func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
-	 var e exec.OsExecutor
+	var e exec.OsExecutor
     var commandWords []string
 
     commandWords = strings.Fields(app.Command)

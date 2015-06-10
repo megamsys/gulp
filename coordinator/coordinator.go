@@ -60,12 +60,12 @@ func Handler(chann []byte) {
 		return
 	}     
 	
-	comp := global.Component{Id: req.AppId}
-	com, err := comp.Get(req.AppId)
-	if err != nil {
-		log.Error("Error: Riak didn't cooperate:\n%s.", err)
-		return
-	}     
+	//comp := global.Component{Id: req.AppId}
+	//com, err := comp.Get(req.AppId)
+	//if err != nil {
+		//log.Error("Error: Riak didn't cooperate:\n%s.", err)
+		//return
+	//}     
 	
 	log.Info("============Switch case entry======")
 	switch req.Action {
@@ -81,7 +81,7 @@ func Handler(chann []byte) {
 	log.Info("============Restart entry======")
 		go app.RestartApp(asm)
 		break		
-	case "componentstart":
+	/*case "componentstart":
 	log.Info("============Component Start entry======")
 		go app.StartComponent(com)
 		break
@@ -92,7 +92,7 @@ func Handler(chann []byte) {
 	case "componentrestart":
 	log.Info("============Component Restart entry======")
 		go app.RestartComponent(com)
-		break	    			
+		break	  */  			
 	}
 }
 

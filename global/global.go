@@ -235,15 +235,15 @@ func (req *Request) Get(reqId string) (*Request, error) {
 
 type AppRequest struct {
 	Id	             string     `json:"id"`
-	AppId            string     `json:"app_id"`
-	AppName          string     `json:"app_name"`
+	AppId            string     `json:"cat_id"`
+	AppName          string     `json:"name"`
 	Action           string     `json:"action"`
 	CreatedAt        string     `json:"created_at"`
 }
 
 func (req *AppRequest) Get(reqId string) (*AppRequest, error) {
     log.Info("Get AppRequest message %v", reqId)
-    conn, err := db.Conn("appreqs")
+    conn, err := db.Conn("catreqs")
 	if err != nil {	
 		return req, err
 	}	
