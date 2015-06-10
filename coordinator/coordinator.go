@@ -67,8 +67,11 @@ func Handler(chann []byte) {
 		//return
 	//}     
 	
-	log.Info("============Switch case entry======")
 	switch req.Action {
+	case "reboot":
+	log.Info("============Reboot entry======")
+		go app.RebootApp(asm)
+		break
 	case "start":
 	log.Info("============Start entry======") 
 		go app.StartApp(asm)

@@ -65,7 +65,7 @@ func (bind *BindPolicy) Apply(asm *global.AssemblyWithComponents) (string, error
 
 
 func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Component) error {
-	megam_home, ckberr := config.GetString("MEGAM_HOME")
+	megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return ckberr
 	}
