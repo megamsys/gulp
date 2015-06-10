@@ -29,11 +29,12 @@ import (
 	"bufio"
 )
 
-func CommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
-	/* var e exec.OsExecutor
+func TorpedoCommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
+	var e exec.OsExecutor
     var commandWords []string
 
-    commandWords = strings.Fields(app.Command)
+    ctype := strings.Split(app.ToscaType, ".")
+    commandWords = strings.Fields(command + " " + ctype[2])
     log.Debug("Command Executor entry: %s\n", app)
     megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
@@ -77,8 +78,13 @@ func CommandExecutor(command string, app *global.AssemblyWithComponents) (action
 			fmt.Println(err)
 			return nil, err
 		}
-	}*/
-	
+	}
+
+	return &app, nil
+}
+
+func CommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
+		
 	for i := range app.Components {
 		  ctype := strings.Split(app.Components[i].ToscaType, ".")
 		  if command != "restart" {			   	
@@ -96,7 +102,7 @@ func CommandExecutor(command string, app *global.AssemblyWithComponents) (action
 }
 
 func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
-	 var e exec.OsExecutor
+	var e exec.OsExecutor
     var commandWords []string
 
     commandWords = strings.Fields(app.Command)
@@ -199,6 +205,29 @@ func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
 
   
   return &app, nil
+}
+
+/**
+** reboot the virtual machine 
+**/
+var rebootApp = action.Action{
+	Name: "rebootapp",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app global.AssemblyWithComponents
+		switch ctx.Params[0].(type) {
+		case global.AssemblyWithComponents:
+			app = ctx.Params[0].(global.AssemblyWithComponents)
+		case *global.AssemblyWithComponents:
+			app = *ctx.Params[0].(*global.AssemblyWithComponents)
+		default:
+			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
+		}
+		return TorpedoCommandExecutor("reboot", &app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
 }
 
 /**
