@@ -17,11 +17,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/megamsys/libgo/cmd"
-	"github.com/tsuru/config"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/megamsys/libgo/cmd"
+	"github.com/tsuru/config"
 )
 
 const (
@@ -30,13 +31,14 @@ const (
 )
 
 const defaultConfigPath = "conf/gulpd.conf"
+
 //const defaultConfigPath = "/home/megam/bin/conf/gulpd.conf"
 
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
 	m.Register(&GulpStart{m, nil, false}) //start the gulpd daemon
-	m.Register(&GulpStop{})               //stop  the gulpd daemon
-	m.Register(&GulpUpdate{})             //stop  the gulpd daemon
+	//	m.Register(&GulpStop{})               //stop  the gulpd daemon
+	m.Register(&GulpUpdate{}) //stop  the gulpd daemon
 	/*m.Register(&AppStart{})               //sudo service <appname> start
 	m.Register(&AppStop{})                //sudo service <appname> stop
 	m.Register(&AppRestart{}) //sudo service <apppname> restart
