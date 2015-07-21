@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/megamsys/libgo/cmd"
 	"launchpad.net/gnuflag"
-	"strconv"
-	"net/http"
 )
 
 type GulpStart struct {
@@ -69,6 +70,7 @@ If you use the '--bark' flag gulpd will notify daemon status.
 }
 
 //The stop has a design issue.
+/*
 func (c *GulpStop) Run(context *cmd.Context, client *cmd.Client) error {
 	// Now using this value stop the queue.
 	StopServer(c.bark)
@@ -83,7 +85,7 @@ func (c *GulpStop) Flags() *gnuflag.FlagSet {
 	}
 	return c.fs
 }
-
+*/
 type GulpUpdate struct {
 	fs     *gnuflag.FlagSet
 	name   string
@@ -116,7 +118,7 @@ func (c *GulpUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
 		return nil
 	}
 
-//we need to move into a struct
+	//we need to move into a struct
 	tmpinp := map[string]string{
 		"node_name":     c.name,
 		"accounts_id":   "",
@@ -126,7 +128,7 @@ func (c *GulpUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
 		"new_node_name": "",
 	}
 
-//and this as well.
+	//and this as well.
 	jsonMsg, err := json.Marshal(tmpinp)
 
 	if err != nil {
@@ -161,7 +163,7 @@ func (c *GulpUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
 	if err != nil {
 		return err
 	}
-    fmt.Println(strconv.Itoa(resp.StatusCode) + " ....code")
+	fmt.Println(strconv.Itoa(resp.StatusCode) + " ....code")
 	if resp.StatusCode == http.StatusNoContent {
 		fmt.Fprintln(ctx.Stdout, "Service successfully updated.")
 	}
