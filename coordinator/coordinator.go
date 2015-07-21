@@ -1,4 +1,4 @@
-/* 
+/*
 ** Copyright [2013-2015] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ type Message struct {
 }
 
 func Handler(chann []byte) {
-	
+
 	m := &Message{}
 	parse_err := json.Unmarshal(chann, &m)
 	log.Info(parse_err)
@@ -52,28 +52,28 @@ func Handler(chann []byte) {
 		log.Error("Error: Riak didn't cooperate:\n%s.", err)
 		return
 	}
-	
+
 	assembly := global.Assembly{Id: req.AppId}
 	asm, err := assembly.GetAssemblyWithComponents(req.AppId)
 	if err != nil {
 	    log.Error("Error: Riak didn't cooperate:\n%s.", err)
 		return
-	}     
-	
+	}
+
 	//comp := global.Component{Id: req.AppId}
 	//com, err := comp.Get(req.AppId)
 	//if err != nil {
 		//log.Error("Error: Riak didn't cooperate:\n%s.", err)
 		//return
-	//}     
-	
+	//}
+
 	switch req.Action {
 	case "reboot":
 	log.Info("============Reboot entry======")
 		go app.RebootApp(asm)
 		break
 	case "start":
-	log.Info("============Start entry======") 
+	log.Info("============Start entry======")
 		go app.StartApp(asm)
 		break
 	case "stop":
@@ -83,7 +83,7 @@ func Handler(chann []byte) {
 	case "restart":
 	log.Info("============Restart entry======")
 		go app.RestartApp(asm)
-		break		
+		break
 	/*case "componentstart":
 	log.Info("============Component Start entry======")
 		go app.StartComponent(com)
@@ -95,12 +95,12 @@ func Handler(chann []byte) {
 	case "componentrestart":
 	log.Info("============Component Restart entry======")
 		go app.RestartComponent(com)
-		break	  */  			
+		break	  */
 	}
 }
 
 /**
-** It handles all events from megam engine 
+** It handles all events from megam engine
 **/
 func EventsHandler(chann []byte) {
 	m := &Message{}
@@ -110,7 +110,7 @@ func EventsHandler(chann []byte) {
 		log.Error("Error: Message parsing error:\n%s.", parse_err)
 		return
 	}
-	
+
 	switch m.Action {
 	case "build":
 	log.Info("============Build entry======")
@@ -132,14 +132,18 @@ func PolicyHandler() {
 	if err != nil {
 		return
 	}
-	
+
 	assembly := global.Assembly{Id: id}
 	asm, asmerr := assembly.GetAssemblyWithComponents(id)
 	if asmerr != nil {
 	    log.Error("Error: Riak didn't cooperate:\n%s.", asmerr)
 		return
-	}   	
-	policies.ApplyPolicies(asm)	  
+	}
+	policies.ApplyPolicies(asm)
 }
 
+func DockerLogs() {
+	log.Info("==>Docker Logs Entry<==")
+	
 
+}

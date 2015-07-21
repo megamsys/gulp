@@ -25,6 +25,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"io"
+	"io/ioutil"
 )
 
 type TimePrecision int
@@ -70,21 +72,36 @@ func (self *HttpServer) registerEndpoint(method string, pattern string, f libhtt
 	case "del":
 		self.p.Del(pattern, HeaderHandler(f, version))
 	case "clog":
-		self.p.Get(pattern, libhttp.HandlerFunc(ContainerLog))
+		self.p.Get(pattern, libhttp.HandlerFunc(DockerLog))
 
 case "cnetwork":
-		self.p.Get(pattern, libhttp.HandlerFunc(ContainerNetwork))
+		self.p.Get(pattern, libhttp.HandlerFunc(DockerNetwork))
 
 	self.p.Options(pattern, HeaderHandler(self.sendCrossOriginHeader, version))
-}
-}
-
-func ContainerLog(w libhttp.ResponseWriter, req *libhttp.Request){
-    fmt.Fprint(w, "Hello, Log\n")
+ }
 }
 
-func ContainerNetwork(w libhttp.ResponseWriter, req *libhttp.Request){
+func DockerLog(w libhttp.ResponseWriter, req *libhttp.Request){
+    fmt.Fprint(w, "Hello, Logs\n")
+		fmt.Println(req)
+		body, err := ioutil.ReadAll(io.LimitReader(req.Body, 1048576))
+		if err != nil {
+			fmt.Println("error")
+		}
+		fmt.Println("Docker logs")
+		fmt.Println(body)
+	//coordinator.DockerLogs()
+
+}
+
+func DockerNetwork(w libhttp.ResponseWriter, req *libhttp.Request){
     fmt.Fprint(w, "Hello, Network\n")
+		 body, err := ioutil.ReadAll(io.LimitReader(req.Body, 1048576))
+		if err != nil {
+			fmt.Println("error")
+		}
+		fmt.Println("Docker networks")
+		fmt.Println(body)
 }
 
 
@@ -96,8 +113,8 @@ func (self *HttpServer) Serve(listener net.Listener) {
 	// Run the given query and return an array of series or a chunked response
 	// with each batch of points we get back
 	self.registerEndpoint("get", "/index", self.query)
-  self.registerEndpoint("clog", "/containerlog", self.query)
-	self.registerEndpoint("cnetwork", "/containernetwork", self.query)
+  self.registerEndpoint("clog", "/dockerlogs", self.query)
+	self.registerEndpoint("cnetwork", "/dockernetworks", self.query)
 
 
 	self.serveListener(listener, self.p)
