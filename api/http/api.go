@@ -20,6 +20,7 @@ import (
 	"github.com/bmizerany/pat"
 	"github.com/tsuru/config"
 	"net"
+	"fmt"
 	libhttp "net/http"
 	"strconv"
 	"strings"
@@ -68,9 +69,24 @@ func (self *HttpServer) registerEndpoint(method string, pattern string, f libhtt
 		self.p.Post(pattern, HeaderHandler(f, version))
 	case "del":
 		self.p.Del(pattern, HeaderHandler(f, version))
-	}
+	case "clog":
+		self.p.Get(pattern, libhttp.HandlerFunc(ContainerLog))
+
+case "cnetwork":
+		self.p.Get(pattern, libhttp.HandlerFunc(ContainerNetwork))
+
 	self.p.Options(pattern, HeaderHandler(self.sendCrossOriginHeader, version))
 }
+}
+
+func ContainerLog(w libhttp.ResponseWriter, req *libhttp.Request){
+    fmt.Fprint(w, "Hello, Log\n")
+}
+
+func ContainerNetwork(w libhttp.ResponseWriter, req *libhttp.Request){
+    fmt.Fprint(w, "Hello, Network\n")
+}
+
 
 func (self *HttpServer) Serve(listener net.Listener) {
 	defer func() { self.shutdown <- true }()
@@ -80,6 +96,9 @@ func (self *HttpServer) Serve(listener net.Listener) {
 	// Run the given query and return an array of series or a chunked response
 	// with each batch of points we get back
 	self.registerEndpoint("get", "/index", self.query)
+  self.registerEndpoint("clog", "/containerlog", self.query)
+	self.registerEndpoint("cnetwork", "/containernetwork", self.query)
+
 
 	self.serveListener(listener, self.p)
 }

@@ -143,10 +143,12 @@ import (
 
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/cmd/gulpd/server"
-//	"github.com/megamsys/gulp/coordinator"
-//	"github.com/megamsys/gulp/global"
+	"github.com/megamsys/gulp/coordinator"
+	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies/bind"
 	"github.com/megamsys/gulp/policies/ha"
+  "github.com/tsuru/config"
+
 )
 
 func init() {
@@ -170,6 +172,10 @@ func RunServer(dry bool) {
 	//	if err := startProfiler(server); err != nil {
 	//		panic(err)
 	//	}
+
+  id, _ := config.GetString("id")
+	global.UpdateRiakStatus(id)
+	coordinator.PolicyHandler()
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Error("ListenAndServe failed: ", err)
