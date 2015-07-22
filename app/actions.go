@@ -1,4 +1,4 @@
-/* 
+/*
 ** Copyright [2013-2015] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,67 +12,68 @@
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-*/
+ */
 package app
 
 import (
-	"fmt"
+	"bufio"
 	"errors"
-	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/global"
-	"github.com/megamsys/libgo/exec"
-	log "code.google.com/p/log4go"
-	"strings" 
-	"github.com/tsuru/config"
+	"fmt"
 	"os"
 	"path"
-	"bufio"
+	"strings"
+
+	log "code.google.com/p/log4go"
+	"github.com/megamsys/gulp/global"
+	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/libgo/exec"
+	"github.com/tsuru/config"
 )
 
 func TorpedoCommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
 	var e exec.OsExecutor
-    var commandWords []string
+	var commandWords []string
 
-    ctype := strings.Split(app.ToscaType, ".")
-    commandWords = strings.Fields(command + " " + ctype[2])
-    log.Debug("Command Executor entry: %s\n", app)
-    megam_home, ckberr := config.GetString("megam_home")
+	ctype := strings.Split(app.ToscaType, ".")
+	commandWords = strings.Fields(command + " " + ctype[2])
+	log.Debug("Command Executor entry: %s\n", app)
+	megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
 	}
-    appName := app.Name
-	basePath := megam_home + "logs" 
+	appName := app.Name
+	basePath := megam_home + "logs"
 	dir := path.Join(basePath, appName)
-	
-	fileOutPath := path.Join(dir, appName + "_out" )
-	fileErrPath := path.Join(dir, appName + "_err" )
+
+	fileOutPath := path.Join(dir, appName+"_out")
+	fileErrPath := path.Join(dir, appName+"_err")
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		log.Info("Creating directory: %s\n", dir)
 		if errm := os.MkdirAll(dir, 0777); errm != nil {
 			return nil, errm
 		}
-	} 
-		// open output file
-		fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-		if outerr != nil {
-			return nil, outerr
-		}
-		defer fout.Close()
-		// open Error file
-		ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-		if errerr != nil {
-			return nil, errerr
-		}
-		defer ferr.Close()
-  
+	}
+	// open output file
+	fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if outerr != nil {
+		return nil, outerr
+	}
+	defer fout.Close()
+	// open Error file
+	ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if errerr != nil {
+		return nil, errerr
+	}
+	defer ferr.Close()
+
 	foutwriter := bufio.NewWriter(fout)
 	ferrwriter := bufio.NewWriter(ferr)
-    log.Debug(commandWords)
-    log.Debug("Length: %s", len(commandWords))
-    
-    defer ferrwriter.Flush()
-    defer foutwriter.Flush()
-	
+	log.Debug(commandWords)
+	log.Debug("Length: %s", len(commandWords))
+
+	defer ferrwriter.Flush()
+	defer foutwriter.Flush()
+
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:len(commandWords)], nil, foutwriter, ferrwriter); err != nil {
 			fmt.Println(err)
@@ -84,66 +85,66 @@ func TorpedoCommandExecutor(command string, app *global.AssemblyWithComponents) 
 }
 
 func CommandExecutor(command string, app *global.AssemblyWithComponents) (action.Result, error) {
-		
+
 	for i := range app.Components {
-		  ctype := strings.Split(app.Components[i].ToscaType, ".")
-		  if command != "restart" {			   	
-		      app.Components[i].Command = command + " " + ctype[2]
-		   } else {
-		   	  app.Components[i].Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
-		   }
-		   _, err := ComponentCommandExecutor(app.Components[i])
-		   if err != nil {
-		   	 return nil, err
-		   }
+		ctype := strings.Split(app.Components[i].ToscaType, ".")
+		if command != "restart" {
+			app.Components[i].Command = command + " " + ctype[2]
+		} else {
+			app.Components[i].Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
 		}
+		_, err := ComponentCommandExecutor(app.Components[i])
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return &app, nil
 }
 
 func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
 	var e exec.OsExecutor
-    var commandWords []string
+	var commandWords []string
 
-    commandWords = strings.Fields(app.Command)
-    log.Debug("Command Executor entry: %s\n", app)
-    megam_home, ckberr := config.GetString("megam_home")
+	commandWords = strings.Fields(app.Command)
+	log.Debug("Command Executor entry: %s\n", app)
+	megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
 	}
-    appName := app.Name
-	basePath := megam_home + "logs" 
+	appName := app.Name
+	basePath := megam_home + "logs"
 	dir := path.Join(basePath, appName)
-	
-	fileOutPath := path.Join(dir, appName + "_out" )
-	fileErrPath := path.Join(dir, appName + "_err" )
+
+	fileOutPath := path.Join(dir, appName+"_out")
+	fileErrPath := path.Join(dir, appName+"_err")
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		log.Info("Creating directory: %s\n", dir)
 		if errm := os.MkdirAll(dir, 0777); errm != nil {
 			return nil, errm
 		}
-	} 
-		// open output file
-		fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-		if outerr != nil {
-			return nil, outerr
-		}
-		defer fout.Close()
-		// open Error file
-		ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-		if errerr != nil {
-			return nil, errerr
-		}
-		defer ferr.Close()
-  
+	}
+	// open output file
+	fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if outerr != nil {
+		return nil, outerr
+	}
+	defer fout.Close()
+	// open Error file
+	ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if errerr != nil {
+		return nil, errerr
+	}
+	defer ferr.Close()
+
 	foutwriter := bufio.NewWriter(fout)
 	ferrwriter := bufio.NewWriter(ferr)
-    log.Debug(commandWords)
-    log.Debug("Length: %s", len(commandWords))
-    
-    defer ferrwriter.Flush()
-    defer foutwriter.Flush()
-	
+	log.Debug(commandWords)
+	log.Debug("Length: %s", len(commandWords))
+
+	defer ferrwriter.Flush()
+	defer foutwriter.Flush()
+
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:len(commandWords)], nil, foutwriter, ferrwriter); err != nil {
 			fmt.Println(err)
@@ -154,61 +155,61 @@ func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
 	return &app, nil
 }
 
-func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
-    var e exec.OsExecutor
-    var commandWords []string
 
-    commandWords = strings.Fields(app.Command)
-    log.Debug("Command Executor entry: %s\n", app)
-    megam_home, ckberr := config.GetString("megam_home")
+func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
+	var e exec.OsExecutor
+	var commandWords []string
+
+	commandWords = strings.Fields(app.Command)
+	log.Debug("Command Executor entry: %s\n", app)
+	megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
 	}
-    appName := app.Name
-	basePath := megam_home + "logs" 
+	appName := app.Name
+	basePath := megam_home + "logs"
 	dir := path.Join(basePath, appName)
-	
-	fileOutPath := path.Join(dir, appName + "_out" )
-	fileErrPath := path.Join(dir, appName + "_err" )
+
+	fileOutPath := path.Join(dir, appName+"_out")
+	fileErrPath := path.Join(dir, appName+"_err")
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		log.Info("Creating directory: %s\n", dir)
 		if errm := os.MkdirAll(dir, 0777); errm != nil {
 			return nil, errm
 		}
-	} 
-		// open output file
-		fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-		if outerr != nil {
-			return nil, outerr
-		}
-		defer fout.Close()
-		// open Error file
-		ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-		if errerr != nil {
-			return nil, errerr
-		}
-		defer ferr.Close()
-  
+	}
+	// open output file
+	fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if outerr != nil {
+		return nil, outerr
+	}
+	defer fout.Close()
+	// open Error file
+	ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if errerr != nil {
+		return nil, errerr
+	}
+	defer ferr.Close()
+
 	foutwriter := bufio.NewWriter(fout)
 	ferrwriter := bufio.NewWriter(ferr)
-    log.Debug(commandWords)
-    log.Debug("Length: %s", len(commandWords))
-    
-    defer ferrwriter.Flush()
-    defer foutwriter.Flush()
-    
-    if len(commandWords) > 0 {
-       if err := e.Execute(commandWords[0], commandWords[1:], nil, foutwriter, ferrwriter); err != nil {
-           return nil, err
-        }
-     }
+	log.Debug(commandWords)
+	log.Debug("Length: %s", len(commandWords))
 
-  
-  return &app, nil
+	defer ferrwriter.Flush()
+	defer foutwriter.Flush()
+
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, foutwriter, ferrwriter); err != nil {
+			return nil, err
+		}
+	}
+
+	return &app, nil
 }
 
 /**
-** reboot the virtual machine 
+** reboot the virtual machine
 **/
 var rebootApp = action.Action{
 	Name: "rebootapp",
@@ -231,7 +232,7 @@ var rebootApp = action.Action{
 }
 
 /**
-** restart the virtual machine 
+** restart the virtual machine
 **/
 var restartApp = action.Action{
 	Name: "restartapp",
@@ -254,7 +255,7 @@ var restartApp = action.Action{
 }
 
 /**
-** start the virtual machine 
+** start the virtual machine
 **/
 var startApp = action.Action{
 	Name: "startapp",
@@ -277,7 +278,7 @@ var startApp = action.Action{
 }
 
 /**
-** stop the virtual machine 
+** stop the virtual machine
 **/
 var stopApp = action.Action{
 	Name: "stopapp",
@@ -291,7 +292,7 @@ var stopApp = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.AssemblyWithComponents.")
 		}
-       
+
 		return CommandExecutor("stop", &app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -301,7 +302,7 @@ var stopApp = action.Action{
 }
 
 /**
-** restart the application or service 
+** restart the application or service
 **/
 var restartComponent = action.Action{
 	Name: "restartcomponent",
@@ -316,7 +317,7 @@ var restartComponent = action.Action{
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
 		ctype := strings.Split(app.ToscaType, ".")
-        app.Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
+		app.Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -326,7 +327,7 @@ var restartComponent = action.Action{
 }
 
 /**
-** start the application or service 
+** start the application or service
 **/
 var startComponent = action.Action{
 	Name: "startcomponent",
@@ -341,7 +342,7 @@ var startComponent = action.Action{
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
 		ctype := strings.Split(app.ToscaType, ".")
-        app.Command = "start " + ctype[2]
+		app.Command = "start " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -351,7 +352,7 @@ var startComponent = action.Action{
 }
 
 /**
-** stop the application or service 
+** stop the application or service
 **/
 var stopComponent = action.Action{
 	Name: "stopcomponent",
@@ -366,7 +367,7 @@ var stopComponent = action.Action{
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
 		ctype := strings.Split(app.ToscaType, ".")
-        app.Command = "stop " + ctype[2]
+		app.Command = "stop " + ctype[2]
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -387,8 +388,8 @@ var shipper = action.Action{
 		default:
 			return nil, errors.New("First parameter must be App or *global.Component.")
 		}
-		
-        app.Command = "bash logheka.sh " + app.ShipperArguments
+
+		app.Command = "bash logheka.sh " + app.ShipperArguments
 		return ContainerCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -398,8 +399,8 @@ var shipper = action.Action{
 }
 
 /**
-** build the application 
-** that means fetch and merge the application from scm and restart the application 
+** build the application
+** that means fetch and merge the application from scm and restart the application
 **/
 var buildApp = action.Action{
 	Name: "buildApp",
@@ -418,7 +419,7 @@ var buildApp = action.Action{
 		if perr != nil {
 			return nil, perr
 		}
-        app.Command = megam_home + "/megam_" + ctype[2] + "_builder/build.sh"
+		app.Command = megam_home + "/megam_" + ctype[2] + "_builder/build.sh"
 		return ComponentCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -426,4 +427,3 @@ var buildApp = action.Action{
 	},
 	MinParams: 1,
 }
-

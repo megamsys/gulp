@@ -1,4 +1,4 @@
-/* 
+/*
 ** Copyright [2013-2015] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,7 @@ import (
 )
 
 // RebootApp creates a new app.
+//
 //
 // reboot the app :
 func RebootApp(app *global.AssemblyWithComponents) error {
@@ -128,4 +129,3 @@ func BuildApp(app *global.Component) error {
 	}
 	return nil
 }
-
