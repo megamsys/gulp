@@ -23,6 +23,7 @@ import (
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
+	"github.com/megamsys/gulp/docker"
 	"github.com/tsuru/config"
 )
 
@@ -149,7 +150,7 @@ func DockerLogs(container_id string, container_name string) {
 	fmt.Println(container_id)
 	fmt.Println(container_name)
 
-//	log := global.Dockerlogs{ContainerId: container_id, ContainerName: container_name}
-	//docker.dockerlogs(log)
+	log := global.DockerLogsInfo{ContainerId: container_id, ContainerName: container_name}
+	docker.StreamLogs(log)
 
 }

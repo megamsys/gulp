@@ -29,7 +29,7 @@ func DockerLogs(w libhttp.ResponseWriter, req *libhttp.Request) {
 
 	var jsonData Dockerlogs
 	err = json.Unmarshal(body, &jsonData)
-	//coordinator.DockerLogs(jsonData.ContainerId, jsonData.ContainerName)
+	coordinator.DockerLogs(jsonData.ContainerId, jsonData.ContainerName)
 
 }
 

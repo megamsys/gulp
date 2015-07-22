@@ -286,7 +286,11 @@ func (asm *Assemblies) Get(asmId string) (*Assemblies, error) {
 	return asm, nil
 }
 
-
+type DockerLogsInfo struct {
+	ContainerId   string `json:"container_id"`
+	ContainerName  string `json:"container_name"`
+	Command    string
+}
 
 type Status struct {
 	Id     string `json:"id"`
