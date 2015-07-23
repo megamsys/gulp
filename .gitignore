@@ -1,6 +1,6 @@
 *.class
 *.log
-gulpd
+#gulpd
 Godeps/_workspace
 # sbt specific
 dist/*
@@ -13,4 +13,3 @@ project/plugins/project/
 # Scala-IDE specific
 bin/
 .scala_dependencies
-

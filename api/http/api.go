@@ -87,8 +87,8 @@ func (self *HttpServer) Serve(listener net.Listener) {
 	// Run the given query and return an array of series or a chunked response
 	// with each batch of points we get back
 	self.registerEndpoint("get", "/index", self.query)
-	self.registerEndpoint("clog", "/dockerlogs", self.query)
-	self.registerEndpoint("cnetwork", "/dockernetworks", self.query)
+	self.registerEndpoint("clog", "/docker/logs", self.query)
+	self.registerEndpoint("cnetwork", "/docker/networks", self.query)
 
 	self.serveListener(listener, self.p)
 }

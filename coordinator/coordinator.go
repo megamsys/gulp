@@ -17,8 +17,6 @@ package coordinator
 
 import (
 	"encoding/json"
-	"fmt"
-
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/global"
@@ -143,13 +141,20 @@ func PolicyHandler() {
 	policies.ApplyPolicies(asm)
 }
 
+
+/*
+* handlers to call the docker log stream and network setting action
+*
+*/
+
 func DockerLogs(container_id string, container_name string) {
+	log.Info("===>Docker Logs Entry<===")
+	log := global.DockerLogsInfo{ContainerId: container_id, ContainerName: container_name}
+  go app.StreamLogs(&log)
+}
 
-	log.Info("==>Docker Logs Entry<==")
-	fmt.Println(container_id)
-	fmt.Println(container_name)
-
-//	log := global.Dockerlogs{ContainerId: container_id, ContainerName: container_name}
-	//docker.dockerlogs(log)
-
+func DockerNetworks(bridge string, container_id string, ip_addr string, gateway string) {
+	log.Info("===>Docker Networks Entry<===")
+  network := global.DockerNetworksInfo{Bridge: bridge, ContainerId: container_id, IpAddr: ip_addr, Gateway: gateway}
+	go app.ConfigureNetworks(&network)
 }

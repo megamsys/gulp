@@ -129,3 +129,37 @@ func BuildApp(app *global.Component) error {
 	}
 	return nil
 }
+
+
+/*
+* Docker logs stream which links docker logs to megam docker file for heka to read
+*
+*/
+
+func StreamLogs(logs *global.DockerLogsInfo) error {
+	actions := []*action.Action{&streamLogs}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(logs)
+	if err != nil {
+		return &AppLifecycleError{app: logs.ContainerName, Err: err}
+	}
+	return nil
+}
+
+/*
+* Docker networks configuration to setting up public ip
+*
+*/
+
+func ConfigureNetworks(networks *global.DockerNetworksInfo) error {
+
+	actions := []*action.Action{&configureNetworks}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(networks)
+	if err != nil {
+		return &AppLifecycleError{app: networks.ContainerId, Err: err}
+	}
+	return nil
+}

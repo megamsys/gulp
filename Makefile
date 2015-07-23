@@ -74,7 +74,7 @@ get-code:
 godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep
 	godep restore ./...
-    
+
 build: check-path get _go_test _gulpd
 
 _go_test:
@@ -84,7 +84,7 @@ _go_test:
 _gulpd:
 	rm -f gulpd
 	go build $(GO_EXTRAFLAGS) -o gulpd ./cmd/gulpd
-	
+
 
 _gulpdr:
 	sudo ./gulpd start

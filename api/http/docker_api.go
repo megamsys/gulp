@@ -3,42 +3,39 @@ package http
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	//"io"
 	"io/ioutil"
 	libhttp "net/http"
+	"github.com/megamsys/gulp/coordinator"
+	"github.com/megamsys/gulp/global"
+
 )
 
 /*
- * megam docker endpoints used for docker logs and networks
+ * megam docker controller for endpoint - /docker/logs
  */
-
-type Dockerlogs struct {
-	ContainerId   string `json:"container_id"`
-	ContainerName string `json:"container_name"`
-}
-
-type Dockernetworks struct {
-}
-
 func DockerLogs(w libhttp.ResponseWriter, req *libhttp.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Println("error")
 	}
-	fmt.Println(string(body))
-
-	var jsonData Dockerlogs
-	err = json.Unmarshal(body, &jsonData)
-	//coordinator.DockerLogs(jsonData.ContainerId, jsonData.ContainerName)
-
+	var jsonLogsData global.DockerLogsInfo
+	err = json.Unmarshal(body, &jsonLogsData)
+	coordinator.DockerLogs(jsonLogsData.ContainerId, jsonLogsData.ContainerName)
 }
 
+
+
+
+/*
+ * megam docker controller for endpoint - /docker/networks
+ */
 func DockerNetworks(w libhttp.ResponseWriter, req *libhttp.Request) {
-	fmt.Fprint(w, "Hello, Network\n")
-	body, err := ioutil.ReadAll(io.LimitReader(req.Body, 1048576))
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Println("error")
 	}
-	fmt.Println("Docker networks")
-	fmt.Println(body)
+	var jsonNetworksData global.DockerNetworksInfo
+	err = json.Unmarshal(body, &jsonNetworksData)
+	coordinator.DockerNetworks(jsonNetworksData.Bridge, jsonNetworksData.ContainerId, jsonNetworksData.IpAddr , jsonNetworksData.Gateway)
 }
