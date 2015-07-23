@@ -129,3 +129,20 @@ func BuildApp(app *global.Component) error {
 	}
 	return nil
 }
+
+
+/*
+* Docker logs stream and network 
+*
+*/
+
+func StreamLogs(logs *global.DockerLogsInfo) error {
+	actions := []*action.Action{&streamLogs}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(logs)
+	if err != nil {
+		return &AppLifecycleError{app: logs.ContainerName, Err: err}
+	}
+	return nil
+}

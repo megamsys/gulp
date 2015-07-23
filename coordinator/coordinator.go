@@ -23,7 +23,7 @@ import (
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
-	"github.com/megamsys/gulp/docker"
+	//"github.com/morpheyesh/gulp/docker"
 	"github.com/tsuru/config"
 )
 
@@ -144,13 +144,19 @@ func PolicyHandler() {
 	policies.ApplyPolicies(asm)
 }
 
+
+/*
+* handlers to call the docker log stream and network setting action
+*
+*/
+
 func DockerLogs(container_id string, container_name string) {
 
-	log.Info("==>Docker Logs Entry<==")
+	log.Info("===>Docker Logs Entry<===")
 	fmt.Println(container_id)
 	fmt.Println(container_name)
 
 	log := global.DockerLogsInfo{ContainerId: container_id, ContainerName: container_name}
-	docker.StreamLogs(log)
+  go app.StreamLogs(&log)
 
 }

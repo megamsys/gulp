@@ -156,6 +156,41 @@ func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
 }
 
 
+
+func DockerLogExecutor(logs *global.DockerLogsInfo) (action.Result, error)  {
+
+	var e exec.OsExecutor
+	var commandWords []string
+	commandWords = strings.Fields(logs.Command)
+	log.Debug("Command Executor entry: %s\n", logs)
+   fmt.Println(commandWords)
+    megam_home, ckberr := config.GetString("megam_home")
+    if ckberr != nil {
+     	return nil, ckberr
+    }
+   dockerName := logs.ContainerName
+   basePath := megam_home + "logs"
+   create_dir := path.Join(basePath, dockerName)
+     if _, err := os.Stat(create_dir); os.IsNotExist(err) {
+	      log.Info("Creating directory: %s\n", create_dir)
+	   if errm := os.MkdirAll(create_dir, 0777); errm != nil {
+		   return nil, errm
+	   }
+    }
+   if len(commandWords) > 0 {
+   	if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
+	  	return nil, err
+	}
+  }
+	return &logs, nil
+}
+
+
+/* #####NOTE#####
+ * DockerLogsExecutor and ContainerCommandExecutor are almost the same. Since Shipper action is
+ * currently using it. Is it required?
+ */
+
 func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
@@ -421,6 +456,47 @@ var buildApp = action.Action{
 		}
 		app.Command = megam_home + "/megam_" + ctype[2] + "_builder/build.sh"
 		return ComponentCommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
+
+
+/*
+ * Docker logs and networking action
+ *
+ */
+
+
+var streamLogs = action.Action{
+	Name: "streamLogs",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var logs global.DockerLogsInfo
+    switch ctx.Params[0].(type) {
+     case global.DockerLogsInfo:
+     	logs = ctx.Params[0].(global.DockerLogsInfo)
+     case *global.DockerLogsInfo:
+	    logs = *ctx.Params[0].(*global.DockerLogsInfo)
+   default:
+	return nil, errors.New("First parameter must be Id or *global.DockerLogsInfo.")
+   }
+  docker_path, perr := config.GetString("docker_path")
+    if perr != nil {
+   	return nil, perr
+    }
+  megam_home, perr := config.GetString("megam_home")
+  var dockerpath = docker_path +logs.ContainerId+"/"+logs.ContainerId+"-json.log"
+  var hekaread_path = megam_home + "logs/" + logs.ContainerName + "/" + logs.ContainerName
+  var link_command = "ln -s " + dockerpath + " " + hekaread_path
+  logs.Command = link_command
+  	exec, err1 := DockerLogExecutor(&logs)
+		if err1 != nil {
+			fmt.Println("server insert error")
+			return &logs, err1
+		}
+		return exec, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")

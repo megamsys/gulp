@@ -292,6 +292,7 @@ type DockerLogsInfo struct {
 	Command    string
 }
 
+
 type Status struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`
