@@ -157,6 +157,11 @@ func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
 
 
 
+
+/*
+ * Docker log executor executes the ln command and establishes link between the
+ * docker path and megam-heka reading path.
+ */
 func DockerLogExecutor(logs *global.DockerLogsInfo) (action.Result, error)  {
 
 	var e exec.OsExecutor
@@ -183,14 +188,35 @@ func DockerLogExecutor(logs *global.DockerLogsInfo) (action.Result, error)  {
 	}
   }
 	return &logs, nil
-}
+  }
+
+
+
+/*
+ * Docker network executor executes the script for the container to be exposed
+ * publicly. Bridge, ip address, container id and gateway are required.
+ */
+func DockerNetworkExecutor(networks *global.DockerNetworksInfo) (action.Result, error) {
+
+	var e exec.OsExecutor
+	var commandWords []string
+	commandWords = strings.Fields(networks.Command)
+	log.Debug("Command Executor entry: %s\n", networks)
+	fmt.Println(commandWords)
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
+		return nil, err
+  }
+  }
+  return &networks, nil
+ }
+
 
 
 /* #####NOTE#####
  * DockerLogsExecutor and ContainerCommandExecutor are almost the same. Since Shipper action is
- * currently using it. Is it required?
+ * currently using it. Is it required?, if not needs to be deleted.
  */
-
 func ContainerCommandExecutor(app *global.Assemblies) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
@@ -497,6 +523,35 @@ var streamLogs = action.Action{
 			return &logs, err1
 		}
 		return exec, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
+
+
+var configureNetworks = action.Action{
+	Name: "configureNetworks",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var networks global.DockerNetworksInfo
+		switch ctx.Params[0].(type) {
+		case global.DockerNetworksInfo:
+			networks = ctx.Params[0].(global.DockerNetworksInfo)
+		case *global.DockerNetworksInfo:
+			networks = *ctx.Params[0].(*global.DockerNetworksInfo)
+	default:
+	return nil, errors.New("First parameter must be Id or *global.DockerNetworksInfo.")
+	}
+
+  network_command := "pipework "+networks.Bridge+" "+networks.ContainerId+" "+networks.IpAddr+"@"+networks.Gateway
+	networks.Command = network_command
+		exec, err1 := DockerNetworkExecutor(&networks)
+		if err1 != nil {
+			fmt.Println("server insert error")
+			return &networks, err1
+		}
+		return exec, err1
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")

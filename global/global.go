@@ -293,6 +293,15 @@ type DockerLogsInfo struct {
 }
 
 
+type DockerNetworksInfo struct {
+	Bridge string `json:"bridge"`
+	ContainerId string `json:"container_id"`
+	IpAddr string `json:"ip_addr"`
+	Gateway string `json:"gateway"`
+	Command   string
+}
+
+
 type Status struct {
 	Id     string `json:"id"`
 	Status string `json:"status"`

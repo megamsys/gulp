@@ -17,13 +17,10 @@ package coordinator
 
 import (
 	"encoding/json"
-	"fmt"
-
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies"
-	//"github.com/morpheyesh/gulp/docker"
 	"github.com/tsuru/config"
 )
 
@@ -151,12 +148,13 @@ func PolicyHandler() {
 */
 
 func DockerLogs(container_id string, container_name string) {
-
 	log.Info("===>Docker Logs Entry<===")
-	fmt.Println(container_id)
-	fmt.Println(container_name)
-
 	log := global.DockerLogsInfo{ContainerId: container_id, ContainerName: container_name}
   go app.StreamLogs(&log)
+}
 
+func DockerNetworks(bridge string, container_id string, ip_addr string, gateway string) {
+	log.Info("===>Docker Networks Entry<===")
+  network := global.DockerNetworksInfo{Bridge: bridge, ContainerId: container_id, IpAddr: ip_addr, Gateway: gateway}
+	go app.ConfigureNetworks(&network)
 }
