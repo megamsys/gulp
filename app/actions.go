@@ -202,12 +202,12 @@ func DockerNetworkExecutor(networks *global.DockerNetworksInfo) (action.Result, 
 	var commandWords []string
 	commandWords = strings.Fields(networks.Command)
 	log.Debug("Command Executor entry: %s\n", networks)
-	fmt.Println(commandWords)
+	log.Debug(commandWords)
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
-		return nil, err
-  }
-  }
+			return nil, err
+        }
+     }
   return &networks, nil
  }
 
@@ -543,8 +543,8 @@ var configureNetworks = action.Action{
 	default:
 	return nil, errors.New("First parameter must be Id or *global.DockerNetworksInfo.")
 	}
-
-  network_command := "pipework "+networks.Bridge+" "+networks.ContainerId+" "+networks.IpAddr+"@"+networks.Gateway
+  megam_home, _ := config.GetString("megam_home")
+  network_command := megam_home+"pipework "+networks.Bridge+" "+networks.ContainerId+" "+networks.IpAddr+"/24@"+networks.Gateway
 	networks.Command = network_command
 		exec, err1 := DockerNetworkExecutor(&networks)
 		if err1 != nil {
