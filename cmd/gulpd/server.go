@@ -25,8 +25,7 @@ import (
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies/bind"
 	"github.com/megamsys/gulp/policies/ha"
-  "github.com/tsuru/config"
-
+	"github.com/tsuru/config"
 )
 
 func init() {
@@ -47,11 +46,11 @@ func RunServer(dry bool) {
 		panic(err)
 	}
 
-	//	if err := startProfiler(server); err != nil {
-	//		panic(err)
-	//	}
+	if err := startProfiler(server); err != nil {
+		panic(err)
+	}
 
-  id, _ := config.GetString("id")
+	id, _ := config.GetString("id")
 	global.UpdateRiakStatus(id)
 	coordinator.PolicyHandler()
 	err = server.ListenAndServe()
