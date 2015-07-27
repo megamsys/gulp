@@ -109,7 +109,7 @@ func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Componen
 								if rasm.Components[rc] != nil {
 									if rasmname[1] == rasm.Components[rc].Name {
 										basePath := megam_home
-										dir := path.Join(basePath, rasm.Components[rc].Name)
+										dir := path.Join(basePath, com.Name)
 										filePath := path.Join(dir, "env.sh")
 										if _, err := os.Stat(dir); os.IsNotExist(err) {
 											fmt.Printf("no such file or directory: %s", dir)
@@ -124,7 +124,7 @@ func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Componen
 											}
 										}
 
-										str := "BINDED_HOST_NAME=" + rasm.Components[rc].Name + "\n" + "HOST=" + rasm.Name + "." + GetParsedValue(rasm.Inputs, "domain") + "\n" + "\nDBNAME=" + rasm.Components[rc].Name + "\n" + "PORT=" + GetParsedValue(rasm.Components[rc].Inputs, "port") + "\nUSERNAME=" + GetParsedValue(rasm.Components[rc].Inputs, "username") + "\nPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "password") + "\nDBUSER=" + GetParsedValue(rasm.Components[rc].Inputs, "dbname") + "\nDBPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "dbpassword") + "\n"
+										str := "BINDED_HOST_NAME=" + rasm.Components[rc].Name + "\n" + "HOST=" + rasm.Name + "." + GetParsedValue(rasm.Inputs, "domain") + "\n" + "\nDBNAME=" + com.Name + "\n" + "PORT=" + GetParsedValue(rasm.Components[rc].Inputs, "port") + "\nUSERNAME=" + GetParsedValue(rasm.Components[rc].Inputs, "username") + "\nPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "password") + "\nDBUSER=" + GetParsedValue(rasm.Components[rc].Inputs, "username") + "\nDBPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "dbpassword") + "\n"
 										errf := ioutil.WriteFile(filePath, []byte(str), 0644)
 										if errf != nil {
 											return errf
