@@ -83,12 +83,14 @@ _go_test:
 
 _gulpd:
 	rm -f gulpd
+	rm -f gulpc
 	go build $(GO_EXTRAFLAGS) -o gulpd ./cmd/gulpd
-
+	go build $(GO_EXTRAFLAGS) -o gulpc ./cmd/gulpc
 
 _gulpdr:
 	sudo ./gulpd start
 	rm -f gulpd
+	rm -f gulpc
 
 _sh_tests:
 	@conf/trusty/megam/megam_test.sh
