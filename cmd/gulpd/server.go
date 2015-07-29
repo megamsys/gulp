@@ -16,16 +16,26 @@
 package main
 
 import (
-	"runtime"
+	"os"
+	"os/signal"
+	"regexp"
+	"syscall"
 	"time"
-
+	"fmt"
 	log "code.google.com/p/log4go"
-	"github.com/megamsys/gulp/cmd/gulpd/server"
+	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/coordinator"
+	"github.com/megamsys/libgo/amqp"
+	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/gulp/global"
 	"github.com/megamsys/gulp/policies/bind"
 	"github.com/megamsys/gulp/policies/ha"
 	"github.com/tsuru/config"
+)
+
+var (
+	signalChannel chan<- os.Signal
+	nameRegexp    = regexp.MustCompile(`^[a-z][a-z0-9-]{0,62}$`)
 )
 
 func init() {
@@ -34,27 +44,63 @@ func init() {
 }
 
 func RunServer(dry bool) {
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	log.Info("Starting gulpd Server ...")
-
-	server, err := server.NewServer()
-	if err != nil {
-		// sleep for the log to flush
-		time.Sleep(time.Second)
-		panic(err)
-	}
-
-	if err := startProfiler(server); err != nil {
-		panic(err)
-	}
-
+	log.Info("Gulpd starting at %s", time.Now())
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, syscall.SIGINT)
+    Checker()
+    name, _ := config.GetString("name")
+    QueueWatcher(name)       
+    
+	log.Info("Gulpd at your service.")
 	id, _ := config.GetString("id")
 	global.UpdateRiakStatus(id)
 	coordinator.PolicyHandler()
-	err = server.ListenAndServe()
+	<-signalChannel
+	log.Info("Gulpd killed |_|.")
+}
+
+func Checker() {
+	log.Info("verifying rabbitmq")
+	factor, err := amqp.Factory()
 	if err != nil {
-		log.Error("ListenAndServe failed: ", err)
+		log.Error("Error: %v\nFailed to get the queue", err)
 	}
+
+	_, connerr := factor.Dial()
+	if connerr != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n Please start rabbitmq service.\n", connerr)
+		os.Exit(1)
+	}
+	log.Info("rabbitmq connected [ok]")
+
+	log.Info("verifying riak")
+
+	rconn, rerr := db.Conn("connection")
+	if rerr != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", connerr)
+		os.Exit(1)
+	}
+
+	data := "sampledata"
+	ferr := rconn.StoreObject("sampleobject", data)
+	if ferr != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", ferr)
+		os.Exit(1)
+	}
+	defer rconn.Close()
+	log.Info("riak connected [ok]")
+
+}
+
+func StopServer(bark bool) {
+	log.Info("Gulpd stopping at %s", time.Now())
+	//handler().Stop()
+	close(signalChannel)
+	log.Info("Gulpd finished |-|.")
+}
+
+
+func QueueWatcher(queue_name string) {    
+	    queueserver1 := queue.NewServer(queue_name)
+		go queueserver1.ListenAndServe()
 }

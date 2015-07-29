@@ -11,13 +11,13 @@ import (
 	"launchpad.net/gnuflag"
 )
 
-type GulpStart struct {
+type GulpdStart struct {
 	manager *cmd.Manager
 	fs      *gnuflag.FlagSet
 	dry     bool
 }
 
-func (g *GulpStart) Info() *cmd.Info {
+func (g *GulpdStart) Info() *cmd.Info {
 	desc := `starts the gulpd daemon, and connects to queue.
 
 If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
@@ -31,7 +31,7 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 	}
 }
 
-func (c *GulpStart) Run(context *cmd.Context, client *cmd.Client) error {
+func (c *GulpdStart) Run(context *cmd.Context, client *cmd.Client) error {
 	// The struc will also have the c.manager
 	// c.manager
 	// Now using this value start the queue.
@@ -39,7 +39,7 @@ func (c *GulpStart) Run(context *cmd.Context, client *cmd.Client) error {
 	return nil
 }
 
-func (c *GulpStart) Flags() *gnuflag.FlagSet {
+func (c *GulpdStart) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
 		c.fs = gnuflag.NewFlagSet("gulpd", gnuflag.ExitOnError)
 		c.fs.BoolVar(&c.dry, "config", false, "config: the configuration file to use")
@@ -50,12 +50,12 @@ func (c *GulpStart) Flags() *gnuflag.FlagSet {
 	return c.fs
 }
 
-type GulpStop struct {
+type GulpdStop struct {
 	fs   *gnuflag.FlagSet
 	bark bool
 }
 
-func (g *GulpStop) Info() *cmd.Info {
+func (g *GulpdStop) Info() *cmd.Info {
 	desc := `stops the gulpd daemon, and shutsdown the queue.
 
 If you use the '--bark' flag gulpd will notify daemon status.
@@ -69,30 +69,13 @@ If you use the '--bark' flag gulpd will notify daemon status.
 	}
 }
 
-//The stop has a design issue.
-/*
-func (c *GulpStop) Run(context *cmd.Context, client *cmd.Client) error {
-	// Now using this value stop the queue.
-	StopServer(c.bark)
-	return nil
-}
-
-func (c *GulpStop) Flags() *gnuflag.FlagSet {
-	if c.fs == nil {
-		c.fs = gnuflag.NewFlagSet("gulpd", gnuflag.ExitOnError)
-		c.fs.BoolVar(&c.bark, "bark", false, "bark: does a notify of the daemon status (to rmq)")
-		c.fs.BoolVar(&c.bark, "b", false, "bark: does a notify of the daemon status (to rmq)")
-	}
-	return c.fs
-}
-*/
-type GulpUpdate struct {
+type GulpdUpdate struct {
 	fs     *gnuflag.FlagSet
 	name   string
 	status string
 }
 
-func (c *GulpUpdate) Info() *cmd.Info {
+func (c *GulpdUpdate) Info() *cmd.Info {
 	return &cmd.Info{
 		Name:    "update",
 		Usage:   "update",
@@ -101,7 +84,7 @@ func (c *GulpUpdate) Info() *cmd.Info {
 	}
 }
 
-func (c *GulpUpdate) Flags() *gnuflag.FlagSet {
+func (c *GulpdUpdate) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
 		c.fs = gnuflag.NewFlagSet("gulpd", gnuflag.ExitOnError)
 		c.fs.StringVar(&c.name, "name", "", "name: app/service host name to update (eg: mobcom.megam.co)")
@@ -112,7 +95,7 @@ func (c *GulpUpdate) Flags() *gnuflag.FlagSet {
 	return c.fs
 }
 
-func (c *GulpUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
+func (c *GulpdUpdate) Run(ctx *cmd.Context, client *cmd.Client) error {
 	if len(c.status) <= 0 || len(c.name) <= 0 {
 		fmt.Println("Nothing to update.")
 		return nil

@@ -5,7 +5,7 @@ import (
 	"gopkg.in/check.v1"
 )
 
-func (s *S) TestGulpStartInfo(c *check.C) {
+func (s *S) TestGulpdStartInfo(c *check.C) {
 	desc := `starts the gulpd daemon, and connects to queue.
 
 If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
@@ -18,12 +18,12 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf/jsons) and exit.
 		Desc:    desc,
 		MinArgs: 0,
 	}
-	command := GulpStart{}
+	command := GulpdStart{}
 	c.Assert(command.Info(), check.DeepEquals, expected)
 }
 
 
-func (s *S) TestGulpStopInfo(c *check.C) {
+func (s *S) TestGulpdStopInfo(c *check.C) {
 	desc := `stops the gulpd daemon, and shutsdown the queue.
 
 If you use the '--bark' flag gulpd will notify daemon status.
@@ -35,6 +35,6 @@ If you use the '--bark' flag gulpd will notify daemon status.
 		Desc:    desc,
 		MinArgs: 0,
 	}
-	command := GulpStop{}
+	command := GulpdStop{}
 	c.Assert(command.Info(), check.DeepEquals, expected)
 }
