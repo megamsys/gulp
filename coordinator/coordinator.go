@@ -17,6 +17,7 @@ package coordinator
 
 import (
 	"encoding/json"
+
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/global"
@@ -44,28 +45,28 @@ func Handler(chann []byte) {
 		log.Error("Error: Message parsing error:\n%s.", parse_err)
 		return
 	}
-	log.Info("============Request entry======")
+	log.Info("============Request entry===========")
 	apprequest := global.AppRequest{Id: m.Id}
 	req, err := apprequest.Get(m.Id)
 	log.Info(req)
 	if err != nil {
-		log.Error("Error: Riak didn't cooperate:\n%s.", err)
+		log.Error("Error: Riak didn't cooperate->:\n%s.", err)
 		return
 	}
 
 	assembly := global.Assembly{Id: req.AppId}
 	asm, err := assembly.GetAssemblyWithComponents(req.AppId)
 	if err != nil {
-		log.Error("Error: Riak didn't cooperate:\n%s.", err)
+		log.Error("Error: Riak didn't cooperate-->:\n%s.", err)
 		return
 	}
 
-	//comp := global.Component{Id: req.AppId}
-	//com, err := comp.Get(req.AppId)
-	//if err != nil {
-	//log.Error("Error: Riak didn't cooperate:\n%s.", err)
-	//return
-	//}
+	comp := global.Component{Id: asm.Components[0].Id}
+	com, err := comp.Get(asm.Components[0].Id)
+	if err != nil {
+		log.Error("Error: Riak didn't cooperate--->:\n%s.", err)
+		return
+	}
 
 	switch req.Action {
 	case "reboot":
@@ -83,6 +84,10 @@ func Handler(chann []byte) {
 	case "restart":
 		log.Info("============Restart entry============")
 		go app.RestartApp(asm)
+		break
+	case "redeploy":
+		log.Info("=============Redeploying=============")
+		go app.BuildApp(com)
 		break
 		/*case "componentstart":
 		log.Info("============Component Start entry======")
@@ -141,20 +146,19 @@ func PolicyHandler() {
 	policies.ApplyPolicies(asm)
 }
 
-
 /*
 * handlers to call the docker log stream and network setting action
 *
-*/
+ */
 
 func DockerLogs(container_id string, container_name string) {
 	log.Info("===>Docker Logs Entry<===")
 	log := global.DockerLogsInfo{ContainerId: container_id, ContainerName: container_name}
-  go app.StreamLogs(&log)
+	go app.StreamLogs(&log)
 }
 
 func DockerNetworks(bridge string, container_id string, ip_addr string, gateway string) {
 	log.Info("===>Docker Networks Entry<===")
-  network := global.DockerNetworksInfo{Bridge: bridge, ContainerId: container_id, IpAddr: ip_addr, Gateway: gateway}
+	network := global.DockerNetworksInfo{Bridge: bridge, ContainerId: container_id, IpAddr: ip_addr, Gateway: gateway}
 	go app.ConfigureNetworks(&network)
 }
