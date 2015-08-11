@@ -155,42 +155,37 @@ func ComponentCommandExecutor(app *global.Component) (action.Result, error) {
 	return &app, nil
 }
 
-
-
-
 /*
  * Docker log executor executes the ln command and establishes link between the
  * docker path and megam-heka reading path.
  */
-func DockerLogExecutor(logs *global.DockerLogsInfo) (action.Result, error)  {
+func DockerLogExecutor(logs *global.DockerLogsInfo) (action.Result, error) {
 
 	var e exec.OsExecutor
 	var commandWords []string
 	commandWords = strings.Fields(logs.Command)
 	log.Debug("Command Executor entry: %s\n", logs)
-   fmt.Println(commandWords)
-    megam_home, ckberr := config.GetString("megam_home")
-    if ckberr != nil {
-     	return nil, ckberr
-    }
-   dockerName := logs.ContainerName
-   basePath := megam_home + "logs"
-   create_dir := path.Join(basePath, dockerName)
-     if _, err := os.Stat(create_dir); os.IsNotExist(err) {
-	      log.Info("Creating directory: %s\n", create_dir)
-	   if errm := os.MkdirAll(create_dir, 0777); errm != nil {
-		   return nil, errm
-	   }
-    }
-   if len(commandWords) > 0 {
-   	if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
-	  	return nil, err
+	fmt.Println(commandWords)
+	megam_home, ckberr := config.GetString("megam_home")
+	if ckberr != nil {
+		return nil, ckberr
 	}
-  }
+	dockerName := logs.ContainerName
+	basePath := megam_home + "logs"
+	create_dir := path.Join(basePath, dockerName)
+	if _, err := os.Stat(create_dir); os.IsNotExist(err) {
+		log.Info("Creating directory: %s\n", create_dir)
+		if errm := os.MkdirAll(create_dir, 0777); errm != nil {
+			return nil, errm
+		}
+	}
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
+			return nil, err
+		}
+	}
 	return &logs, nil
-  }
-
-
+}
 
 /*
  * Docker network executor executes the script for the container to be exposed
@@ -203,7 +198,7 @@ func DockerNetworkExecutor(networks *global.DockerNetworksInfo) (action.Result, 
 	commandWords = strings.Fields(networks.Command)
 	log.Debug("Command Executor entry: %s\n", networks)
 	log.Debug(commandWords)
-	
+
 	megam_home, ckberr := config.GetString("megam_home")
 	if ckberr != nil {
 		return nil, ckberr
@@ -240,16 +235,66 @@ func DockerNetworkExecutor(networks *global.DockerNetworksInfo) (action.Result, 
 
 	defer ferrwriter.Flush()
 	defer foutwriter.Flush()
-	
+
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, foutwriter, ferrwriter); err != nil {
 			return nil, err
-        }
-     }
-  return &networks, nil
- }
+		}
+	}
+	return &networks, nil
+}
 
+func RedeployCommandExecutor(app *global.Component) (action.Result, error) {
+	var e exec.OsExecutor
+	var commandWords []string
 
+	commandWords = strings.Fields(app.Command)
+	log.Debug("Command Executor entry: %s\n", app)
+	megam_home, ckberr := config.GetString("MEGAM_HOME")
+	if ckberr != nil {
+		return nil, ckberr
+	}
+	appName := app.Name
+	basePath := megam_home + "logs"
+	dir := path.Join(basePath, appName)
+
+	fileOutPath := path.Join(dir, appName+"_out")
+	fileErrPath := path.Join(dir, appName+"_err")
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Info("Creating directory: %s\n", dir)
+		if errm := os.MkdirAll(dir, 0777); errm != nil {
+			return nil, errm
+		}
+	}
+	// open output file
+	fout, outerr := os.OpenFile(fileOutPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if outerr != nil {
+		return nil, outerr
+	}
+	defer fout.Close()
+	// open Error file
+	ferr, errerr := os.OpenFile(fileErrPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if errerr != nil {
+		return nil, errerr
+	}
+	defer ferr.Close()
+
+	foutwriter := bufio.NewWriter(fout)
+	ferrwriter := bufio.NewWriter(ferr)
+	log.Debug(commandWords)
+	log.Debug("Length: %s", len(commandWords))
+
+	defer ferrwriter.Flush()
+	defer foutwriter.Flush()
+
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:len(commandWords)], nil, foutwriter, ferrwriter); err != nil {
+			fmt.Println(err)
+			return nil, err
+		}
+	}
+	return &app, nil
+}
 
 /* #####NOTE#####
  * DockerLogsExecutor and ContainerCommandExecutor are almost the same. Since Shipper action is
@@ -518,8 +563,8 @@ var buildApp = action.Action{
 		if perr != nil {
 			return nil, perr
 		}
-		app.Command = megam_home + "/megam_" + ctype[2] + "_builder/build.sh"
-		return ComponentCommandExecutor(&app)
+		app.Command = megam_home + "megam_" + ctype[2] + "_builder/build.sh"
+		return RedeployCommandExecutor(&app)
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")
@@ -527,35 +572,33 @@ var buildApp = action.Action{
 	MinParams: 1,
 }
 
-
 /*
  * Docker logs and networking action
  *
  */
 
-
 var streamLogs = action.Action{
 	Name: "streamLogs",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		var logs global.DockerLogsInfo
-    switch ctx.Params[0].(type) {
-     case global.DockerLogsInfo:
-     	logs = ctx.Params[0].(global.DockerLogsInfo)
-     case *global.DockerLogsInfo:
-	    logs = *ctx.Params[0].(*global.DockerLogsInfo)
-   default:
-	return nil, errors.New("First parameter must be Id or *global.DockerLogsInfo.")
-   }
-  docker_path, perr := config.GetString("docker_path")
-    if perr != nil {
-   	return nil, perr
-    }
-  megam_home, perr := config.GetString("megam_home")
-  var dockerpath = docker_path +logs.ContainerId+"/"+logs.ContainerId+"-json.log"
-  var hekaread_path = megam_home + "logs/" + logs.ContainerName + "/" + logs.ContainerName
-  var link_command = "ln -s " + dockerpath + " " + hekaread_path
-  logs.Command = link_command
-  	exec, err1 := DockerLogExecutor(&logs)
+		switch ctx.Params[0].(type) {
+		case global.DockerLogsInfo:
+			logs = ctx.Params[0].(global.DockerLogsInfo)
+		case *global.DockerLogsInfo:
+			logs = *ctx.Params[0].(*global.DockerLogsInfo)
+		default:
+			return nil, errors.New("First parameter must be Id or *global.DockerLogsInfo.")
+		}
+		docker_path, perr := config.GetString("docker_path")
+		if perr != nil {
+			return nil, perr
+		}
+		megam_home, perr := config.GetString("megam_home")
+		var dockerpath = docker_path + logs.ContainerId + "/" + logs.ContainerId + "-json.log"
+		var hekaread_path = megam_home + "logs/" + logs.ContainerName + "/" + logs.ContainerName
+		var link_command = "ln -s " + dockerpath + " " + hekaread_path
+		logs.Command = link_command
+		exec, err1 := DockerLogExecutor(&logs)
 		if err1 != nil {
 			fmt.Println("server insert error")
 			return &logs, err1
@@ -568,7 +611,6 @@ var streamLogs = action.Action{
 	MinParams: 1,
 }
 
-
 var configureNetworks = action.Action{
 	Name: "configureNetworks",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -578,13 +620,13 @@ var configureNetworks = action.Action{
 			networks = ctx.Params[0].(global.DockerNetworksInfo)
 		case *global.DockerNetworksInfo:
 			networks = *ctx.Params[0].(*global.DockerNetworksInfo)
-	default:
-	return nil, errors.New("First parameter must be Id or *global.DockerNetworksInfo.")
-	}
-  megam_home, _ := config.GetString("megam_home")
-  
-  network_command := megam_home+"pipework "+networks.Bridge+" "+parseID(networks.ContainerId)+" "+networks.IpAddr+"/24@"+networks.Gateway
-	networks.Command = network_command
+		default:
+			return nil, errors.New("First parameter must be Id or *global.DockerNetworksInfo.")
+		}
+		megam_home, _ := config.GetString("megam_home")
+
+		network_command := megam_home + "pipework " + networks.Bridge + " " + parseID(networks.ContainerId) + " " + networks.IpAddr + "/24@" + networks.Gateway
+		networks.Command = network_command
 		exec, err1 := DockerNetworkExecutor(&networks)
 		if err1 != nil {
 			fmt.Println("server insert error")
@@ -599,8 +641,8 @@ var configureNetworks = action.Action{
 }
 
 func parseID(id string) string {
-  if len(strings.TrimSpace(id)) > 12 {
-    return string([]rune(id)[:12])
-  }	
-  return id
+	if len(strings.TrimSpace(id)) > 12 {
+		return string([]rune(id)[:12])
+	}
+	return id
 }
