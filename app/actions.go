@@ -583,7 +583,7 @@ var configureNetworks = action.Action{
 	}
   megam_home, _ := config.GetString("megam_home")
   
-  network_command := megam_home+"pipework "+networks.Bridge+" "+parseID(networks.ContainerId)+" "+networks.IpAddr+"/24@"+networks.Gateway
+  network_command := megam_home+"pipework "+networks.Bridge+" "+networks.ContainerId+" "+networks.IpAddr+"/24@"+networks.Gateway
 	networks.Command = network_command
 		exec, err1 := DockerNetworkExecutor(&networks)
 		if err1 != nil {

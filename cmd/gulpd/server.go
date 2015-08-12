@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 	"fmt"
+	"net"
 	log "code.google.com/p/log4go"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/gulp/coordinator"
@@ -31,6 +32,8 @@ import (
 	"github.com/megamsys/gulp/policies/bind"
 	"github.com/megamsys/gulp/policies/ha"
 	"github.com/tsuru/config"
+	"github.com/facebookgo/ganglia/gmetric"
+	"github.com/facebookgo/ganglia/gmon"
 )
 
 var (
@@ -49,7 +52,8 @@ func RunServer(dry bool) {
 	signal.Notify(signalChannel, syscall.SIGINT)
     Checker()
     name, _ := config.GetString("name")
-    QueueWatcher(name)       
+    QueueWatcher(name)   
+    ganglia()    
     
 	log.Info("Gulpd at your service.")
 	id, _ := config.GetString("id")
@@ -57,6 +61,64 @@ func RunServer(dry bool) {
 	coordinator.PolicyHandler()
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
+}
+
+func ganglia() {
+	// A Client can connect to multiple addresses.
+	log.Info("-----------------------------------------------")
+client := &gmetric.Client{
+    Addr: []net.Addr{
+        &net.UDPAddr{IP: net.ParseIP("192.168.1.101"), Port: 8649},
+    },
+}
+
+   addr := fmt.Sprintf("%s:%d", "192.168.1.100", 8649)
+   log.Info("++++++++++++++++++++++++++++++++")
+   log.Info(addr)
+	ganglia, gerr := gmon.RemoteRead("tcp", addr)
+	if gerr != nil {
+		log.Error(gerr)
+	}
+	log.Info("---------------------------ganglia--------------------")
+	log.Info(ganglia)
+
+//h := NewHarness()
+
+// You only need to Open the connections once on application startup.
+if err := client.Open(); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+}
+
+// Defines the Metric.
+metric := &gmetric.Metric{
+    Name:         "web_requests",
+    Title:        "Number of Web Requests",
+    Host:         "web0.app.com",
+    ValueType:    gmetric.ValueUint32,
+    Units:        "count",
+    Slope:        gmetric.SlopeBoth,
+    TickInterval: 20 * time.Second,
+    Lifetime:     24 * time.Hour,
+}
+
+// Meta packets only need to be sent every `send_metadata_interval` as
+// configured in gmond.conf.
+if err := client.WriteMeta(metric); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+}
+
+if err := client.WriteValue(metric, 1); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+}
+
+// Close the connections before terminating your application.
+if err := client.Close(); err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+}
 }
 
 func Checker() {
