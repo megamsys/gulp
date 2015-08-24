@@ -2,7 +2,7 @@
 Gulpd
 =================
 
-Gulpd is a agent for Megam PaaS 
+Gulpd is a agent for Megam cloud platform 
 
 ### Requirements
 
@@ -34,7 +34,7 @@ make
 
 ### Documentation
 
-Refer [documentation] (http://www.gomegam.com/docs)
+Refer [documentation] (http://docs.megam.io)
 
 
 
@@ -52,7 +52,8 @@ We are glad to help if you have questions, or request for new features..
 |:---------------------|:-----------------------------------------|
 | **Author:**          | Rajthilak (<rajthilak@megam.io>)
 | 	                   | KishorekumarNeelamegam (<nkishore@megam.io>)
-| **Copyright:**       | Copyright (c) 2012-2014 Megam Systems.
+|                      | Yeshwanth kumar (<getyesh@megam.io)   
+| **Copyright:**       | Copyright (c) 2013-2015 Megam Systems.
 | **License:**         | Apache License, Version 2.0
 
 Licensed under the Apache License, Version 2.0 (the "License");
