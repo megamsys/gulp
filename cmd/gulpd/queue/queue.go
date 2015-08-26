@@ -18,8 +18,9 @@ package queue
 import (
 	"github.com/megamsys/libgo/amqp"
 	log "code.google.com/p/log4go"
-	"github.com/megamsys/gulp/coordinator"
+	//"github.com/megamsys/gulp/coordinator"
 	"github.com/tsuru/config"
+    "github.com/megamsys/gulp/state"
 )
 
 type QueueServer struct {
@@ -35,6 +36,13 @@ func NewServer(listenAddress string) *QueueServer {
 	self.ListenAddress = listenAddress
 	self.shutdown = make(chan bool, 1)
     log.Info(self)
+
+s := state.State{}
+	_, serr := s.New("")
+	if serr != nil {
+		log.Error("Error: %v\nFailed to create state", serr)
+	}
+
 	return self
 }
 
@@ -62,7 +70,7 @@ func (self *QueueServer) ListenAndServe() {
 				
 			queue1, _ := config.GetString("name")				
 			if self.ListenAddress == queue1 {			     
-			       coordinator.Handler(msg)
+			     //  coordinator.Handler(msg)
 			}
 		}
 	log.Info("Handling message %v", msgChan)

@@ -22,18 +22,13 @@ import (
 	"syscall"
 	"time"
 	"fmt"
-	"net"
-	log "code.google.com/p/log4go"
+	//"net"
+	log "github.com/golang/glog"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
-	"github.com/megamsys/gulp/coordinator"
 	"github.com/megamsys/libgo/amqp"
-	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/gulp/global"
-	"github.com/megamsys/gulp/policies/bind"
-	"github.com/megamsys/gulp/policies/ha"
+	"github.com/megamsys/libgo/db"	
 	"github.com/tsuru/config"
-	"github.com/facebookgo/ganglia/gmetric"
-	"github.com/facebookgo/ganglia/gmon"
+	//"github.com/megamsys/gulp/state"
 )
 
 var (
@@ -42,83 +37,26 @@ var (
 )
 
 func init() {
-	bind.Init()
-	ha.Init()
+	//bind.Init()
+	//ha.Init()
 }
 
 func RunServer(dry bool) {
 	log.Info("Gulpd starting at %s", time.Now())
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
-    Checker()
+    //Checker()
     name, _ := config.GetString("name")
     QueueWatcher(name)   
-    ganglia()    
     
 	log.Info("Gulpd at your service.")
-	id, _ := config.GetString("id")
-	global.UpdateRiakStatus(id)
-	coordinator.PolicyHandler()
+	//id, _ := config.GetString("id")
+	//global.UpdateRiakStatus(id)
+	//coordinator.PolicyHandler()
+	
+	
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
-}
-
-func ganglia() {
-	// A Client can connect to multiple addresses.
-	log.Info("-----------------------------------------------")
-client := &gmetric.Client{
-    Addr: []net.Addr{
-        &net.UDPAddr{IP: net.ParseIP("192.168.1.101"), Port: 8649},
-    },
-}
-
-   addr := fmt.Sprintf("%s:%d", "192.168.1.100", 8649)
-   log.Info("++++++++++++++++++++++++++++++++")
-   log.Info(addr)
-	ganglia, gerr := gmon.RemoteRead("tcp", addr)
-	if gerr != nil {
-		log.Error(gerr)
-	}
-	log.Info("---------------------------ganglia--------------------")
-	log.Info(ganglia)
-
-//h := NewHarness()
-
-// You only need to Open the connections once on application startup.
-if err := client.Open(); err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-}
-
-// Defines the Metric.
-metric := &gmetric.Metric{
-    Name:         "web_requests",
-    Title:        "Number of Web Requests",
-    Host:         "web0.app.com",
-    ValueType:    gmetric.ValueUint32,
-    Units:        "count",
-    Slope:        gmetric.SlopeBoth,
-    TickInterval: 20 * time.Second,
-    Lifetime:     24 * time.Hour,
-}
-
-// Meta packets only need to be sent every `send_metadata_interval` as
-// configured in gmond.conf.
-if err := client.WriteMeta(metric); err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-}
-
-if err := client.WriteValue(metric, 1); err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-}
-
-// Close the connections before terminating your application.
-if err := client.Close(); err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-}
 }
 
 func Checker() {

@@ -17,149 +17,22 @@ package app
 
 import (
 	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/global"
+	"github.com/megamsys/gulp/state/provisioner/chefsolo"
 )
 
-// RebootApp creates a new app.
-//
-//
-// reboot the app :
-func RebootApp(app *global.AssemblyWithComponents) error {
-	actions := []*action.Action{&rebootApp}
+/**
+** state up the virtual machine
+**/
+func StateUP(app *chefsolo.Provisioner) error {
+	actions := []*action.Action{&stateup}
 
 	pipeline := action.NewPipeline(actions...)
 	err := pipeline.Execute(app)
 	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
+		return &AppLifecycleError{app: "", Err: err}
 	}
 	return nil
 }
 
 
-// StartsApp creates a new app.
-//
-// Starts the app :
-func RestartApp(app *global.AssemblyWithComponents) error {
-	actions := []*action.Action{&restartApp}
 
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-
-func StartApp(app *global.AssemblyWithComponents) error {
-	actions := []*action.Action{&startApp}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-func StopApp(app *global.AssemblyWithComponents) error {
-	actions := []*action.Action{&stopApp}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-
-func RestartComponent(app *global.Component) error {
-	actions := []*action.Action{&restartComponent}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-
-func StartComponent(app *global.Component) error {
-	actions := []*action.Action{&startComponent}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-func StopComponent(app *global.Component) error {
-	actions := []*action.Action{&stopComponent}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-func Shipper(app *global.Assemblies) error {
-	actions := []*action.Action{&shipper}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-func BuildApp(app *global.Component) error {
-	actions := []*action.Action{&buildApp}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(app)
-	if err != nil {
-		return &AppLifecycleError{app: app.Name, Err: err}
-	}
-	return nil
-}
-
-
-/*
-* Docker logs stream which links docker logs to megam docker file for heka to read
-*
-*/
-
-func StreamLogs(logs *global.DockerLogsInfo) error {
-	actions := []*action.Action{&streamLogs}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(logs)
-	if err != nil {
-		return &AppLifecycleError{app: logs.ContainerName, Err: err}
-	}
-	return nil
-}
-
-/*
-* Docker networks configuration to setting up public ip
-*
-*/
-
-func ConfigureNetworks(networks *global.DockerNetworksInfo) error {
-
-	actions := []*action.Action{&configureNetworks}
-
-	pipeline := action.NewPipeline(actions...)
-	err := pipeline.Execute(networks)
-	if err != nil {
-		return &AppLifecycleError{app: networks.ContainerId, Err: err}
-	}
-	return nil
-}

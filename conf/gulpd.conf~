@@ -1,0 +1,18 @@
+megam_home: /var/lib/megam/
+account_id: ACT1242476978897027072
+name: reschedules
+id: ASM1242477979045593088
+docker_path: /var/lib/docker/containers/
+riak:
+  url: 192.168.1.9:8087
+  bucket: catreqs
+api:
+  host: api.megam.io
+amqp:
+  url: amqp://guest:guest@localhost:5672/
+  exchange: megam_reapportions.megam.co_exchange
+  queue: megam_reapportions.megam.co_queue
+  consumerTag: megam_node_consumer
+  routingkey: megam_key
+admin:
+  port: 8084
