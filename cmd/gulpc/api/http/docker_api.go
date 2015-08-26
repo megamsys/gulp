@@ -1,6 +1,6 @@
 package http
 
-import (
+/*import (
 	"encoding/json"
 	"fmt"
 	//"io"
@@ -9,12 +9,12 @@ import (
 
 	"github.com/megamsys/gulp/coordinator"
 	"github.com/megamsys/gulp/global"
-)
+)*/
 
 /*
  * megam docker handlers for endpoint - /docker/logs
  */
-func DockerLogs(w libhttp.ResponseWriter, req *libhttp.Request) {
+/*func DockerLogs(w libhttp.ResponseWriter, req *libhttp.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Println("error")
@@ -22,12 +22,12 @@ func DockerLogs(w libhttp.ResponseWriter, req *libhttp.Request) {
 	var jsonLogsData global.DockerLogsInfo
 	err = json.Unmarshal(body, &jsonLogsData)
 	coordinator.DockerLogs(jsonLogsData.ContainerId, jsonLogsData.ContainerName)
-}
+}*/
 
 /*
  * megam docker handlers for endpoint - /docker/networks
  */
-func DockerNetworks(w libhttp.ResponseWriter, req *libhttp.Request) {
+/*func DockerNetworks(w libhttp.ResponseWriter, req *libhttp.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Println("error")
@@ -35,4 +35,4 @@ func DockerNetworks(w libhttp.ResponseWriter, req *libhttp.Request) {
 	var jsonNetworksData global.DockerNetworksInfo
 	err = json.Unmarshal(body, &jsonNetworksData)
 	coordinator.DockerNetworks(jsonNetworksData.Bridge, jsonNetworksData.ContainerId, jsonNetworksData.IpAddr, jsonNetworksData.Gateway)
-}
+}*/

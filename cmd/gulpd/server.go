@@ -22,15 +22,13 @@ import (
 	"syscall"
 	"time"
 	"fmt"
-	log "code.google.com/p/log4go"
+	//"net"
+	log "github.com/golang/glog"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
-	"github.com/megamsys/gulp/coordinator"
 	"github.com/megamsys/libgo/amqp"
-	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/gulp/global"
-	"github.com/megamsys/gulp/policies/bind"
-	"github.com/megamsys/gulp/policies/ha"
+	"github.com/megamsys/libgo/db"	
 	"github.com/tsuru/config"
+	//"github.com/megamsys/gulp/state"
 )
 
 var (
@@ -39,22 +37,24 @@ var (
 )
 
 func init() {
-	bind.Init()
-	ha.Init()
+	//bind.Init()
+	//ha.Init()
 }
 
 func RunServer(dry bool) {
 	log.Info("Gulpd starting at %s", time.Now())
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT)
-    Checker()
+    //Checker()
     name, _ := config.GetString("name")
-    QueueWatcher(name)       
+    QueueWatcher(name)   
     
 	log.Info("Gulpd at your service.")
-	id, _ := config.GetString("id")
-	global.UpdateRiakStatus(id)
-	coordinator.PolicyHandler()
+	//id, _ := config.GetString("id")
+	//global.UpdateRiakStatus(id)
+	//coordinator.PolicyHandler()
+	
+	
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
 }

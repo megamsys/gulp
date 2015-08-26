@@ -70,10 +70,10 @@ func (self *HttpServer) registerEndpoint(method string, pattern string, f libhtt
 	case "del":
 		self.p.Del(pattern, HeaderHandler(f, version))
 	case "clog":
-		self.p.Post(pattern, libhttp.HandlerFunc(DockerLogs))
+		//self.p.Post(pattern, libhttp.HandlerFunc(DockerLogs))
 
 	case "cnetwork":
-		self.p.Post(pattern, libhttp.HandlerFunc(DockerNetworks))
+		//self.p.Post(pattern, libhttp.HandlerFunc(DockerNetworks))
 
 		self.p.Options(pattern, HeaderHandler(self.sendCrossOriginHeader, version))
 	}
