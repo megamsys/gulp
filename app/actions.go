@@ -24,7 +24,7 @@ import (
 	//"strings"
 
 	log "github.com/golang/glog"
-	"github.com/megamsys/megamgulp/state/provisioner/chefsolo"
+	"github.com/megamsys/gulp/state/provisioner/chefsolo"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 	"github.com/tsuru/config"
