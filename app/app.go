@@ -36,3 +36,60 @@ func StateUP(app *chefsolo.Provisioner) error {
 
 
 
+
+func StartApp(app *global.AssemblyWithComponents) error {
+	actions := []*action.Action{&startApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func StopApp(app *global.AssemblyWithComponents) error {
+	actions := []*action.Action{&stopApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func RebootApp(app *global.AssemblyWithComponents) error {
+	actions := []*action.Action{&rebootApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+
+
+func RestartApp(app *global.AssemblyWithComponents) error {
+	actions := []*action.Action{&restartApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func BuildApp(app *global.Component) error {
+	actions := []*action.Action{&buildApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}

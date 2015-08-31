@@ -26,7 +26,7 @@ import (
 	log "github.com/golang/glog"
 	"github.com/megamsys/gulp/cmd/gulpd/queue"
 	"github.com/megamsys/libgo/amqp"
-	"github.com/megamsys/libgo/db"	
+	//"github.com/megamsys/libgo/db"
 	"github.com/tsuru/config"
 	//"github.com/megamsys/gulp/state"
 )
@@ -47,14 +47,14 @@ func RunServer(dry bool) {
 	signal.Notify(signalChannel, syscall.SIGINT)
     //Checker()
     name, _ := config.GetString("name")
-    QueueWatcher(name)   
-    
+    QueueWatcher(name)
+
 	log.Info("Gulpd at your service.")
 	//id, _ := config.GetString("id")
 	//global.UpdateRiakStatus(id)
 	//coordinator.PolicyHandler()
-	
-	
+
+
 	<-signalChannel
 	log.Info("Gulpd killed |_|.")
 }
@@ -75,8 +75,9 @@ func Checker() {
 
 	log.Info("verifying riak")
 
+/*
 	rconn, rerr := db.Conn("connection")
-	if rerr != nil {
+  if rerr != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n Please start Riak service.\n", connerr)
 		os.Exit(1)
 	}
@@ -89,7 +90,7 @@ func Checker() {
 	}
 	defer rconn.Close()
 	log.Info("riak connected [ok]")
-
+*/
 }
 
 func StopServer(bark bool) {
@@ -100,7 +101,7 @@ func StopServer(bark bool) {
 }
 
 
-func QueueWatcher(queue_name string) {    
+func QueueWatcher(queue_name string) {
 	    queueserver1 := queue.NewServer(queue_name)
 		go queueserver1.ListenAndServe()
 }
