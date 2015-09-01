@@ -1,78 +1,162 @@
-/*
-** Copyright [2013-2015] [Megam Systems]
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-** http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
- */
 package handlers
 
 import (
-	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/libgo/db"
-	//"github.com/megamsys/megamd/global"
-	//"github.com/megamsys/megamd/"
-//	"github.com/megamsys/gulp/provisioner"
+  "github.com/megamsys/libgo/db"
+"log"
+//"fmt"
+//"github.com/tsuru/config"
+"strings"
 )
 
-type assembly struct {
-	Id           string          `json:"id"`
-	Name         string          `json:"name"`
-	JsonClaz     string          `json:"json_claz"`
-	ToscaType    string          `json:"tosca_type"`
-	Requirements []*KeyValuePair `json:"requirements"`
-	Policies     []*Policy       `json:"policies"`
-	Inputs       []*KeyValuePair `json:"inputs"`
-	Operations   []*Operations   `json:"operations"`
-	Outputs      []*KeyValuePair `json:"outputs"`
-	Status       string          `json:"status"`
-	CreatedAt    string          `json:"created_at"`
+const (
+assemblyBucket = "assembly"
+comBucket = "components"
+)
+
+
+type Request struct {
+	Id	             string     `json:"id"`
+	AppId            string     `json:"cat_id"`
+	AppName          string     `json:"name"`
+	Action           string     `json:"action"`
+  Category         string     `json:"category"`
+	CreatedAt        string     `json:"created_at"`
 }
 
-/*type Assembly struct {
-	assembly
-	Components []string `json:"components"`
-}*/
+type Assembly struct {
+   Id             string   	 		`json:"id"`
+   JsonClaz       string   			`json:"json_claz"`
+   Name           string   			`json:"name"`
+   ToscaType      string        	`json:"tosca_type"`
+   Components     []string   		`json:"components"`
+   Requirements	  []*KeyValuePair	`json:"requirements"`
+   Policies       []*Policy  		`json:"policies"`
+   Inputs         []*KeyValuePair   `json:"inputs"`
+   Operations     []*Operations    	`json:"operations"`
+   Outputs        []*KeyValuePair  	`json:"outputs"`
+   Status         string    		`json:"status"`
+   CreatedAt      string   			`json:"created_at"`
+   }
 
-type DeepAssembly struct {
-	assembly
-	Components []*Component
+type Component struct {
+	Id                         string 				`json:"id"`
+	Name                       string 				`json:"name"`
+	ToscaType                  string 				`json:"tosca_type"`
+	Inputs                     []*KeyValuePair		`json:"inputs"`
+	Outputs					   []*KeyValuePair		`json:"outputs"`
+	Artifacts                  *Artifacts			`json:"artifacts"`
+	RelatedComponents          []string				`json:"related_components"`
+	Operations     			   []*Operations    	`json:"operations"`
+	Status         			   string    			`json:"status"`
+	CreatedAt                  string 				`json:"created_at"`
+	Command         string
 }
 
-func Deep(asmId string) (*DeepAssembly, error) {
-	//log.Debugf("[global] Get assembly_w_components %s", asmId)
-	d := &DeepAssembly{}
-	if conn, err := db.Conn("assembly"); err != nil {
-		return d, err
-	}
+type AssemblyWithComponents struct {
+	Id         		string 				`json:"id"`
+	Name       		string 				`json:"name"`
+	ToscaType  		string          	`json:tosca_type"`
+	Components 		[]*Component
+	Requirements	[]*KeyValuePair		`json:"requirements"`
+    Policies        []*Policy  			`json:"policies"`
+    Inputs          []*KeyValuePair   	`json:"inputs"`
+    Operations      []*Operations    	`json:"operations"`
+    Outputs         []*KeyValuePair  	`json:"outputs"`
+    Status          string    			`json:"status"`
+    Command         string
+    CreatedAt       string   			`json:"created_at"`
+}
 
-	if err := conn.FetchStruct(asmId, d); err != nil {
-		return d, ferr
-	}
+type KeyValuePair struct {
+	Key     string   `json:"key"`
+	Value   string   `json:"value"`
+}
 
-	d.digMore()
+type Policy struct {
+	Name    string   `json:"name"`
+	Ptype   string   `json:"ptype"`
+	Members []string `json:"members"`
+}
+
+type Operations struct {
+	OperationType 				string 				`json:"operation_type"`
+	Description 				string				`json:"description"`
+	OperationRequirements		[]*KeyValuePair		`json:"operation_requirements"`
+}
+
+type Artifacts struct {
+	ArtifactType 			string 			`json:"artifact_type"`
+	Content     		 	string 			`json:"content"`
+	ArtifactRequirements  	[]*KeyValuePair	`json:"artifact_requirements"`
+}
+
+
+
+func GetAssemblyWithComponents(asmId string, connection *db.Storage) (*AssemblyWithComponents, error) {
+  log.Print("Get Assembly message %v", asmId)
+  var j = -1
+  asmresult := &AssemblyWithComponents{}
+  asm := &Assembly{}
+
+ferr := connection.FetchStruct(asmId, asm)
+if ferr != nil {
+  return asmresult, ferr
+}
+var arraycomponent = make([]*Component, len(asm.Components))
+for i := range asm.Components {
+   t := strings.TrimSpace(asm.Components[i])
+  if len(t) > 1  {
+    componentID := asm.Components[i]
+    component := Component{Id: componentID }
+        com, err := component.Get(componentID)
+    if err != nil {
+         log.Print("Error: Riak didn't cooperate:\n%s.", err)
+         return asmresult, err
+    }
+      j++
+    arraycomponent[j] = com
+    }
+    }
+result := &AssemblyWithComponents{Id: asm.Id, Name: asm.Name, ToscaType: asm.ToscaType,  Components: arraycomponent, Requirements: asm.Requirements, Policies: asm.Policies, Inputs: asm.Inputs, Outputs: asm.Outputs, Operations: asm.Operations, Status: asm.Status, CreatedAt: asm.CreatedAt}
+return result, nil
+}
+
+
+func (asm *Component) Get(asmId string) (*Component, error) {
+    log.Print("Get Component message %v", asmId)
+/*   riakUrl, err := config.GetString("riak:url")
+    if err != nil {
+      log.Print(err)
+    }
+    */
+    riakUrl := "127.0.0.1:8087"
+
+   conn, cerr := RiakConnection(riakUrl, comBucket)
+	if cerr != nil {
+		return asm, cerr
+	}
+	ferr := conn.FetchStruct(asmId, asm)
+	if ferr != nil {
+		return asm, ferr
+	}
 	defer conn.Close()
-	return result, nil
+
+	return asm, nil
+
 }
 
-func (asm *DeepAssembly) digMore() error {
-	for i := range asm.Components {
-		if len(strings.TrimSpace(asm.Components[i])) > 1 {
-			comp := NewComponent(asm.Components[i])
-			if err := comp.Get(comp.Id); err != nil {
-				fmt.Println(err)
-				//log.Errorf("Failed to get component %s from riak: %s.", comp.Id, err.Error())
-				return err
-			}
-			asm.ComponentsMap[comp.Id] = comp
-		}
+
+func RiakConnection(rurl string, rbucket string) (*db.Storage, error) {
+	var url = []string{rurl}
+	riakClient, err := db.NewRiakDB(url, rbucket)
+	log.Print(riakClient)
+	if err != nil {
+		log.Print("[x]", err)
 	}
+
+	conn, derr := riakClient.Conn()
+	if derr != nil {
+		log.Print("[x]", derr)
+	}
+	return conn, nil
 }
