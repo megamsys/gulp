@@ -13,14 +13,14 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
-package handler
+package handlers
 
 import (
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/db"
 	//"github.com/megamsys/megamd/global"
-	"github.com/megamsys/megamd/log"
-	"github.com/megamsys/megamd/provisioner"
+	//"github.com/megamsys/megamd/"
+//	"github.com/megamsys/gulp/provisioner"
 )
 
 type assembly struct {
@@ -48,7 +48,7 @@ type DeepAssembly struct {
 }
 
 func Deep(asmId string) (*DeepAssembly, error) {
-	log.Debugf("[global] Get assembly_w_components %s", asmId)
+	//log.Debugf("[global] Get assembly_w_components %s", asmId)
 	d := &DeepAssembly{}
 	if conn, err := db.Conn("assembly"); err != nil {
 		return d, err
@@ -68,7 +68,8 @@ func (asm *DeepAssembly) digMore() error {
 		if len(strings.TrimSpace(asm.Components[i])) > 1 {
 			comp := NewComponent(asm.Components[i])
 			if err := comp.Get(comp.Id); err != nil {
-				log.Errorf("Failed to get component %s from riak: %s.", comp.Id, err.Error())
+				fmt.Println(err)
+				//log.Errorf("Failed to get component %s from riak: %s.", comp.Id, err.Error())
 				return err
 			}
 			asm.ComponentsMap[comp.Id] = comp

@@ -17,7 +17,7 @@ package app
 
 import (
 	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/state/provisioner/chefsolo"
+//	"github.com/megamsys/gulp/state/provisioner/chefsolo"
 )
 
 /**
@@ -37,7 +37,7 @@ func StateUP(app *chefsolo.Provisioner) error {
 
 
 
-func StartApp(app *global.AssemblyWithComponents) error {
+func StartApp(app *global.DeepAssembly) error {
 	actions := []*action.Action{&startApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -48,7 +48,7 @@ func StartApp(app *global.AssemblyWithComponents) error {
 	return nil
 }
 
-func StopApp(app *global.AssemblyWithComponents) error {
+func StopApp(app *global.DeepAssembly) error {
 	actions := []*action.Action{&stopApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -59,7 +59,7 @@ func StopApp(app *global.AssemblyWithComponents) error {
 	return nil
 }
 
-func RebootApp(app *global.AssemblyWithComponents) error {
+func RebootApp(app *global.DeepAssembly) error {
 	actions := []*action.Action{&rebootApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -72,7 +72,7 @@ func RebootApp(app *global.AssemblyWithComponents) error {
 
 
 
-func RestartApp(app *global.AssemblyWithComponents) error {
+func RestartApp(app *global.DeepAssembly) error {
 	actions := []*action.Action{&restartApp}
 
 	pipeline := action.NewPipeline(actions...)

@@ -26,13 +26,13 @@ import (
 
 	log "github.com/golang/glog"
 	"github.com/megamsys/gulp/handlers"
-	"github.com/megamsys/gulp/state/provisioner/chefsolo"
+	//"github.com/megamsys/gulp/state/provisioner/chefsolo"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 	"github.com/tsuru/config"
 )
 
-func TorpedoCommandExecutor(command string, app *handlers.AssemblyWithComponents) (action.Result, error) {
+func TorpedoCommandExecutor(command string, app *handlers.DeepAssembly) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
 
@@ -139,7 +139,7 @@ func ChefCommandExecutor(commandWords []string, app *chefsolo.Provisioner) (acti
 	return &app, nil
 }
 
-func CommandExecutor(command string, app *handlers.AssemblyWithComponents) (action.Result, error) {
+func CommandExecutor(command string, app *handlers.DeepAssembly) (action.Result, error) {
 
 	for i := range app.Components {
 		ctype := strings.Split(app.Components[i].ToscaType, ".")
@@ -183,14 +183,14 @@ var stateup = action.Action{
 var rebootApp = action.Action{
 	Name: "rebootapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app global.AssemblyWithComponents
+		var app global.DeepAssembly
 		switch ctx.Params[0].(type) {
-		case global.AssemblyWithComponents:
-			app = ctx.Params[0].(global.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case global.DeepAssembly:
+			app = ctx.Params[0].(global.DeepAssembly)
+		case *handlers.DeepAssembly:
+			app = *ctx.Params[0].(*handlers.DeepAssembly)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *handlers.DeepAssembly.")
 		}
 		return TorpedoCommandExecutor("reboot", &app)
 	},
@@ -203,14 +203,14 @@ var rebootApp = action.Action{
 var restartApp = action.Action{
 	Name: "restartapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app global.AssemblyWithComponents
+		var app global.DeepAssembly
 		switch ctx.Params[0].(type) {
-		case global.AssemblyWithComponents:
-			app = ctx.Params[0].(global.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case global.DeepAssembly:
+			app = ctx.Params[0].(global.DeepAssembly)
+		case *handlers.DeepAssembly:
+			app = *ctx.Params[0].(*handlers.DeepAssembly)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *handlers.DeepAssembly.")
 		}
 		return CommandExecutor("restart", &app)
 	},
@@ -223,14 +223,14 @@ var restartApp = action.Action{
 var stopApp = action.Action{
 	Name: "stopapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app global.AssemblyWithComponents
+		var app global.DeepAssembly
 		switch ctx.Params[0].(type) {
-		case global.AssemblyWithComponents:
-			app = ctx.Params[0].(global.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case global.DeepAssembly:
+			app = ctx.Params[0].(global.DeepAssembly)
+		case *handlers.DeepAssembly:
+			app = *ctx.Params[0].(*handlers.DeepAssembly)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *handlers.DeepAssembly.")
 		}
 
 		return CommandExecutor("stop", &app)

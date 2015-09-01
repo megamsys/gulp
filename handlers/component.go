@@ -13,13 +13,13 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
-package handler
+package handlers
 
 import (
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/db"
-	"github.com/megamsys/megamd/log"
-	"github.com/megamsys/megamd/provisioner"
+//	"github.com/megamsys/megamd/log"
+//	"github.com/megamsys/megamd/provisioner"
 )
 
 type Policy struct {
@@ -61,7 +61,7 @@ func NewComponent(id string) *Component {
 **fetch the component json from riak and parse the json to struct
 **/
 func (c *Component) Get(comp_id string) error {
-	log.Debugf("[global] Get component %s", asmId)
+	//log.Debugf("[global] Get component %s", asmId)
 	if conn, err := db.Conn("components"); err != nil {
 		return err
 	}

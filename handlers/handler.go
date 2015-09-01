@@ -1,4 +1,7 @@
 package handlers
+
+import "log"
+
 /*
 import (
   "github.com/megamsys/libgo/db"
@@ -105,7 +108,7 @@ func Handler(requestId string) (error) {
 	if berr != nil {
 		log.Fatal(berr)
 	}
-*/
+
 riakUrl := "127.0.0.1:8087"
 reqBucket := "catreqs"
 
@@ -161,23 +164,24 @@ fmt.Println(reflect.TypeOf(element))
 fmt.Println(y)
 }
 
-
+*/
 
 func RiakConnection(rurl string, rbucket string) (*db.Storage, error) {
-  var url = []string{rurl}
-  riakClient, err := db.NewRiakDB(url, rbucket)
-  log.Print(riakClient)
-  if err != nil {
-    log.Print("[x]", err)
-  }
+	var url = []string{rurl}
+	riakClient, err := db.NewRiakDB(url, rbucket)
+	log.Print(riakClient)
+	if err != nil {
+		log.Print("[x]", err)
+	}
 
-  conn, derr := riakClient.Conn()
-  if derr != nil {
-    log.Print("[x]", derr)
-  }
-  return conn, nil
+	conn, derr := riakClient.Conn()
+	if derr != nil {
+		log.Print("[x]", derr)
+	}
+	return conn, nil
 }
 
+/*
 
 func GetAssemblyWithComponents(asmId string, connection *db.Storage) (*AssemblyWithComponents, error) {
   log.Print("Get Assembly message %v", asmId)
