@@ -16,11 +16,12 @@
 package state
 
 import (
+	"encoding/json"
+	"os"
+
 	log "github.com/golang/glog"
 	"github.com/megamsys/gulp/state/provisioner/chefsolo"
 	"github.com/megamsys/gulp/app"
-	"encoding/json"
-	"os"
 )
 
 const (
@@ -29,56 +30,55 @@ const (
 
 	// DefaultRunList.
 	//DefaultRunList = []string
-	
+
 	// Chef output format (null, doc, minimal, min) (default: doc)
 	DefaultFormat = ""
-	
+
 	// DefaultLogLevel is the set log level (default: info)
 	DefaultLogLevel = "info"
-	
+
 	//set the default sandbox path
 	DefaultSandboxPath = "/var/lib/megam"
-	
+
 	//set the default root path
 	DefaultRootPath = "/var/lib/megam"
-	
+
 	//Do not run commands with sudo (enabled by default)
 	DefaultSudo = true
-	
 )
 
 type Attributes struct {
-    RunList   []string      `json:"run_list"`
-    RiakHost  string 		`json:"riak_host"`
+	RunList  []string `json:"run_list"`
+	RiakHost string   `json:"riak_host"`
 }
-
 
 /*
  * State is the basic interface of this package.
  */
-type State struct {}
 
-/* new state */
+type State struct{}
+
+
 func (s *State) New(assemblyID string) (string, error) {
 	var runList []string
-    res1D := &Attributes{
-        RunList:  []string{"recipe[megam_deps]" },
-        RiakHost: "api.megam.io",
-        }
-    DefaultAttributes, _ := json.Marshal(res1D)
+	res1D := &Attributes{
+		RunList:  []string{"recipe[megam_deps]"},
+		RiakHost: "api.megam.io",
+	}
+	DefaultAttributes, _ := json.Marshal(res1D)
 
 	var p chefsolo.Provisioner
-		p = chefsolo.Provisioner{
-			RunList:     runList,
-			Attributes:  string(DefaultAttributes),
-			Format:      DefaultFormat,
-			LogLevel:    DefaultLogLevel,
-			SandboxPath: DefaultSandboxPath,
-			RootPath:    DefaultRootPath,
-			Sudo:        DefaultSudo,
-		}
+	p = chefsolo.Provisioner{
+		RunList:     runList,
+		Attributes:  string(DefaultAttributes),
+		Format:      DefaultFormat,
+		LogLevel:    DefaultLogLevel,
+		SandboxPath: DefaultSandboxPath,
+		RootPath:    DefaultRootPath,
+		Sudo:        DefaultSudo,
+	}
 	log.Info("Provisioner = %+v\n", p)
-	
+
 	log.Info("Preparing local files")
 
 	log.Info("Creating local sandbox in", p.SandboxPath)
@@ -89,15 +89,15 @@ func (s *State) New(assemblyID string) (string, error) {
 	if err := p.PrepareFiles(); err != nil {
 		log.Error("Error = %+v\n", err)
 	}
-	
+
 	go app.StateUP(&p)
 	return "", nil
 }
 
 func (s *State) Change(assemblyID string) (string, error) {
-return "", nil
+	return "", nil
 }
 
 func (s *State) Delete(assemblyID string) (string, error) {
-return "", nil
+	return "", nil
 }

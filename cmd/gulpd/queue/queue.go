@@ -1,4 +1,4 @@
-/* 
+/*
 ** Copyright [2013-2015] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,25 +56,23 @@ func (self *QueueServer) ListenAndServe() {
 	if err != nil {
 		log.Error("Failed to get the queue instance: %s", err)
 	}
-	
+
 	pubsub, err := factor.Get(self.ListenAddress)
 	if err != nil {
 		log.Error("Failed to get the queue instance: %s", err)
 	}
-	
-	//res := &global.Message{}    
-	
+
+	//res := &global.Message{}
+
 	msgChan, _ := pubsub.Sub()
 	for msg := range msgChan {
 			log.Info(" [x] %q", msg)
-				
-			queue1, _ := config.GetString("name")				
-			if self.ListenAddress == queue1 {			     
+
+			queue1, _ := config.GetString("name")
+			if self.ListenAddress == queue1 {
 			     //  coordinator.Handler(msg)
 			}
 		}
 	log.Info("Handling message %v", msgChan)
-	self.chann = msgChan	
+	self.chann = msgChan
 }
-
-

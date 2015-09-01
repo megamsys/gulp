@@ -18,6 +18,7 @@ package app
 import (
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/state/provisioner/chefsolo"
+	"github.com/megamsys/gulp/handlers"
 )
 
 /**
@@ -36,3 +37,60 @@ func StateUP(app *chefsolo.Provisioner) error {
 
 
 
+
+func StartApp(app *handlers.AssemblyWithComponents) error {
+	actions := []*action.Action{&startApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func StopApp(app *handlers.AssemblyWithComponents) error {
+	actions := []*action.Action{&stopApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func RebootApp(app *handlers.AssemblyWithComponents) error {
+	actions := []*action.Action{&rebootApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+
+
+func RestartApp(app *handlers.AssemblyWithComponents) error {
+	actions := []*action.Action{&restartApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+func BuildApp(app *handlers.Component) error {
+	actions := []*action.Action{&buildApp}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(app)
+	if err != nil {
+		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}

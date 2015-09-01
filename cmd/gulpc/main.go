@@ -37,7 +37,7 @@ const defaultConfigPath = "conf/gulpd.conf"
 func buildManager(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
 	m.Register(&GulpcStart{m, nil, false}) //start the gulpc server
-	m.Register(&GulpcUpdate{}) //stop  the gulpc server	
+	m.Register(&GulpcUpdate{}) //stop  the gulpc server
 	return m
 }
 
