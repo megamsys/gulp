@@ -14,13 +14,18 @@ comBucket = "components"
 )
 
 
-type Request struct {
+/*type Requests struct {
 	Id	             string     `json:"id"`
 	AppId            string     `json:"cat_id"`
 	AppName          string     `json:"name"`
 	Action           string     `json:"action"`
     Category         string     `json:"category"`
 	CreatedAt        string     `json:"created_at"`
+}*/
+
+type ActionData struct {
+  Assembly		*AssemblyWithComponents
+  Request		*Requests
 }
 
 type Assembly struct {
@@ -97,10 +102,12 @@ func GetAssemblyWithComponents(asmId string) (*AssemblyWithComponents, error) {
   var j = -1
   asmresult := &AssemblyWithComponents{}
   asm := &Assembly{}
-c, err := db.Conn("assembly")
-	if err != nil {
-		return nil, err
-	}
+  riakUrl := "192.168.1.9:8087"
+
+   c, cerr := RiakConnection(riakUrl, "assembly")
+	if cerr != nil {
+		return asmresult, cerr
+	}  
 ferr := c.FetchStruct(asmId, asm)
 if ferr != nil {
   return asmresult, ferr

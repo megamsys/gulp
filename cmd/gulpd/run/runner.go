@@ -17,7 +17,7 @@ package run
 
 import (
 	"fmt"
-	"runtime"
+//	"runtime"
 	"time"
 
 	log "github.com/golang/glog"

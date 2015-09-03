@@ -1,12 +1,29 @@
+/*
+** Copyright [2013-2015] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+ */
+ 
 package httpd
 
 import (
 	"fmt"
-	"log"
+	log "github.com/golang/glog"
 	"net"
 	"net/http"
-	"os"
+//	"os"
 	"strings"
+	"github.com/megamsys/gulp/meta"
 )
 
 // Service manages the listener and handler for an HTTP endpoint.
@@ -19,27 +36,25 @@ type Service struct {
 }
 
 // NewService returns a new instance of Service.
-func NewService(c httpd.Config) *Service {
+func NewService(c meta.Config, h Config) *Service {
 	s := &Service{
-		addr: c.BindAddress,
+		addr: h.BindAddress,
 		err:  make(chan error),
-		Handler: NewHandler(
-			"0.9",
-		),
+		Handler: NewHandler(),
 	}
 	return s
 }
 
 // Open starts the service
 func (s *Service) Open() error {
-	s.Logger.Println("Starting HTTP service")
+	log.Info("Starting HTTP service")
 
 	listener, err := net.Listen("tcp", s.addr)
 	if err != nil {
 		return err
 	}
 
-	s.Logger.Println("Listening on HTTP:", listener.Addr().String())
+	log.Info("Listening on HTTP:", listener.Addr().String())
 	s.ln = listener
 
 	// Begin listening for requests in a separate goroutine.

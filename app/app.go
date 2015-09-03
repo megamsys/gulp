@@ -17,8 +17,7 @@ package app
 
 import (
 	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/state/provisioner/chefsolo"
-	"github.com/megamsys/gulp/handlers"
+	"github.com/megamsys/gulp/activities/state/provisioner/chefsolo"
 )
 
 /**
@@ -38,7 +37,7 @@ func StateUP(app *chefsolo.Provisioner) error {
 
 
 
-func StartApp(app *handlers.AssemblyWithComponents) error {
+func StartApp(app *AssemblyWithComponents) error {
 	actions := []*action.Action{&startApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -49,7 +48,7 @@ func StartApp(app *handlers.AssemblyWithComponents) error {
 	return nil
 }
 
-func StopApp(app *handlers.AssemblyWithComponents) error {
+func StopApp(app *AssemblyWithComponents) error {
 	actions := []*action.Action{&stopApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -60,7 +59,7 @@ func StopApp(app *handlers.AssemblyWithComponents) error {
 	return nil
 }
 
-func RebootApp(app *handlers.AssemblyWithComponents) error {
+func RebootApp(app *AssemblyWithComponents) error {
 	actions := []*action.Action{&rebootApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -73,7 +72,7 @@ func RebootApp(app *handlers.AssemblyWithComponents) error {
 
 
 
-func RestartApp(app *handlers.AssemblyWithComponents) error {
+func RestartApp(app *AssemblyWithComponents) error {
 	actions := []*action.Action{&restartApp}
 
 	pipeline := action.NewPipeline(actions...)
@@ -84,7 +83,7 @@ func RestartApp(app *handlers.AssemblyWithComponents) error {
 	return nil
 }
 
-func BuildApp(app *handlers.Component) error {
+func BuildApp(app *Component) error {
 	actions := []*action.Action{&buildApp}
 
 	pipeline := action.NewPipeline(actions...)

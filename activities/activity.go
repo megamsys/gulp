@@ -17,13 +17,14 @@ package activities
 
 import (
 	"fmt"
+	"github.com/megamsys/gulp/app"
 )
 
 
 // Every Activities must implement this interface.
 type Activities interface {	
 	// Called when execute action a Machine.
-	Action() error
+	Action(*app.ActionData) error
 }
 
 

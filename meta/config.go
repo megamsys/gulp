@@ -1,11 +1,28 @@
+/*
+** Copyright [2013-2015] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+ */
+ 
 package meta
 
 import (
 	"os"
 	"time"
-
-	"github.com/megamsys/libgo/cmd"
+	//"fmt"
 	"github.com/megamsys/gulp/toml"
+	"github.com/megamsys/libgo/cmd"
+	"path/filepath"
 )
 
 const (
@@ -50,15 +67,15 @@ type Config struct {
 }
 
 func (c Config) String() string {
-	table := NewTable()
-	table.AddRow(Row{Colorfy("Config:", "white", "", "bold"), Colorfy("Meta", "green", "", "")})
-	table.AddRow(Row{"Home", c.Home})
-	table.AddRow(Row{"Dir", c.Dir})
-	table.AddRow(Row{"Riak", c.Riak})
-	table.AddRow(Row{"API", c.Api})
-	table.AddRow(Row{"AMQP", c.AMQP})
-	table.AddRow(Row{"Hostname", c.Hostname})
-	table.AddRow(Row{"", ""})
+	table := cmd.NewTable()
+	table.AddRow(cmd.Row{cmd.Colorfy("Config:", "white", "", "bold"), cmd.Colorfy("Meta", "green", "", "")})
+	table.AddRow(cmd.Row{"Home", c.Home})
+	table.AddRow(cmd.Row{"Dir", c.Dir})
+	table.AddRow(cmd.Row{"Riak", c.Riak})
+	table.AddRow(cmd.Row{"API", c.Api})
+	table.AddRow(cmd.Row{"AMQP", c.AMQP})
+	table.AddRow(cmd.Row{"Hostname", c.Hostname})
+	table.AddRow(cmd.Row{"", ""})
 	return table.String()
 }
 
@@ -67,10 +84,10 @@ func NewConfig() *Config {
 	// By default, store logs, meta and load conf files in current users home directory
 	if os.Getenv("MEGAM_HOME") != "" {
 		homeDir = os.Getenv("MEGAM_HOME")
-	} else if u, err := user.Current(); err == nil {
-		homeDir = u.HomeDir
-	} else {
-		return nil, fmt.Errorf("failed to determine home directory")
+	//} else if u, err := user.Current(); err == nil {
+	//	homeDir = u.HomeDir
+	//} else {
+	//	return nil, fmt.Errorf("failed to determine home directory")
 	}
 
 	defaultDir := filepath.Join(homeDir, "gulp/meta")

@@ -17,8 +17,9 @@ package app
 
 import (
 	log "github.com/golang/glog"
-	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/libgo/db"
+	"errors"
+	"fmt"
+	"encoding/json"
 )
 
 var (
@@ -37,7 +38,7 @@ func (e InvalidProcessError) Error() string {
 type Request string
 
 func (r Request) String() string {
-	return string(s)
+	return string(r)
 }
 
 func ParseRequest(req string) (Request, error) {
@@ -79,10 +80,24 @@ func ParseRequest(req string) (Request, error) {
 	case "stopped":
 		return ReqStopped, nil
 	}
-	return Request(""), ErrInvalidReqtype
+	return Request(""), ErrInvalidRequesttype
 }
 
 const (
+
+    ReqBuild = Request("build")
+    ReqBuilt = Request("built")
+    ReqCreate = Request("create")
+    ReqStateup = Request("stateup")
+    ReqStatedown = Request("statedown")
+    ReqCreated = Request("created")
+    ReqDelete = Request("delete")
+    ReqDeleting = Request("deleting")
+    ReqDeleted = Request("deleted")
+    ReqStart = Request("start")
+    ReqStop = Request("stop")
+    ReqStoping = Request("stoping")
+  
 	// ReqCreating is the initial status of a unit in the database,
 	// it should transition shortly to a more specific status
 	ReqCreating = Request("create")
@@ -119,17 +134,19 @@ type Requests struct {
 **fetch the request json from riak and parse the json to struct
 **/
 func (p *Payload) Convert() (*Requests, error) {
-	log.Debugf("Get request %s", p.Id)
+	log.Info("Get request %s", p.Id)
 	r := &Requests{}
-	c, err := db.Conn("requests")
+	riakUrl := "192.168.1.9:8087"
+
+   conn, cerr := RiakConnection(riakUrl, "requests")
+	if cerr != nil {
+		return r, cerr
+	}
+	err := conn.FetchStruct(p.Id, r)
 	if err != nil {
 		return nil, err
 	}
-	err := c.FetchStruct(id, r)
-	if err != nil {
-		return nil, err
-	}
-	defer c.Close()
+	defer conn.Close()
 	return r, nil
 }
 
@@ -138,7 +155,7 @@ type Payload struct {
 }
 
 type PayloadConvertor interface {
-	Convert(Payload p) (*Requests, error)
+	Convert(Payload) (*Requests, error)
 }
 
 func NewPayload(b []byte) (*Payload, error) {

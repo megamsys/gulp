@@ -45,7 +45,7 @@ type Provisioner struct {
 }
 
 func (p Provisioner) prepareJSON() error {
-	log.Debug("Preparing JSON data")
+	log.Info("Preparing JSON data")
 	data := "{}\n"
 	if p.Attributes != "" {
 		data = p.Attributes
@@ -54,7 +54,7 @@ func (p Provisioner) prepareJSON() error {
 }
 
 func (p Provisioner) prepareSoloConfig() error {
-	log.Debug("Preparing Chef Solo config")
+	log.Info("Preparing Chef Solo config")
 	data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(p.RootPath, "cookbooks"))
 	data += "ssl_verify_mode :verify_peer\n"
 	return ioutil.WriteFile(path.Join(p.SandboxPath, "solo.rb"), []byte(data), 0644)

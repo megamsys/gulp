@@ -34,7 +34,7 @@ func (v *configFile) String() string {
 
 func (v *configFile) Set(value string) error {
 	v.value = value
-	configPath = value
+	configPath := value
 	return nil
 }
 
@@ -58,11 +58,11 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf) and exit.
 	}
 }
 
-func (c *Start) Run(context *cmd.Context, client *cmd.Client) error {
+func (c *Start) Run(context *cmd.Context) error {
 	fmt.Println("[main] starting gulpd ...")
 
 	// Parse config
-	config, err := cmd.ParseConfig(c.file)
+	config, err := ParseConfig(c.file)
 	if err != nil {
 		return fmt.Errorf("parse config: %s", err)
 	}
@@ -123,7 +123,8 @@ func (c *Start) Flags() *gnuflag.FlagSet {
 
 // ParseConfig parses the config at path.
 // Returns a demo configuration if path is blank.
-func (cmd *Command) ParseConfig(path string) (*Config, error) {
+//func (cmd *Command) ParseConfig(path string) (*Config, error) {
+func ParseConfig(path string) (*Config, error) {
 	// Use  configuration from the path, if path is specified.
 	if path != "" {
 		fmt.Fprintf(cmd.Stdout, "Using configuration at: %s\n", path)

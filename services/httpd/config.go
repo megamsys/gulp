@@ -1,22 +1,42 @@
+/*
+** Copyright [2013-2015] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+ */
+ 
 package httpd
 
+import (
+	"github.com/megamsys/libgo/cmd"
+)
+
 type Config struct {
-	Enabled     bool   `toml:"enabled"`
+	Enabled     string   `toml:"enabled"`
 	BindAddress string `toml:"bind_address"`
 }
 
 func (c Config) String() string {
-	table := NewTable()
-	table.AddRow(Row{Colorfy("Config:", "white", "", "bold"), Colorfy("Httpd", "green", "", "")})
-	table.AddRow(Row{"Enabled", c.Enabled})
-	table.AddRow(Row{"BindAddress", c.BindAddress})
-	table.AddRow(Row{"", ""})
+	table := cmd.NewTable()
+	table.AddRow(cmd.Row{cmd.Colorfy("Config:", "white", "", "bold"), cmd.Colorfy("Httpd", "green", "", "")})
+	table.AddRow(cmd.Row{"Enabled", c.Enabled})
+	table.AddRow(cmd.Row{"BindAddress", c.BindAddress})
+	table.AddRow(cmd.Row{"", ""})
 	return table.String()
 }
 
-func NewConfig() Config {
-	return Config{
-		Enabled:     true,
+func NewConfig() *Config {
+	return &Config{
+		Enabled:     "true",
 		BindAddress: "localhost:7777",
 	}
 }

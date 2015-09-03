@@ -16,11 +16,15 @@
 package state
 
 import (
+	"os"
+    "encoding/json"
 	log "github.com/golang/glog"
-	"github.com/megamsys/megamgulp/state/provisioner"
+	"github.com/megamsys/gulp/activities"
+	"github.com/megamsys/gulp/app"
+	"github.com/megamsys/gulp/activities/state/provisioner/chefsolo"
 )
 
-**
+/**
 **State Activity register function
 **This function register to activities container
 **/
@@ -52,9 +56,15 @@ const (
 	
 )
 
+type Node struct {
+	MegamRiak 	string		`json:"megam_riak"`
+}
+
 type Attributes struct {
     RunList   []string      `json:"run_list"`
     RiakHost  string 		`json:"riak_host"`
+  //  Node      *Node			`json:"node"`
+    MegamRiak 	string		`json:"megam_riak"`
 }
 
 func (c *StateActivity) Action(data *app.ActionData) error {
@@ -67,25 +77,29 @@ func (c *StateActivity) Action(data *app.ActionData) error {
 		delete(data.Assembly)
 		break	
 	}
+	return nil
 }
 
 
 /* new state */
-func new(assembly *app.Assembly) (string, error) {
+func new(assembly *app.AssemblyWithComponents) (string, error) {
 
+   var runList []string
     res1D := &Attributes{
         RunList:  []string{"recipe[megam_deps]" },
         RiakHost: "api.megam.io",
+        //Node:	  &Node{MegamRiak:"api.megam.io"},
+        MegamRiak: "api.megam.io",
         }
     DefaultAttributes, _ := json.Marshal(res1D)
 
-	var p provisioner.Provisioner
+	var p chefsolo.Provisioner
 		p = chefsolo.Provisioner{
-			RunList:     DefaultRunList,
+			RunList:     runList,
 			Attributes:  string(DefaultAttributes),
 			Format:      DefaultFormat,
 			LogLevel:    DefaultLogLevel,
-			SandboxPath: DefaultSandboxPath,
+			SandboxPath: DefaultSandBoxPath,
 			RootPath:    DefaultRootPath,
 			Sudo:        DefaultSudo,
 		}
@@ -93,23 +107,24 @@ func new(assembly *app.Assembly) (string, error) {
 	
 	log.Info("Preparing local files")
 
-	log.Debug("Creating local sandbox in", SandboxPath)
-	if err := os.MkdirAll(SandboxPath, 0755); err != nil {
-		abort(err)
+	log.Info("Creating local sandbox in", p.SandboxPath)
+	if err := os.MkdirAll(p.SandboxPath, 0755); err != nil {
+		log.Error("Error = %+v\n", err)
 	}
 
 	if err := p.PrepareFiles(); err != nil {
-		abort(err)
+		log.Error("Error = %+v\n", err)
 	}
 	
-	go app.StateUP(p)
+	go app.StateUP(&p)
+	return "", nil
 
 }
 
-func change(assembly *app.Assembly) (string, error) {
-
+func change(assembly *app.AssemblyWithComponents) (string, error) {
+  return "", nil
 }
 
-func delete(assembly *app.Assembly) (string, error) {
-
+func delete(assembly *app.AssemblyWithComponents) (string, error) {
+	return "", nil
 }

@@ -1,16 +1,32 @@
+/*
+** Copyright [2013-2015] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+ */
+ 
 package gulpd
 
 import (
-	"bufio"
-	"bytes"
-	"io"
-	"log"
-	"os"
-	"strconv"
-	"strings"
+//	"bufio"
+//	"bytes"
+//	"io"
+	log "github.com/golang/glog"
+//	"os"
+//	"strconv"
+//	"strings"
 	"sync"
 	"time"
-
+	"github.com/megamsys/libgo/amqp"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/meta"
 )
@@ -24,15 +40,11 @@ type Service struct {
 	Handler *Handler
 
 	Meta    *meta.Config
-	Gulpd *gulpd.Config
+	Gulpd   *Config
 }
 
 // NewService returns a new instance of Service.
-func NewService(c meta.Config, d gulpd.Config) (*Service, error) {
-	if err != nil {
-		return nil, err
-	}
-
+func NewService(c meta.Config, d Config) (*Service, error) {
 	s := &Service{
 		err:     make(chan error),
 		Meta:    &c,
@@ -44,11 +56,11 @@ func NewService(c meta.Config, d gulpd.Config) (*Service, error) {
 
 // Open starts the service
 func (s *Service) Open() error {
-	log.Infof("Starting gulpd service")
+	log.Info("Starting gulpd service")
 
 	p, err := amqp.NewRabbitMQ(s.Meta.AMQP, s.Gulpd.AssemblyID)
 	if err != nil {
-		log.Errorf("Couldn't establish an amqp (%s): %s", s.Meta, err.Error())
+		log.Error("Couldn't establish an amqp (%s): %s", s.Meta, err.Error())
 	}
 
 	ch, err := p.Sub()
@@ -58,7 +70,11 @@ func (s *Service) Open() error {
 		if err != nil {
 			return err
 		}
-		go s.Handler.serveAMQP(p.Convert())
+		req, rerr := p.Convert() 
+		if rerr != nil {
+			return rerr
+		}	
+		go s.Handler.ServeAMQP(req)
 	}
 
 	return nil

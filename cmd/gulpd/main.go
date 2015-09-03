@@ -16,9 +16,8 @@
 package main
 
 import (
-	"fmt"
 	"os"
-
+	"github.com/megamsys/gulp/cmd/gulpd/run"
 	"github.com/megamsys/libgo/cmd"
 )
 
@@ -27,11 +26,12 @@ var (
 	version string = "0.9"
 	commit  string = "01"
 	branch  string = "master"
+	header  string = "Supported-Gulp"
 )
 
 func cmdRegistry(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
-	m.Register(&Start{})
+	m.Register(&run.Start{})
 	return m
 }
 
