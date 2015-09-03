@@ -1,5 +1,5 @@
 /*
-** Copyright [2012-2013] [Megam Systems]
+** Copyright [2013-2015] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,35 +17,27 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/megamsys/libgo/cmd"
-	"github.com/tsuru/config"
 )
 
-const (
-	version = "0.3.0"
-	header  = "Supported-Gulp"
+// These variables are populated via the Go linker.
+var (
+	version string = "0.9"
+	commit  string = "01"
+	branch  string = "master"
 )
 
-const defaultConfigPath = "conf/gulpd.conf"
-
-//const defaultConfigPath = "/home/megam/bin/conf/gulpd.conf"
-
-func buildManager(name string) *cmd.Manager {
+func cmdRegistry(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
-	m.Register(&GulpdStart{m, nil, false}) //start the gulpd daemon
-	m.Register(&GulpdUpdate{}) //stop  the gulpd daemon	
+	m.Register(&Start{})
 	return m
 }
 
+//Run the commands from cli.
 func main() {
-	p, _ := filepath.Abs(defaultConfigPath)
-	log.Println(fmt.Errorf("Conf: %s", p))
-	config.ReadConfigFile(defaultConfigPath)
 	name := cmd.ExtractProgramName(os.Args[0])
-	manager := buildManager(name)
+	manager := cmdRegistry(name)
 	manager.Run(os.Args[1:])
 }
