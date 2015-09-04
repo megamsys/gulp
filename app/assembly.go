@@ -139,7 +139,7 @@ func (asm *Component) Get(asmId string) (*Component, error) {
       log.Print(err)
     }
     */
-    riakUrl := "127.0.0.1:8087"
+    riakUrl := "192.168.1.9:8087"
 
    conn, cerr := RiakConnection(riakUrl, comBucket)
 	if cerr != nil {

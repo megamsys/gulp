@@ -26,7 +26,8 @@ import (
 	"runtime/pprof"
 //	"strings"
 //	"time"
-
+	"strconv"
+	log "github.com/golang/glog"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/services/gulpd"
 	"github.com/megamsys/gulp/services/httpd"
@@ -65,24 +66,32 @@ func NewServer(c *Config, version string) (*Server, error) {
 
 	// Append services.
 	s.appendGulpdService(c.Meta, c.Gulpd)
-	s.appendHTTPDService(c.HTTPD)
+	s.appendHTTPDService(c.Meta, c.HTTPD)
 	return s, nil
 }
 
-func (s *Server) appendGulpdService(c meta.Config, d gulpd.Config) {
-	if !c.Enabled {
+func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
+	enable, _ := strconv.ParseBool(d.Enabled)
+	if !enable {
 		return
 	}
-	srv := activity.NewService(c, d)
+	srv, err := gulpd.NewService(c, d)
+	if err != nil {
+		return
+	}
 	//	srv.ProvisioningWriter = s.ProvisioningWriter
 	s.Services = append(s.Services, srv)
 }
 
-func (s *Server) appendHTTPDService(c httpd.Config) {
-	if !c.Enabled {
+func (s *Server) appendHTTPDService(c *meta.Config, h *httpd.Config) {
+	enable, _ := strconv.ParseBool(h.Enabled)
+	if !enable {
 		return
 	}
-	srv := httpd.NewService(c)
+	srv, err := httpd.NewService(c, h)
+	if err != nil {
+		return
+	}
 	//	srv.Handler.QueryExecutor = s.QueryExecutor
 	srv.Handler.Version = s.version
 
@@ -98,10 +107,10 @@ func (s *Server) Open() error {
 		// Start profiling, if set.
 		startProfile(s.CPUProfile, s.MemProfile)
 
-		host, port, err := s.hostAddr()
-		if err != nil {
-			return err
-		}
+	//	host, port, err := s.hostAddr()
+	//	if err != nil {
+	//		return err
+	//	}
 
 		//		go s.monitorErrorChan(s.?.Err())
 
@@ -165,9 +174,9 @@ func startProfile(cpuprofile, memprofile string) {
 	if cpuprofile != "" {
 		f, err := os.Create(cpuprofile)
 		if err != nil {
-			log.Errorf("cpuprofile: %v", err)
+			log.Error("cpuprofile: %v", err)
 		}
-		log.Printf("writing CPU profile to: %s\n", cpuprofile)
+		log.Info("writing CPU profile to: %s\n", cpuprofile)
 		prof.cpu = f
 		pprof.StartCPUProfile(prof.cpu)
 	}
@@ -175,9 +184,9 @@ func startProfile(cpuprofile, memprofile string) {
 	if memprofile != "" {
 		f, err := os.Create(memprofile)
 		if err != nil {
-			log.Errorf("memprofile: %v", err)
+			log.Error("memprofile: %v", err)
 		}
-		log.Printf("writing mem profile to: %s\n", memprofile)
+		log.Info("writing mem profile to: %s\n", memprofile)
 		prof.mem = f
 		runtime.MemProfileRate = 4096
 	}
@@ -189,11 +198,11 @@ func stopProfile() {
 	if prof.cpu != nil {
 		pprof.StopCPUProfile()
 		prof.cpu.Close()
-		log.Println("CPU profile stopped")
+		log.Info("CPU profile stopped")
 	}
 	if prof.mem != nil {
 		pprof.Lookup("heap").WriteTo(prof.mem, 0)
 		prof.mem.Close()
-		log.Println("mem profile stopped")
+		log.Info("mem profile stopped")
 	}
 }

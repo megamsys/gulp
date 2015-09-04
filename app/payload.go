@@ -125,7 +125,7 @@ type Requests struct {
 	Id	             string     `json:"id"`
 	AppId            string     `json:"cat_id"`
 	AppName          string     `json:"name"`
-	Action           string     `json:"action"`
+	Action           string     `json:"cattype"`
     Category         string     `json:"category"`
 	CreatedAt        string     `json:"created_at"`
 }

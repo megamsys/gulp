@@ -20,6 +20,10 @@ import (
 	"gopkg.in/check.v1"
 )
 
+type S struct{}
+
+var _ = check.Suite(&S{})
+
 func (s *S) TestMegamStartInfo(c *check.C) {
 	desc := `starts the gulpd daemon.
 

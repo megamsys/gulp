@@ -29,6 +29,8 @@ import (
 	"github.com/megamsys/libgo/amqp"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/activities/state"
+	"github.com/megamsys/gulp/activities/control"
 )
 
 const leaderWaitTimeout = 30 * time.Second
@@ -44,19 +46,23 @@ type Service struct {
 }
 
 // NewService returns a new instance of Service.
-func NewService(c meta.Config, d Config) (*Service, error) {
+func NewService(c *meta.Config, d *Config) (*Service, error) {
 	s := &Service{
 		err:     make(chan error),
-		Meta:    &c,
-		Gulpd:   &d,
+		Meta:    c,
+		Gulpd:   d,
 	}
 	s.Handler = NewHandler(s.Gulpd)
 	return s, nil
 }
 
 // Open starts the service
-func (s *Service) Open() error {
+func (s *Service) Open() error {  
+
 	log.Info("Starting gulpd service")
+	
+	state.Init()
+	control.Init()
 
 	p, err := amqp.NewRabbitMQ(s.Meta.AMQP, s.Gulpd.AssemblyID)
 	if err != nil {

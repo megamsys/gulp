@@ -68,7 +68,7 @@ type Attributes struct {
 }
 
 func (c *StateActivity) Action(data *app.ActionData) error {
-	
+
 	switch data.Request.Action {
 	case "stateup":
 		new(data.Assembly)

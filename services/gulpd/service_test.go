@@ -22,7 +22,7 @@ import (
 )
 
 func (s *S) TestCreateService(c *check.C) {
-    _, err := NewService(meta.Config{}, Config{
+    _, err := NewService(&meta.Config{}, &Config{
 		AssemblyID: "ASM000",
 	})	
 	c.Assert(err, check.IsNil)

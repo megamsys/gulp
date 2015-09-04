@@ -41,7 +41,7 @@ func NewHandler(conf *Config) *Handler {
 }
 
 func (h *Handler) ServeAMQP(r *app.Requests) error {
-	assembly, err := app.GetAssemblyWithComponents(r.Id)
+	assembly, err := app.GetAssemblyWithComponents(r.AppId)
 	if err != nil {
 		return err
 	}

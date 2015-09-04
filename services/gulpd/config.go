@@ -26,23 +26,22 @@ const (
 )
 
 type Config struct {
+	Enabled       string   			`toml:"enabled"`
 	AssemblyID    string 			`toml:"assembly_id"`	
 }
 
 func (c Config) String() string {
 	table := cmd.NewTable()
 	table.AddRow(cmd.Row{cmd.Colorfy("Config:", "white", "", "bold"), cmd.Colorfy("Activity", "green", "", "")})
+	table.AddRow(cmd.Row{"Enabled", c.Enabled})
 	table.AddRow(cmd.Row{"AssemblyID", c.AssemblyID})	
 	table.AddRow(cmd.Row{"", ""})
 	return table.String() 
 }
 
 func NewConfig() *Config {
-	c := &Config{}
-	c.AssemblyID = DefaultAssemblyID
-	return c
-
 	return &Config{
+		Enabled:     "true",
 		AssemblyID:    DefaultAssemblyID,	
 	}
 }

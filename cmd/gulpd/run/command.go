@@ -18,7 +18,9 @@ package run
 import (
 	"fmt"
 	"os"
-
+	"os/signal"
+	"time"
+	"syscall"
 	"github.com/BurntSushi/toml"
 	"github.com/megamsys/libgo/cmd"
 	"launchpad.net/gnuflag"
@@ -34,7 +36,7 @@ func (v *configFile) String() string {
 
 func (v *configFile) Set(value string) error {
 	v.value = value
-	configPath := value
+	//configPath := value
 	return nil
 }
 
@@ -60,9 +62,10 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf) and exit.
 
 func (c *Start) Run(context *cmd.Context) error {
 	fmt.Println("[main] starting gulpd ...")
-
+    fmt.Println("-----------------------")
+    fmt.Println(c.file.String())
 	// Parse config
-	config, err := ParseConfig(c.file)
+	config, err := ParseConfig(c.file.String())
 	if err != nil {
 		return fmt.Errorf("parse config: %s", err)
 	}
@@ -71,14 +74,14 @@ func (c *Start) Run(context *cmd.Context) error {
 		return nil
 	}
 
-	cmd := run.NewCommand()
+	cmd := NewCommand()
 
 	// Tell the server the build details.
-	cmd.Version = version
-	cmd.Commit = commit
-	cmd.Branch = branch
+	cmd.Version = "0.9"
+	cmd.Commit = "commit"
+	cmd.Branch = "master"
 
-	if err := cmd.Gpd(config); err != nil {
+	if err := cmd.Gpd(config, cmd.Version); err != nil {
 		return fmt.Errorf("run: %s", err)
 	}
 
@@ -127,7 +130,7 @@ func (c *Start) Flags() *gnuflag.FlagSet {
 func ParseConfig(path string) (*Config, error) {
 	// Use  configuration from the path, if path is specified.
 	if path != "" {
-		fmt.Fprintf(cmd.Stdout, "Using configuration at: %s\n", path)
+	//	fmt.Fprintf(cmd.Stdout, "Using configuration at: %s\n", path)
 	}
 
 	config := NewConfig()

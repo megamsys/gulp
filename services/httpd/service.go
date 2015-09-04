@@ -36,13 +36,13 @@ type Service struct {
 }
 
 // NewService returns a new instance of Service.
-func NewService(c meta.Config, h Config) *Service {
+func NewService(c *meta.Config, h *Config) (*Service, error) {
 	s := &Service{
 		addr: h.BindAddress,
 		err:  make(chan error),
 		Handler: NewHandler(),
 	}
-	return s
+	return s, nil
 }
 
 // Open starts the service

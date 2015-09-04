@@ -34,8 +34,7 @@ import (
 
 type Config struct {
 	Meta    *meta.Config 	`toml:"meta"`
-
-	Gulpd   *gulpd.Config  `toml:"gulpd"`
+	Gulpd   *gulpd.Config   `toml:"gulpd"`
 	HTTPD   *httpd.Config   `toml:"http"`
 
 }
@@ -66,8 +65,8 @@ func NewDemoConfig() (*Config, error) {
 func (c *Config) Validate() error {
 	if c.Meta.Dir == "" {
 		return errors.New("Meta.Dir must be specified")
-	} else if c.Gulpd.Dir == "" {
-		return errors.New("Gulpd.Dir must be specified")
+	} else if c.Gulpd.AssemblyID == "" {
+		return errors.New("Gulpd.AssemblyID must be specified")
 	}
 	return nil
 }

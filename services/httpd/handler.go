@@ -54,12 +54,12 @@ func NewHandler() *Handler {
 	//	loggingEnabled: loggingEnabled,
 	}
 
-	/*h.SetRoutes([]route{
+	h.SetRoutes([]route{
 		route{ // Ping
 			"ping",
-			"GET", "/ping", true, h.servePing,
+			"GET", "/ping", h.servePing,
 		},
-	})*/
+	})
 
 	return h
 }
@@ -100,17 +100,17 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // servePing returns a simple response to let the client know the server is running.
 func (h *Handler) servePing(w http.ResponseWriter, r *http.Request) {
 	v := make(map[string]string)
-	v["name"] = "megamd"
+	v["name"] = "gulp"
 	v["version"] = "0.9"
 	w.Header().Set("Content-Type", "application/json")
 	//return json.NewEncoder(w).Encode(&v)
 }
 
 // versionHeader takes a HTTP handler and returns a HTTP handler
-// and adds the X-MEGAMD-VERSION header to outgoing responses.
+// and adds the X-GULP-VERSION header to outgoing responses.
 func versionHeader(inner http.Handler, h *Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("X-MEGAMD-Version", h.Version)
+		w.Header().Add("X-GULP-Version", h.Version)
 		inner.ServeHTTP(w, r)
 	})
 }

@@ -18,37 +18,37 @@ package run
 
 import (
 	"github.com/BurntSushi/toml"
-	"gopkg.in/check.v1"
+	//"gopkg.in/check.v1"
+	"testing"
+//	"fmt"
 )
 
-type S struct{}
+//type S struct{}
 
-var _ = check.Suite(&S{})
+//var _ = check.Suite(&S{})
 
 // Ensure the configuration can be parsed.
-func (s *S) TestConfig_Parse(c *check.C) {
+func TestConfig_Parse(t *testing.T) {
 	// Parse configuration.
-	var conf run.Config
+	var conf Config
 	if _, err := toml.Decode(`
-		[meta]
-			debug = true
-			hostname = "localhost"
-			bind_address = ":9999"
-			dir = "/var/lib/megam/gulpd/meta"
-			riak = "192.168.1.100:8087"
-			api  = "https://api.megam.io/v2"
-			amqp = "amqp://guest:guest@192.168.1.100:5672/"
-
-		[Activity]
-			one_endpoint = "http://192.168.1.100:3030/xmlrpc2"
-			one_userid = "oneadmin"
-			one_password =  "password"	
+[meta]
+hostname = "localhost"
+bind_address = ":9999"
+dir = "/var/lib/megam/gulpd/meta"
+riak = "192.168.1.100:8087"
+api  = "https://api.megam.io/v2"
+amqp = "amqp://guest:guest@192.168.1.100:5672/"
+[gulpd]
+[http]
 `, &conf); err != nil {
-	//	t.Fatal(err)
+		t.Fatal(err)
 	}
 
-	c.Assert(conf.Hostname, check.Equals, "locahost")
-	c.Assert(conf.Riak, check.Equals, "192.168.1.100:8087")
-	c.Assert(conf.Api, check.Equals, "https://api.megam.io/v2")
+ //   c.Assert(err, check.IsNil)
+//	c.Assert(conf.Meta.Hostname, check.Equals, "dfgdfg")
+//	c.Assert(conf.Meta.Riak, check.Equals, "192.168.1.100:8087")
+//	c.Assert(conf.Meta.Api, check.Equals, "https://api.megam.io/v2")
 
 }
+

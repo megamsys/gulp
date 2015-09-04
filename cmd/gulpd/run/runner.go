@@ -58,7 +58,7 @@ func NewCommand() *Command {
 }
 
 //Short form for "Gulp daemon - Gpd" .We start the gulpd daemon.
-func (cmd *Command) Gpd(c *Config, version string) {
+func (cmd *Command) Gpd(c *Config, version string) error {
 
 	fmt.Println(logo)
 
@@ -86,6 +86,14 @@ func (cmd *Command) Gpd(c *Config, version string) {
 	return nil
 }
 
+func funSpin() {
+	s := spin.New()
+	for i := 0; i < 30; i++ {
+  		fmt.Printf("\r  \033[36mcomputing\033[m %s ", s.Next())
+  		time.Sleep(100 * time.Millisecond)
+	}
+}
+
 // Close shuts down the server.
 func (cmd *Command) Close() error {
 	defer close(cmd.Closed)
@@ -100,7 +108,7 @@ func (cmd *Command) monitorServerErrors() {
 	for {
 		select {
 		case err := <-cmd.Server.Err():
-			log.Errorf(err)
+			log.Error(err)
 		case <-cmd.closing:
 			return
 		}
