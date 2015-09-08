@@ -25,14 +25,13 @@ import (
 	//"strings"
 
 	log "github.com/golang/glog"
-	"github.com/megamsys/gulp/handlers"
-	"github.com/megamsys/gulp/state/provisioner/chefsolo"
+	"github.com/megamsys/gulp/activities/state/provisioner/chefsolo"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 	"github.com/tsuru/config"
 )
 
-func TorpedoCommandExecutor(command string, app *handlers.AssemblyWithComponents) (action.Result, error) {
+func TorpedoCommandExecutor(command string, app *AssemblyWithComponents) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
 
@@ -139,7 +138,7 @@ func ChefCommandExecutor(commandWords []string, app *chefsolo.Provisioner) (acti
 	return &app, nil
 }
 
-func CommandExecutor(command string, app *handlers.AssemblyWithComponents) (action.Result, error) {
+func CommandExecutor(command string, app *AssemblyWithComponents) (action.Result, error) {
 
 	for i := range app.Components {
 		ctype := strings.Split(app.Components[i].ToscaType, ".")
@@ -157,7 +156,7 @@ func CommandExecutor(command string, app *handlers.AssemblyWithComponents) (acti
 	return &app, nil
 }
 
-func ComponentCommandExecutor(app *handlers.Component) (action.Result, error) {
+func ComponentCommandExecutor(app *Component) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
 
@@ -211,7 +210,7 @@ func ComponentCommandExecutor(app *handlers.Component) (action.Result, error) {
 }
 
 
-func RedeployCommandExecutor(app *handlers.Component) (action.Result, error) {
+func RedeployCommandExecutor(app *Component) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
 
@@ -291,14 +290,14 @@ var stateup = action.Action{
 var startApp = action.Action{
 	Name: "startapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app handlers.AssemblyWithComponents
+		var app AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case handlers.AssemblyWithComponents:
-			app = ctx.Params[0].(handlers.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case AssemblyWithComponents:
+			app = ctx.Params[0].(AssemblyWithComponents)
+		case *AssemblyWithComponents:
+			app = *ctx.Params[0].(*AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *AssemblyWithComponents.")
 		}
 		return CommandExecutor("start", &app)
 	},
@@ -312,14 +311,14 @@ var startApp = action.Action{
 var rebootApp = action.Action{
 	Name: "rebootapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app handlers.AssemblyWithComponents
+		var app AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case handlers.AssemblyWithComponents:
-			app = ctx.Params[0].(handlers.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case AssemblyWithComponents:
+			app = ctx.Params[0].(AssemblyWithComponents)
+		case *AssemblyWithComponents:
+			app = *ctx.Params[0].(*AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *AssemblyWithComponents.")
 		}
 		return TorpedoCommandExecutor("reboot", &app)
 	},
@@ -332,14 +331,14 @@ var rebootApp = action.Action{
 var restartApp = action.Action{
 	Name: "restartapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app handlers.AssemblyWithComponents
+		var app AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case handlers.AssemblyWithComponents:
-			app = ctx.Params[0].(handlers.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case AssemblyWithComponents:
+			app = ctx.Params[0].(AssemblyWithComponents)
+		case *AssemblyWithComponents:
+			app = *ctx.Params[0].(*AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *AssemblyWithComponents.")
 		}
 		return CommandExecutor("restart", &app)
 	},
@@ -352,14 +351,14 @@ var restartApp = action.Action{
 var stopApp = action.Action{
 	Name: "stopapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app handlers.AssemblyWithComponents
+		var app AssemblyWithComponents
 		switch ctx.Params[0].(type) {
-		case handlers.AssemblyWithComponents:
-			app = ctx.Params[0].(handlers.AssemblyWithComponents)
-		case *handlers.AssemblyWithComponents:
-			app = *ctx.Params[0].(*handlers.AssemblyWithComponents)
+		case AssemblyWithComponents:
+			app = ctx.Params[0].(AssemblyWithComponents)
+		case *AssemblyWithComponents:
+			app = *ctx.Params[0].(*AssemblyWithComponents)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.AssemblyWithComponents.")
+			return nil, errors.New("First parameter must be App or *AssemblyWithComponents.")
 		}
 
 		return CommandExecutor("stop", &app)
@@ -373,14 +372,14 @@ var stopApp = action.Action{
 var restartComponent = action.Action{
 	Name: "restartcomponent",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app handlers.Component
+		var app Component
 		switch ctx.Params[0].(type) {
-		case handlers.Component:
-			app = ctx.Params[0].(handlers.Component)
-		case *handlers.Component:
-			app = *ctx.Params[0].(*handlers.Component)
+		case Component:
+			app = ctx.Params[0].(Component)
+		case *Component:
+			app = *ctx.Params[0].(*Component)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.Component.")
+			return nil, errors.New("First parameter must be App or *Component.")
 		}
 		ctype := strings.Split(app.ToscaType, ".")
 		app.Command = "stop " + ctype[2] + "; " + "start " + ctype[2]
@@ -395,14 +394,14 @@ var restartComponent = action.Action{
 var buildApp = action.Action{
 	Name: "buildApp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		var app handlers.Component
+		var app Component
 		switch ctx.Params[0].(type) {
-		case handlers.Component:
-			app = ctx.Params[0].(handlers.Component)
-		case *handlers.Component:
-			app = *ctx.Params[0].(*handlers.Component)
+		case Component:
+			app = ctx.Params[0].(Component)
+		case *Component:
+			app = *ctx.Params[0].(*Component)
 		default:
-			return nil, errors.New("First parameter must be App or *handlers.Component.")
+			return nil, errors.New("First parameter must be App or *Component.")
 		}
 		ctype := strings.Split(app.ToscaType, ".")
 		megam_home, perr := config.GetString("megam_home")

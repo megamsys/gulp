@@ -1,18 +1,26 @@
 {
 	"ImportPath": "github.com/megamsys/gulp",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.5",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
-			"ImportPath": "code.google.com/p/log4go",
-			"Comment": "go.weekly.2012-02-22-1",
-			"Rev": "c3294304d93f48a37d3bed1d382882a9c2989f99"
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.1.0-21-g056c9bc",
+			"Rev": "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
+		},
+		{
+			"ImportPath": "github.com/bmizerany/pat",
+			"Rev": "b8a35001b773c267eb260a691f4e5499a3531600"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "fca8c8854093a154ff1eb580aae10276ad6b1b5f"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
-			"Rev": "39e27fc0f226450c58e11eda145b542bc5dff3fe"
+			"Rev": "1dceb1a2654bdc74ca97ad91f71f500eecc96269"
 		},
 		{
 			"ImportPath": "github.com/howeyc/fsnotify",
@@ -21,27 +29,27 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "4717f0159a8ec45f9cd82ade2394f1b09882fea8"
+			"Rev": "ee9fc0d9874cbadf79bd19d168b265be26d2567f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/amqp",
-			"Rev": "4717f0159a8ec45f9cd82ade2394f1b09882fea8"
+			"Rev": "ee9fc0d9874cbadf79bd19d168b265be26d2567f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "4717f0159a8ec45f9cd82ade2394f1b09882fea8"
+			"Rev": "ee9fc0d9874cbadf79bd19d168b265be26d2567f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "4717f0159a8ec45f9cd82ade2394f1b09882fea8"
+			"Rev": "ee9fc0d9874cbadf79bd19d168b265be26d2567f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "4717f0159a8ec45f9cd82ade2394f1b09882fea8"
+			"Rev": "ee9fc0d9874cbadf79bd19d168b265be26d2567f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "4717f0159a8ec45f9cd82ade2394f1b09882fea8"
+			"Rev": "ee9fc0d9874cbadf79bd19d168b265be26d2567f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/riakpbc",
@@ -49,15 +57,20 @@
 		},
 		{
 			"ImportPath": "github.com/streadway/amqp",
-			"Rev": "6a378341a305bfbc252e8a6638f16cf443221997"
+			"Rev": "f4879ba28fffbb576743b03622a9ff20461826b2"
+		},
+		{
+			"ImportPath": "github.com/tj/go-spin",
+			"Comment": "1.0.0-9-g4bd47d3",
+			"Rev": "4bd47d3603b5c0460028794fbbf207f881088c08"
 		},
 		{
 			"ImportPath": "github.com/tsuru/config",
-			"Rev": "1fb3132fcee97c39e8894cb8aa8e90abdeaf98c7"
+			"Rev": "b424dc06980e3a20599454c782f4ce1ea64027c6"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",
-			"Rev": "64131543e7896d5bcc6bd5a76287eb75ea96c673"
+			"Rev": "11d3bc7aa68e238947792f30573146a3231fc0f1"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v1",
