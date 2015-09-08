@@ -136,7 +136,7 @@ type Requests struct {
 func (p *Payload) Convert() (*Requests, error) {
 	log.Info("Get request %s", p.Id)
 	r := &Requests{}
-	riakUrl := "192.168.1.9:8087"
+	riakUrl := "192.168.1.247:8087"
 
    conn, cerr := RiakConnection(riakUrl, "requests")
 	if cerr != nil {

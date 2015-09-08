@@ -62,8 +62,6 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf) and exit.
 
 func (c *Start) Run(context *cmd.Context) error {
 	fmt.Println("[main] starting gulpd ...")
-    fmt.Println("-----------------------")
-    fmt.Println(c.file.String())
 	// Parse config
 	config, err := ParseConfig(c.file.String())
 	if err != nil {
