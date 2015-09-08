@@ -13,25 +13,27 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package httpd
 
 import (
-//	"bytes"
-//	"compress/gzip"
-//	"errors"
-//	"fmt"
-//	"io"
-//	"io/ioutil"
+	//	"bytes"
+	//	"compress/gzip"
+	//	"errors"
+	//	"fmt"
+	//	"io"
+	//	"io/ioutil"
+
 	"net/http"
 	"net/http/pprof"
-//	"os"
-//	"strconv"
+	//	"os"
+	//	"strconv"
 	"strings"
-//	"time"
-
+	//	"time"
 	"github.com/bmizerany/pat"
-//	"github.com/megamsys/gulp/meta"
+	//	"github.com/megamsys/gulp/meta"
+
+	"github.com/megamsys/gulp/activities/docker/handler"
 )
 
 type route struct {
@@ -49,9 +51,10 @@ type Handler struct {
 
 // NewHandler returns a new instance of handler with routes.
 func NewHandler() *Handler {
+
 	h := &Handler{
-		mux:            pat.New(),
-	//	loggingEnabled: loggingEnabled,
+		mux: pat.New(),
+		//	loggingEnabled: loggingEnabled,
 	}
 
 	h.SetRoutes([]route{
@@ -91,8 +94,16 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			pprof.Index(w, r)
 		}
-		return
+	} else {
+		switch r.URL.Path {
+		case "/docker/logs":
+			handler.Logs(w, r)
+			//Does it require another handler? why cant activities be called frm here?
+		case "/docker/networks":
+			handler.Networks(w, r)
+		}
 	}
+	return
 
 	h.mux.ServeHTTP(w, r)
 }

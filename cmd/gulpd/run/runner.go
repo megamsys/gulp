@@ -20,17 +20,17 @@ import (
 //	"runtime"
 	"time"
 
-	log "github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"github.com/tj/go-spin"
 )
 
 const logo = `
- ██████╗ ██╗   ██╗██╗     ██████╗ ██████╗ 
+ ██████╗ ██╗   ██╗██╗     ██████╗ ██████╗
 ██╔════╝ ██║   ██║██║     ██╔══██╗██╔══██╗
 ██║  ███╗██║   ██║██║     ██████╔╝██║  ██║
 ██║   ██║██║   ██║██║     ██╔═══╝ ██║  ██║
 ╚██████╔╝╚██████╔╝███████╗██║     ██████╔╝
- ╚═════╝  ╚═════╝ ╚══════╝╚═╝     ╚═════╝ 
+ ╚═════╝  ╚═════╝ ╚══════╝╚═╝     ╚═════╝
 `
 
 // Command represents the command executed by "gulpd start".

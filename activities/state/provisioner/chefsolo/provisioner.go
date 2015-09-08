@@ -22,7 +22,7 @@ import (
 	"io/ioutil"
 	"path"
 	"strings"
-	log "github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 )
 
 const (

@@ -13,21 +13,22 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package run
 
 import (
-//	"bytes"
+	//	"bytes"
 	"fmt"
-//	"net"
-//	"net/http"
+	//	"net"
+	//	"net/http"
 	"os"
 	"runtime"
 	"runtime/pprof"
-//	"strings"
-//	"time"
+	//	"strings"
+	//	"time"
 	"strconv"
-	log "github.com/golang/glog"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/services/gulpd"
 	"github.com/megamsys/gulp/services/httpd"
@@ -63,9 +64,8 @@ func NewServer(c *Config, version string) (*Server, error) {
 		Hostname:    c.Meta.Hostname,
 		BindAddress: c.Meta.BindAddress,
 	}
-
 	// Append services.
-	s.appendGulpdService(c.Meta, c.Gulpd)
+	//	s.appendGulpdService(c.Meta, c.Gulpd)
 	s.appendHTTPDService(c.Meta, c.HTTPD)
 	return s, nil
 }
@@ -84,6 +84,7 @@ func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
 }
 
 func (s *Server) appendHTTPDService(c *meta.Config, h *httpd.Config) {
+
 	enable, _ := strconv.ParseBool(h.Enabled)
 	if !enable {
 		return
@@ -107,10 +108,10 @@ func (s *Server) Open() error {
 		// Start profiling, if set.
 		startProfile(s.CPUProfile, s.MemProfile)
 
-	//	host, port, err := s.hostAddr()
-	//	if err != nil {
-	//		return err
-	//	}
+		//	host, port, err := s.hostAddr()
+		//	if err != nil {
+		//		return err
+		//	}
 
 		//		go s.monitorErrorChan(s.?.Err())
 

@@ -19,8 +19,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
 	"syscall"
+	"time"
+
 	"github.com/BurntSushi/toml"
 	"github.com/megamsys/libgo/cmd"
 	"launchpad.net/gnuflag"
@@ -63,6 +64,7 @@ If you use the '--dry' flag gulpd will do a dry run(parse conf) and exit.
 func (c *Start) Run(context *cmd.Context) error {
 	fmt.Println("[main] starting gulpd ...")
 	// Parse config
+	fmt.Println(c.file.String())
 	config, err := ParseConfig(c.file.String())
 	if err != nil {
 		return fmt.Errorf("parse config: %s", err)
@@ -128,7 +130,7 @@ func (c *Start) Flags() *gnuflag.FlagSet {
 func ParseConfig(path string) (*Config, error) {
 	// Use  configuration from the path, if path is specified.
 	if path != "" {
-	//	fmt.Fprintf(cmd.Stdout, "Using configuration at: %s\n", path)
+		//	fmt.Fprintf(cmd.Stdout, "Using configuration at: %s\n", path)
 	}
 
 	config := NewConfig()

@@ -13,16 +13,20 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package httpd
 
 import (
 	"fmt"
-	log "github.com/golang/glog"
 	"net"
 	"net/http"
-//	"os"
+
+	log "github.com/Sirupsen/logrus"
+	//	"os"
 	"strings"
+
+	"github.com/megamsys/gulp/activities/docker"
+
 	"github.com/megamsys/gulp/meta"
 )
 
@@ -37,17 +41,21 @@ type Service struct {
 
 // NewService returns a new instance of Service.
 func NewService(c *meta.Config, h *Config) (*Service, error) {
+
 	s := &Service{
-		addr: h.BindAddress,
-		err:  make(chan error),
+		addr:    h.BindAddress,
+		err:     make(chan error),
 		Handler: NewHandler(),
 	}
+	fmt.Println(s.Handler)
 	return s, nil
 }
 
 // Open starts the service
 func (s *Service) Open() error {
 	log.Info("Starting HTTP service")
+
+	docker.Init()
 
 	listener, err := net.Listen("tcp", s.addr)
 	if err != nil {

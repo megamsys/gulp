@@ -13,16 +13,17 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package meta
 
 import (
 	"os"
 	"time"
 	//"fmt"
+	"path/filepath"
+
 	"github.com/megamsys/gulp/toml"
 	"github.com/megamsys/libgo/cmd"
-	"path/filepath"
 )
 
 const (
@@ -49,6 +50,9 @@ const (
 
 	// DefaultLeaderLeaseTimeout is the default leader lease for the store.
 	DefaultLeaderLeaseTimeout = 500 * time.Millisecond
+
+	//DefaultDockerPath is the detault docker path
+	DefaultDockerPath = "/var/lib/docker/containers/"
 )
 
 // Config represents the meta configuration.
@@ -64,6 +68,7 @@ type Config struct {
 	ElectionTimeout    toml.Duration `toml:"election-timeout"`
 	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
 	LeaderLeaseTimeout toml.Duration `toml:"leader-lease-timeout"`
+	DockerPath         string        `toml:"docker_path"`
 }
 
 func (c Config) String() string {
@@ -84,23 +89,24 @@ func NewConfig() *Config {
 	// By default, store logs, meta and load conf files in current users home directory
 	if os.Getenv("MEGAM_HOME") != "" {
 		homeDir = os.Getenv("MEGAM_HOME")
-	//} else if u, err := user.Current(); err == nil {
-	//	homeDir = u.HomeDir
-	//} else {
-	//	return nil, fmt.Errorf("failed to determine home directory")
+		//} else if u, err := user.Current(); err == nil {
+		//	homeDir = u.HomeDir
+		//} else {
+		//	return nil, fmt.Errorf("failed to determine home directory")
 	}
 
 	defaultDir := filepath.Join(homeDir, "gulp/meta")
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
-		Home:               homeDir,
+		Home:               homeDir, //Need to remove
 		Dir:                defaultDir,
 		Hostname:           DefaultHostname,
 		BindAddress:        DefaultBindAddress,
 		Riak:               DefaultRiak,
 		Api:                DefaultApi,
 		AMQP:               DefaultAMQP,
+		DockerPath:         DefaultDockerPath,
 		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
 		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),
 		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),
