@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package gulpd
 
 import (
@@ -57,10 +57,10 @@ func NewService(c *meta.Config, d *Config) (*Service, error) {
 }
 
 // Open starts the service
-func (s *Service) Open() error {  
+func (s *Service) Open() error { 
 
 	log.Info("Starting gulpd service")
-	
+
 	state.Init()
 	control.Init()
 
@@ -76,10 +76,10 @@ func (s *Service) Open() error {
 		if err != nil {
 			return err
 		}
-		req, rerr := p.Convert() 
+		req, rerr := p.Convert()
 		if rerr != nil {
 			return rerr
-		}	
+		}
 		go s.Handler.ServeAMQP(req)
 	}
 

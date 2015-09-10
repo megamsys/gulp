@@ -416,3 +416,45 @@ var buildApp = action.Action{
 	},
 	MinParams: 1,
 }
+
+var loadgithub = action.Action{
+	Name: "loadgithub",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app AssemblyWithComponents
+		switch ctx.Params[0].(type) {
+		case AssemblyWithComponents:
+			app = ctx.Params[0].(AssemblyWithComponents)
+		case *AssemblyWithComponents:
+			app = *ctx.Params[0].(*AssemblyWithComponents)
+		default:
+			return nil, errors.New("First parameter must be App or *AssemblyWithComponents.")
+		}
+		app.Command = "sudo apt-get install github"
+		return TorpedoCommandExecutor("reboot", &app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
+
+var loadsshkeys = action.Action{
+	Name: "loadsshkeys",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var app AssemblyWithComponents
+		switch ctx.Params[0].(type) {
+		case AssemblyWithComponents:
+			app = ctx.Params[0].(AssemblyWithComponents)
+		case *AssemblyWithComponents:
+			app = *ctx.Params[0].(*AssemblyWithComponents)
+		default:
+			return nil, errors.New("First parameter must be App or *AssemblyWithComponents.")
+		}
+		//update sshkeys to .ssh file
+		return TorpedoCommandExecutor("reboot", &app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}

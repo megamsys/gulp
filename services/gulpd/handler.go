@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package gulpd
 
 import (
@@ -35,7 +35,7 @@ type Handler struct {
 func NewHandler(conf *Config) *Handler {
 	h := &Handler{
 		d: conf,
-	}	
+	}
 
 	return h
 }
@@ -50,11 +50,11 @@ func (h *Handler) ServeAMQP(r *app.Requests) error {
 		Assembly: assembly,
 		Request: r,
 			}
-	
-	p, err := activities.GetActivity(r.Category)	
+
+	p, err := activities.GetActivity(r.Category)
 	if err = p.Action(&di); err != nil {
 			return err
-		}	
-	
+		}
+
 	return nil
 }
