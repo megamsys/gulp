@@ -78,8 +78,8 @@ godep:
 build: check-path get _go_test _gulpd
 
 _go_test:
-	go clean $(GO_EXTRAFLAGS) ./...
-	go test $(GO_EXTRAFLAGS) ./...
+	go clean  ./...
+	go test  ./...
 
 _gulpd:
 	rm -f gulpd
@@ -88,7 +88,7 @@ _gulpd:
 #	go build $(GO_EXTRAFLAGS) -o gulpc ./cmd/gulpc
 
 _gulpdr:
-	sudo ./gulpd start
+	sudo ./gulpd start --config conf/gulpd.toml
 	rm -f gulpd
 #	rm -f gulpc
 

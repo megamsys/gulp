@@ -12,24 +12,25 @@
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-*/
+ */
 package activities
 
 import (
 	"fmt"
+	"io/ioutil"
+	libhttp "net/http"
+
 	"github.com/megamsys/gulp/app"
 )
 
-
 // Every Activities must implement this interface.
-type Activities interface {	
+type Activities interface {
 	// Called when execute action a Machine.
 	Action(*app.ActionData) error
 }
 
-
 var plugs = make(map[string]Activities)
-var plug_names = []string{"state", "control", "policies"}
+var plug_names = []string{"state", "control", "policies", "docker"}
 
 /**
 **register the all Activities to "plug" array
@@ -44,4 +45,14 @@ func GetActivity(name string) (Activities, error) {
 		return nil, fmt.Errorf("Activities not registered")
 	}
 	return activity, nil
+}
+
+func HttpDataParser(w libhttp.ResponseWriter, req *libhttp.Request) []byte {
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		fmt.Println("error")
+	}
+
+	return body
 }

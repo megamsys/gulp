@@ -16,7 +16,7 @@
 package app
 
 import (
-	log "github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"errors"
 	"fmt"
 	"encoding/json"
@@ -97,7 +97,7 @@ const (
     ReqStart = Request("start")
     ReqStop = Request("stop")
     ReqStoping = Request("stoping")
-  
+
 	// ReqCreating is the initial status of a unit in the database,
 	// it should transition shortly to a more specific status
 	ReqCreating = Request("create")

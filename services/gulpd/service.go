@@ -17,20 +17,21 @@
 package gulpd
 
 import (
-//	"bufio"
-//	"bytes"
-//	"io"
-	log "github.com/golang/glog"
-//	"os"
-//	"strconv"
-//	"strings"
+	//	"bufio"
+	//	"bytes"
+	//	"io"
+	log "github.com/Sirupsen/logrus"
+	//	"os"
+	//	"strconv"
+	//	"strings"
 	"sync"
 	"time"
-	"github.com/megamsys/libgo/amqp"
+
+	"github.com/megamsys/gulp/activities/control"
+	"github.com/megamsys/gulp/activities/state"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/activities/state"
-	"github.com/megamsys/gulp/activities/control"
+	"github.com/megamsys/libgo/amqp"
 )
 
 const leaderWaitTimeout = 30 * time.Second
@@ -41,25 +42,25 @@ type Service struct {
 	err     chan error
 	Handler *Handler
 
-	Meta    *meta.Config
-	Gulpd   *Config
+	Meta  *meta.Config
+	Gulpd *Config
 }
 
 // NewService returns a new instance of Service.
 func NewService(c *meta.Config, d *Config) (*Service, error) {
 	s := &Service{
-		err:     make(chan error),
-		Meta:    c,
-		Gulpd:   d,
+		err:   make(chan error),
+		Meta:  c,
+		Gulpd: d,
 	}
 	s.Handler = NewHandler(s.Gulpd)
 	return s, nil
 }
 
 // Open starts the service
-func (s *Service) Open() error { 
+func (s *Service) Open() error {
 
-	log.Info("Starting gulpd service")
+	log.Info("Starting gulpd service->")
 
 	state.Init()
 	control.Init()
