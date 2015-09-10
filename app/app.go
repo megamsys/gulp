@@ -12,12 +12,12 @@
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
-*/
+ */
 package app
 
 import (
-	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/activities/state/provisioner/chefsolo"
+	"github.com/megamsys/libgo/action"
 )
 
 /**
@@ -33,9 +33,6 @@ func StateUP(app *chefsolo.Provisioner) error {
 	}
 	return nil
 }
-
-
-
 
 func StartApp(app *AssemblyWithComponents) error {
 	actions := []*action.Action{&startApp}
@@ -70,8 +67,6 @@ func RebootApp(app *AssemblyWithComponents) error {
 	return nil
 }
 
-
-
 func RestartApp(app *AssemblyWithComponents) error {
 	actions := []*action.Action{&restartApp}
 
@@ -90,6 +85,39 @@ func BuildApp(app *Component) error {
 	err := pipeline.Execute(app)
 	if err != nil {
 		return &AppLifecycleError{app: app.Name, Err: err}
+	}
+	return nil
+}
+
+/*
+* Docker logs stream which links docker logs to megam docker file for heka to read
+*
+ */
+
+func StreamLogs(logs *LogsInfo) error {
+	actions := []*action.Action{&streamLogs}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(logs)
+	if err != nil {
+		return &AppLifecycleError{app: logs.ContainerName, Err: err}
+	}
+	return nil
+}
+
+/*
+* Docker networks configuration to setting up public ip
+*
+ */
+
+func ConfigureNetworks(networks *NetworksInfo) error {
+
+	actions := []*action.Action{&configureNetworks}
+
+	pipeline := action.NewPipeline(actions...)
+	err := pipeline.Execute(networks)
+	if err != nil {
+		return &AppLifecycleError{app: networks.ContainerId, Err: err}
 	}
 	return nil
 }

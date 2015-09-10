@@ -24,8 +24,10 @@ import (
 	"strings"
 	//"strings"
 
-	log "github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/activities/state/provisioner/chefsolo"
+	//"github.com/megamsys/gulp/app"
+	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 	"github.com/tsuru/config"
@@ -209,7 +211,6 @@ func ComponentCommandExecutor(app *Component) (action.Result, error) {
 	return &app, nil
 }
 
-
 func RedeployCommandExecutor(app *Component) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
@@ -262,6 +263,54 @@ func RedeployCommandExecutor(app *Component) (action.Result, error) {
 	return &app, nil
 }
 
+/*
+ * Docker log executor executes the ln command and establishes link between the
+ * docker path and megam-heka reading path.
+ */
+func DockerLogExecutor(logs *LogsInfo) (action.Result, error) {
+	var e exec.OsExecutor
+	var commandWords []string
+	commandWords = strings.Fields(logs.Command)
+	log.Debug("Command Executor entry: %s\n", logs)
+	fmt.Println(commandWords)
+	tomlConf := meta.NewConfig()
+	megam_home := tomlConf.Home
+
+	dockerName := logs.ContainerName
+	basePath := megam_home + "/logs"
+	create_dir := path.Join(basePath, dockerName)
+	if _, err := os.Stat(create_dir); os.IsNotExist(err) {
+		log.Info("Creating directory: %s\n", create_dir)
+		if errm := os.MkdirAll(create_dir, 0777); errm != nil {
+			return nil, errm
+		}
+	}
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
+			return nil, err
+		}
+	}
+	return &logs, nil
+}
+
+/*
+ * Docker network executor executes the script for the container to be exposed
+ * publicly. Bridge, ip address, container id and gateway are required.
+ */
+func DockerNetworkExecutor(networks *NetworksInfo) (action.Result, error) {
+
+	var e exec.OsExecutor
+	var commandWords []string
+	commandWords = strings.Fields(networks.Command)
+	log.Debug("Command Executor entry: %s\n", networks)
+	fmt.Println(commandWords)
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
+			return nil, err
+		}
+	}
+	return &networks, nil
+}
 
 /**
 ** state up the virtual machine
@@ -286,7 +335,6 @@ var stateup = action.Action{
 	MinParams: 1,
 }
 
-
 var startApp = action.Action{
 	Name: "startapp",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -306,7 +354,6 @@ var startApp = action.Action{
 	},
 	MinParams: 1,
 }
-
 
 var rebootApp = action.Action{
 	Name: "rebootapp",
@@ -410,6 +457,74 @@ var buildApp = action.Action{
 		}
 		app.Command = megam_home + "megam_" + ctype[2] + "_builder/build.sh"
 		return RedeployCommandExecutor(&app)
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
+
+/*
+ * Docker logs and networking action
+ *
+ */
+
+var streamLogs = action.Action{
+	Name: "streamLogs",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var logs LogsInfo
+		switch ctx.Params[0].(type) {
+		case LogsInfo:
+			logs = ctx.Params[0].(LogsInfo)
+		case *LogsInfo:
+			logs = *ctx.Params[0].(*LogsInfo)
+		default:
+			return nil, errors.New("First parameter must be Id or *app.LogsInfo.")
+		}
+
+		tomlConf := meta.NewConfig()
+		megam_home := tomlConf.Home
+
+		docker_path := tomlConf.DockerPath
+
+		var dockerpath = docker_path + logs.ContainerId + "/" + logs.ContainerId + "-json.log"
+		var hekaread_path = megam_home + "/logs/" + logs.ContainerName + "/" + logs.ContainerName
+		var link_command = "ln -s " + dockerpath + " " + hekaread_path
+		logs.Command = link_command
+		exec, err1 := DockerLogExecutor(&logs)
+		if err1 != nil {
+			fmt.Println("server insert error")
+			return &logs, err1
+		}
+		return exec, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		log.Info("[%s] Nothing to recover")
+	},
+	MinParams: 1,
+}
+
+var configureNetworks = action.Action{
+	Name: "configureNetworks",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		var networks NetworksInfo
+		switch ctx.Params[0].(type) {
+		case NetworksInfo:
+			networks = ctx.Params[0].(NetworksInfo)
+		case *NetworksInfo:
+			networks = *ctx.Params[0].(*NetworksInfo)
+		default:
+			return nil, errors.New("First parameter must be Id or *NetworksInfo.")
+		}
+
+		network_command := "pipework " + networks.Bridge + " " + networks.ContainerId + " " + networks.IpAddr + "@" + networks.Gateway
+		networks.Command = network_command
+		exec, err1 := DockerNetworkExecutor(&networks)
+		if err1 != nil {
+			fmt.Println("server insert error")
+			return &networks, err1
+		}
+		return exec, err1
 	},
 	Backward: func(ctx action.BWContext) {
 		log.Info("[%s] Nothing to recover")

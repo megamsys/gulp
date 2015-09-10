@@ -18,7 +18,7 @@ package state
 import (
 	"os"
     "encoding/json"
-	log "github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/activities"
 	"github.com/megamsys/gulp/app"
 	"github.com/megamsys/gulp/activities/state/provisioner/chefsolo"
@@ -38,22 +38,22 @@ const (
 
 	// DefaultRunList.
 	DefaultRunList = ""
-	
+
 	// Chef output format (null, doc, minimal, min) (default: doc)
 	DefaultFormat = ""
-	
+
 	// DefaultLogLevel is the set log level (default: info)
 	DefaultLogLevel = "info"
-	
+
 	//set the default sandbox path
 	DefaultSandBoxPath = "/var/lib/megam"
-	
+
 	//set the default root path
 	DefaultRootPath = "/var/lib/megam"
-	
+
 	//Do not run commands with sudo (enabled by default)
 	DefaultSudo = true
-	
+
 )
 
 type Node struct {
@@ -75,7 +75,7 @@ func (c *StateActivity) Action(data *app.ActionData) error {
 		break
 	case "statedown":
 		delete(data.Assembly)
-		break	
+		break
 	}
 	return nil
 }
@@ -104,7 +104,7 @@ func new(assembly *app.AssemblyWithComponents) (string, error) {
 			Sudo:        DefaultSudo,
 		}
 	log.Info("Provisioner = %+v\n", p)
-	
+
 	log.Info("Preparing local files")
 
 	log.Info("Creating local sandbox in", p.SandboxPath)
@@ -115,7 +115,7 @@ func new(assembly *app.AssemblyWithComponents) (string, error) {
 	if err := p.PrepareFiles(); err != nil {
 		log.Error("Error = %+v\n", err)
 	}
-	
+
 	go app.StateUP(&p)
 	return "", nil
 

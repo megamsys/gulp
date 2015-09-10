@@ -17,6 +17,7 @@ package main
 
 import (
 	"os"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/cmd/gulpd/run"
 	"github.com/megamsys/libgo/cmd"
 )
@@ -28,6 +29,13 @@ var (
 	branch  string = "master"
 	header  string = "Supported-Gulp"
 )
+
+func init() {
+	// Only log the debug or above
+  log.SetLevel(log.DebugLevel)  // level is configurable via cli option.
+	// Output to stderr instead of stdout, could also be a file.
+  log.SetOutput(os.Stdout)
+}
 
 func cmdRegistry(name string) *cmd.Manager {
 	m := cmd.BuildBaseManager(name, version, header)
