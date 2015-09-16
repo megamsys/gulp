@@ -1,0 +1,28 @@
+heap profile: 3: 8576 [3: 8576] @ heap/8192
+1: 4096 [1: 4096] @ 0x440905 0x5d3bdb 0x5bfcaa 0x5c036d 0x5b459c 0x5b508d 0x5d0501 0x5e9b6d 0x5ec361 0x6bd41c 0x6bcec4 0x5cf54b 0x5cf81e 0x5cda3e 0x5acfc6 0x5af775 0x50b348 0x475700 0x47483d 0x4733e9 0x471976 0x477460 0x40126a 0x42d370 0x45e9d1
+1: 4096 [1: 4096] @ 0x440905 0x5d3bdb 0x5b5186 0x5aadc1 0x4a1a44 0x5aab9f 0x5d042c 0x5e9b6d 0x5ec361 0x6bd41c 0x6bcec4 0x5cf54b 0x5cf81e 0x5cda3e 0x5acfc6 0x5af775 0x50b348 0x475700 0x47483d 0x4733e9 0x471976 0x477460 0x40126a 0x42d370 0x45e9d1
+1: 384 [1: 384] @ 0x4342e7 0x4289cf 0x42e8e0 0x42e489 0x45c1b2
+0: 0 [0: 0] @ 0x440905 0x50f495 0x50d964 0x47546c 0x4748cb 0x473a0d 0x4755f1 0x45e9d1
+
+# runtime.MemStats
+# Alloc = 547896
+# TotalAlloc = 547896
+# Sys = 8194360
+# Lookups = 19
+# Mallocs = 2237
+# Frees = 0
+# HeapAlloc = 547896
+# HeapSys = 1638400
+# HeapIdle = 450560
+# HeapInuse = 1187840
+# HeapReleased = 0
+# HeapObjects = 2237
+# Stack = 458752 / 458752
+# MSpan = 13776 / 16384
+# MCache = 9664 / 16384
+# BuckHashSys = 1444488
+# NextGC = 4194304
+# PauseNs = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+# NumGC = 0
+# EnableGC = true
+# DebugGC = false

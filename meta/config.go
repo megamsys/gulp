@@ -38,6 +38,9 @@ const (
 
 	// DefaultApi is the default megam gateway if one is not provided.
 	DefaultApi = "https://api.megam.io/v2"
+	
+	// DefaultProvider is the default provisioner used by our engine.
+	DefaultProvider = "chefsolo"
 
 	// DefaultAMQP is the default rabbitmq if one is not provided.
 	DefaultAMQP = "amqp://guest:guest@localhost:5672/"
@@ -55,6 +58,8 @@ const (
 	DefaultDockerPath = "/var/lib/docker/containers/"
 )
 
+var MC *Config
+
 // Config represents the meta configuration.
 type Config struct {
 	Home               string        `toml:"home"`
@@ -65,6 +70,7 @@ type Config struct {
 	Api                string        `toml:"api"`
 	AMQP               string        `toml:"amqp"`
 	Peers              []string      `toml:"-"`
+	Provider 		   string 	     `toml:"provider"`
 	ElectionTimeout    toml.Duration `toml:"election-timeout"`
 	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
 	LeaderLeaseTimeout toml.Duration `toml:"leader-lease-timeout"`
@@ -106,9 +112,14 @@ func NewConfig() *Config {
 		Riak:               DefaultRiak,
 		Api:                DefaultApi,
 		AMQP:               DefaultAMQP,
+		Provider: 			DefaultProvider,
 		DockerPath:         DefaultDockerPath,
 		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
 		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),
 		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),
 	}
+}
+
+func (c *Config) MC() {
+	MC = c
 }
