@@ -56,6 +56,12 @@ const (
 
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
+	
+	//DefaultRepository is the default repository for megam
+	DefaultRepository = "github" 
+	
+	//DefaultRepositoryPath is the default repository path by megam
+	DefaultRepositoryPath = "https://github.com/megamsys/chef-repo.git"
 )
 
 var MC *Config
@@ -75,6 +81,8 @@ type Config struct {
 	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
 	LeaderLeaseTimeout toml.Duration `toml:"leader-lease-timeout"`
 	DockerPath         string        `toml:"docker_path"`
+	Repository	       string        `toml:"repository"`
+	RepositoryPath     string        `toml:"repository_path"`
 }
 
 func (c Config) String() string {
@@ -117,6 +125,8 @@ func NewConfig() *Config {
 		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
 		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),
 		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),
+		Repository:			DefaultRepository,
+		RepositoryPath:     DefaultRepositoryPath,
 	}
 }
 

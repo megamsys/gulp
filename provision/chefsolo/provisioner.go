@@ -26,6 +26,7 @@ import (
     "github.com/megamsys/libgo/action"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/meta"
 )
 
 const (
@@ -70,6 +71,28 @@ type chefsoloProvisioner struct {
 	RootPath    string
 	Sudo        bool
 }
+
+//initialize the provisioner and setup the requirements for provisioner
+func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
+	return p.setupRequirements(m)
+}
+
+//this setup the requirements for provisioner using megam default repository
+func (p *chefsoloProvisioner) setupRequirements(m map[string]string) error {
+
+	carton.Respository = m[Repository]
+
+	if initializableRepository, ok := carton.Respository.(repository.InitializableRepository); ok {
+		log.Debugf("Before repository initialization.")
+		err = initializableRepository.Initialize(m[RepositoryPath])
+		if err != nil {
+			log.Errorf("fatal error, couldn't initialize the Repository %s", s.Meta.RepositoryPath)
+		} else {
+			log.Debugf("%s Initialized", m[Repository])
+		}
+	}
+}
+
 
 func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 	out := "chefsolo provisioner reports the following:\n"

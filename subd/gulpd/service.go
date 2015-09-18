@@ -56,24 +56,28 @@ func NewService(c *meta.Config, d *Config) *Service {
 
 // Open starts the service
 func (s *Service) Open() error {
+
 	log.Debug("starting gulpd service")
 
 	p, err := amqp.NewRabbitMQ(s.Meta.AMQP, QUEUE)
 	if err != nil {
-		log.Errorf("Couldn't establish an amqp (%s): %s", s.Meta.AMQP, err.Error())
+		return err
 	}
 
-	drain, err := p.Sub()
-	if err != nil {
-		return fmt.Errorf("Couldn't subscribe to amqp (%s): %s", s.Meta.AMQP, err.Error())
+	if swt, err := p.Sub(); err != nil {
+		return err
+	} else {
+		if err = s.setProvisioner(); err != nil {
+			return err
+		}
+		
+		//before publish the queue, we need to verify assembly status
+  		s.publishAMQP(QUEUE, &carton.Requests{Name: s.Gulpd.Name, CatId: s.Gulpd.CatID, CatType: carton.STATE, Action: provision.ReqStarted.string}.ToJson())
+
+		go s.processQueue(swt)
 	}
-	
-	//before publish the queue, we need to verify assembly status
-  	s.publishAMQP(QUEUE, &carton.Requests{Name: s.Gulpd.Name, CatId: s.Gulpd.CatID, CatType: carton.STATE, Action: provision.ReqStarted.string}.ToJson())
 
-	go s.processQueue(drain)
-
-	return nil
+	return nil	
 }
 
 // processQueue continually drains the given queue  and processes the queue request
@@ -140,7 +144,7 @@ func (s *Service) setProvisioner() {
 	log.Debugf("Using %q provisioner. %q", s.Meta.Provider, a)
 	if initializableProvisioner, ok := carton.Provisioner.(provision.InitializableProvisioner); ok {
 		log.Debugf("Before initialization.")
-		err = initializableProvisioner.Initialize(s.Gulpd.toMap())
+		err = initializableProvisioner.Initialize(s.Meta.toMap())
 		if err != nil {
 			log.Errorf("fatal error, couldn't initialize the provisioner %s", s.Meta.Provider)
 		} else {
@@ -158,4 +162,5 @@ func (s *Service) setProvisioner() {
 		}
 	}
 }
+
 

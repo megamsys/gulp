@@ -33,8 +33,8 @@ type Repository interface {
 }
 
 // RepositoryManager represents a manager of application repositories.
-type RepositoryManager interface {
-	Clone(url string) error
+type InitializableRepository interface {
+	Initialize(url string) error
 }
 
 // Manager returns the current configured manager, as defined in the

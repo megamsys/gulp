@@ -17,10 +17,8 @@
 package github
 
 import (
-//	"encoding/json"
-//	log "github.com/Sirupsen/logrus"
-	//git "github.com/google/go-github/github"
-//	"strings"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/repository"
 )
 
@@ -28,7 +26,6 @@ func init() {
 	repository.Register("github", githubManager{})
 }
 
-const endpointConfig = "git:api-server"
 
 type githubManager struct{}
 
@@ -37,6 +34,22 @@ type githubManager struct{}
 **/
 func (m githubManager) Clone(url string) error {
 	
+	fmt.Fprintf(w, "\n---- clone %s from github ----\n", url)
+	actions := []*action.Action{
+		&clone,
+	}
+	pipeline := action.NewPipeline(actions...)
+
+	args := runActionsArgs{		
+		Writer:        w,
+		Url:   url,
+	}
+
+	err := pipeline.Execute(args)
+	if err != nil {
+		log.Errorf("error on execute status pipeline for box %s - %s", box.GetFullName(), err)
+		return err
+	}
 	return nil
 
 }

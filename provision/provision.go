@@ -125,8 +125,13 @@ type Provisioner interface {
 	Command() []string
 }
 
+// Provisioner message 
 type MessageProvisioner interface {
 	StartupMessage() (string, error)
+}
+
+type ProvisionerRequirements interface {
+	SetupRequirements() error
 }
 
 // InitializableProvisioner is a provisioner that provides an initialization

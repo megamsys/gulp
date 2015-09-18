@@ -5,7 +5,7 @@ import (
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/hc"
 
-	"github.com/megamsys/megamd/meta"
+	"github.com/megamsys/gulp/meta"
 )
 
 func init() {
