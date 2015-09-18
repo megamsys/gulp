@@ -5,7 +5,7 @@ import (
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/hc"
 
-	"github.com/megamsys/gulp/meta"
+//	"github.com/megamsys/gulp/meta"
 )
 
 func init() {
@@ -24,8 +24,8 @@ func healthCheck() error {
 //A global function which helps to avoid passing config of riak everywhere.
 func newConn(bkt string) (*db.Storage, error) {
 	log.Debug("New bucket: " + bkt)
-	r, err := db.NewRiakDB(meta.MC.Riak, bkt)
-
+	//r, err := db.NewRiakDB(meta.MC.Riak, bkt)
+	r, err := db.NewRiakDB([]string{"localhost:8087"}, bkt)
 	if err != nil {
 		return nil, err
 	}

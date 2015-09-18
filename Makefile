@@ -69,7 +69,7 @@ bzr:
 
 
 get-code:
-	go get $(GO_EXTRAFLAGS) -u -d -t ./...
+	go get $(GO_EXTRAFLAGS) -u -d -t -v ./...
 
 godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep

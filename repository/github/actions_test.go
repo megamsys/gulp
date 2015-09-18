@@ -13,25 +13,6 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
-package gulpd
 
-import (
-	"gopkg.in/check.v1"
-	"github.com/megamsys/gulp/meta"
-)
+package github
 
-type S struct {
-	service *Service
-}
-
-var _ = check.Suite(&S{})
-
-func (s *S) TestCreateService(c *check.C) {
-
-    srv := NewService(&meta.Config{}, &Config{
-		CatID: "ASM000",
-	})	
-	s.service = srv
-	c.Assert(srv, check.NotNil)
-}

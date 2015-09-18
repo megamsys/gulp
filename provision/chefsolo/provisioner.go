@@ -26,7 +26,8 @@ import (
     "github.com/megamsys/libgo/action"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/repository"
+//	"github.com/megamsys/gulp/meta"
 )
 
 const (
@@ -44,6 +45,9 @@ const (
 	
 	//Do not run commands with sudo (enabled by default)
 	DefaultSudo = true
+	
+	Repository = "repository"
+	RepositoryPath = "repository_path"
 )
 
 var mainChefSoloProvisioner *chefsoloProvisioner
@@ -79,18 +83,27 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 
 //this setup the requirements for provisioner using megam default repository
 func (p *chefsoloProvisioner) setupRequirements(m map[string]string) error {
+    a, err := repository.Get(m[Repository])
 
-	carton.Respository = m[Repository]
+	if err != nil {
+		log.Errorf("fatal error, couldn't located the Repository %s", m[Repository])
+		return err
+	}
+	
+	provision.Repository = a
 
-	if initializableRepository, ok := carton.Respository.(repository.InitializableRepository); ok {
+	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 		log.Debugf("Before repository initialization.")
 		err = initializableRepository.Initialize(m[RepositoryPath])
 		if err != nil {
-			log.Errorf("fatal error, couldn't initialize the Repository %s", s.Meta.RepositoryPath)
+			log.Errorf("fatal error, couldn't initialize the Repository %s", m[RepositoryPath])
+			return err
 		} else {
 			log.Debugf("%s Initialized", m[Repository])
+			return nil
 		}
 	}
+	return nil
 }
 
 

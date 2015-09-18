@@ -17,15 +17,10 @@
 package run
 
 import (
-	//	"bytes"
 	"fmt"
-	//	"net"
-	//	"net/http"
 	"os"
 	"runtime"
 	"runtime/pprof"
-	//	"strings"
-	//	"time"
 	"strconv"
 
 	log "github.com/Sirupsen/logrus"
@@ -65,21 +60,14 @@ func NewServer(c *Config, version string) (*Server, error) {
 		BindAddress: c.Meta.BindAddress,
 	}
 	// Append services.
-	//	s.appendGulpdService(c.Meta, c.Gulpd)
+	s.appendGulpdService(c.Meta, c.Gulpd)
 	s.appendHTTPDService(c.Meta, c.HTTPD)
 	return s, nil
 }
 
 func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
-	enable, _ := strconv.ParseBool(d.Enabled)
-	if !enable {
-		return
-	}
-	srv, err := gulpd.NewService(c, d)
-	if err != nil {
-		return
-	}
-	//	srv.ProvisioningWriter = s.ProvisioningWriter
+	srv := gulpd.NewService(c, d)
+	
 	s.Services = append(s.Services, srv)
 }
 

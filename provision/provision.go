@@ -20,7 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-
+	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/gulp/carton/bind"
 )
 
@@ -34,6 +34,8 @@ var (
 	ErrEmptyCarton   = errors.New("no boxs for this carton")
 	ErrBoxNotFound   = errors.New("box not found")
 )
+
+var Repository repository.Repository
 
 // Status represents the status of a unit in megamd
 type Status string
@@ -66,6 +68,14 @@ const (
 	// StatusCreated is the status for box after being provisioned by the
 	// provisioner, updated by gulp
 	StatusCreated = Status("created")
+	
+	// StatusBootstrapping is the status for box being bootstrapping by the
+	// provisioner, like in the bootstrap.
+	StatusBootstrapping = Status("bootstrapping")
+
+	// StatusBootstrapped is the status for box after being bootstrapped by the
+	// provisioner, updated by gulp
+	StatusBootstrapped = Status("bootstrapped")
 
 	// Stateup is the status for box being statefully moved to a different state.
 	// Sent by megamd to gulpd when it received StatusCreated.

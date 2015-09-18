@@ -21,7 +21,7 @@ func init() {
 
 type nopManager struct{}
 
-func (nopManager) Clone(url string) error {
+func (nopManager) Initialize(url string) error {
 	return nil
 }
 

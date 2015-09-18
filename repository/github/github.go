@@ -17,8 +17,9 @@
 package github
 
 import (
-	"fmt"
+	//"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/repository"
 )
 
@@ -32,22 +33,21 @@ type githubManager struct{}
 /**
 * clone repository from github.com using url
 **/
-func (m githubManager) Clone(url string) error {
+func (m githubManager) Initialize(url string) error {
 	
-	fmt.Fprintf(w, "\n---- clone %s from github ----\n", url)
 	actions := []*action.Action{
 		&clone,
 	}
 	pipeline := action.NewPipeline(actions...)
 
 	args := runActionsArgs{		
-		Writer:        w,
+	//	Writer:        w,
 		Url:   url,
 	}
 
 	err := pipeline.Execute(args)
 	if err != nil {
-		log.Errorf("error on execute status pipeline for box %s - %s", box.GetFullName(), err)
+		log.Errorf("error on execute status pipeline for github %s - %s", url, err)
 		return err
 	}
 	return nil

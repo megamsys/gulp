@@ -16,20 +16,19 @@
  
 package repository
 
+import (
+	"fmt"
+)
+
 const (
 	defaultManager = "github"	
 )
 
-var managers map[string]RepositoryManager
+var managers map[string]InitializableRepository
 
 
 type Repository interface {
-	IsEnabled() bool
-	GetToken() string
-	//GetGit() string
-	//GetGitURL() string
-	GetUserName() string
-	GetVersion() string
+	
 }
 
 // RepositoryManager represents a manager of application repositories.
@@ -37,9 +36,18 @@ type InitializableRepository interface {
 	Initialize(url string) error
 }
 
+// Get gets the named provisioner from the registry.
+func Get(name string) (Repository, error) {
+	p, ok := managers[name]
+	if !ok {
+		return nil, fmt.Errorf("unknown repository: %q", name)
+	}
+	return p, nil
+}
+
 // Manager returns the current configured manager, as defined in the
 // configuration file.
-func Manager(managerName string) RepositoryManager {
+func Manager(managerName string) InitializableRepository {
 	if _, ok := managers[managerName]; !ok {
 		managerName = "nop"
 	}
@@ -48,9 +56,9 @@ func Manager(managerName string) RepositoryManager {
 
 // Register registers a new repository manager, that can be later configured
 // and used.
-func Register(name string, manager RepositoryManager) {
+func Register(name string, manager InitializableRepository) {
 	if managers == nil {
-		managers = make(map[string]RepositoryManager)
+		managers = make(map[string]InitializableRepository)
 	}
 	managers[name] = manager
 }

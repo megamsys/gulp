@@ -23,7 +23,7 @@ import (
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
-
+	
 	"sync"
 	"time"
 )
@@ -39,7 +39,7 @@ type Service struct {
 	Handler *Handler
 
 	Meta    *meta.Config
-	Gulpd *Config
+	Gulpd 	*Config
 }
 
 // NewService returns a new instance of Service.
@@ -47,7 +47,7 @@ func NewService(c *meta.Config, d *Config) *Service {
 	s := &Service{
 		err:     make(chan error),
 		Meta:    c,
-		Gulpd: d,
+		Gulpd:   d,
 	}
 	s.Handler = NewHandler(s.Gulpd)
 	c.MC() //an accessor.
@@ -72,7 +72,8 @@ func (s *Service) Open() error {
 		}
 		
 		//before publish the queue, we need to verify assembly status
-  		s.publishAMQP(QUEUE, &carton.Requests{Name: s.Gulpd.Name, CatId: s.Gulpd.CatID, CatType: carton.STATE, Action: provision.ReqStarted.string}.ToJson())
+		req := &carton.Requests{CatId: s.Gulpd.CatID, Category: carton.STATE, Action: provision.StatusBootstrapped.String()}
+  		s.publishAMQP(QUEUE, req.ToJson())
 
 		go s.processQueue(swt)
 	}
@@ -133,34 +134,32 @@ func (s *Service) publishAMQP(key string, json string) {
 }
 
 //this is an array, a property provider helps to load the provider specific stuff
-func (s *Service) setProvisioner() {
-	a, err := provision.Get(s.Meta.Provider)
+func (s *Service) setProvisioner() error {
+	var err error
 
-	if err != nil {
-		fmt.Errorf("fatal error, couldn't located the provisioner %s", s.Meta.Provider)
+	if carton.Provisioner, err = provision.Get(s.Gulpd.Provider); err != nil {
+		return err
 	}
-	carton.Provisioner = a
 
-	log.Debugf("Using %q provisioner. %q", s.Meta.Provider, a)
+	log.Debugf("configuring %s provisioner", s.Gulpd.Provider)
 	if initializableProvisioner, ok := carton.Provisioner.(provision.InitializableProvisioner); ok {
-		log.Debugf("Before initialization.")
-		err = initializableProvisioner.Initialize(s.Meta.toMap())
+		err = initializableProvisioner.Initialize(s.Gulpd.toMap())
 		if err != nil {
-			log.Errorf("fatal error, couldn't initialize the provisioner %s", s.Meta.Provider)
+			return fmt.Errorf("unable to initialize %s provisioner\n --> %s", s.Gulpd.Provider, err)
 		} else {
-			log.Debugf("%s Initialized", s.Meta.Provider)
+			log.Debugf("%s initialized", s.Gulpd.Provider)
 		}
 	}
-	log.Debugf("After initialization.")
 
 	if messageProvisioner, ok := carton.Provisioner.(provision.MessageProvisioner); ok {
 		startupMessage, err := messageProvisioner.StartupMessage()
 		if err == nil && startupMessage != "" {
-			log.Debugf(startupMessage)
-		} else {
-			log.Debugf("------> " + err.Error())
+			log.Infof(startupMessage)
 		}
 	}
+	return nil
 }
+
+
 
 

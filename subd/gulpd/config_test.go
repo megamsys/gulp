@@ -21,20 +21,19 @@ import (
 	"gopkg.in/check.v1"
 )
 
-type S struct {}
-
-var _ = check.Suite(&S{})
-
 // Ensure the configuration can be parsed.
-func (s *S) TestConfig_Parse(c *check.C) {
+func (s *S) TestDeploydConfig_Parse(c *check.C) {
 	// Parse configuration.
-	var a Config
+	var cm Config
 	if _, err := toml.Decode(`
-		cat_id = "ASM000"
-	
-`, &a); err != nil {
-		//t.Fatal(err)
+		provider = "chefsolo"
+		repository   = "github"
+		repository_path = "https://github.com/megamsys/chef-repo.git"
+`, &cm); err != nil {
+		c.Fatal(err)
 	}
 
-	c.Assert(a.CatID, check.Equals, "ASM000")	
+	c.Assert(cm.Provider, check.Equals, "chefsolo")
+	c.Assert(cm.Repository, check.Equals, "github")
+	c.Assert(cm.RepositoryPath, check.Equals, "https://github.com/megamsys/chef-repo.git")
 }

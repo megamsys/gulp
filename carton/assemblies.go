@@ -19,14 +19,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
 	"strings"
 )
 
 var Provisioner provision.Provisioner
-
-var Repository repository.Repository
 
 type Cartons []*Carton
 type JsonPairs []*JsonPair

@@ -33,7 +33,7 @@ const endpointConfig = "git:api-server"
 type gitlabManager struct{}
 
 
-func (m gitlabManager) Clone(url string) error {
+func (m gitlabManager) Initialize(url string) error {
 	
 	return nil
 

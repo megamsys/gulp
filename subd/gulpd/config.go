@@ -18,23 +18,34 @@ package gulpd
 
 import (
 	"github.com/megamsys/libgo/cmd"
+	"github.com/megamsys/gulp/provision/chefsolo"
 )
 
 const (
 	// DefaultAssemblyID.
-	DefaultAssemblyID = "ASM00"
+	DefaultAssemblyID = "ASM00"	
+	
+	// DefaultProvider is the default provisioner used by our engine.
+	DefaultProvider = "chefsolo"
+	
+	//DefaultRepository is the default repository for megam
+	DefaultRepository = "github" 
+	
+	//DefaultRepositoryPath is the default repository path by megam
+	DefaultRepositoryPath = "https://github.com/megamsys/chef-repo.git"
 )
 
 type Config struct {
-	Enabled       string   			`toml:"enabled"`
-	Name		  string			`toml:"name"`
-	CatID         string 			`toml:"cat_id"`	
+	Name		       string		 `toml:"name"`
+	CatID              string 		 `toml:"cat_id"`	
+	Provider 		   string 	     `toml:"provider"`
+	Repository	       string        `toml:"repository"`
+	RepositoryPath     string        `toml:"repository_path"`
 }
 
 func (c Config) String() string {
 	table := cmd.NewTable()
 	table.AddRow(cmd.Row{cmd.Colorfy("Config:", "white", "", "bold"), cmd.Colorfy("Activity", "green", "", "")})
-	table.AddRow(cmd.Row{"Enabled", c.Enabled})
 	table.AddRow(cmd.Row{"Name", c.Name})	
 	table.AddRow(cmd.Row{"CatID", c.CatID})	
 	table.AddRow(cmd.Row{"", ""})
@@ -43,8 +54,18 @@ func (c Config) String() string {
 
 func NewConfig() *Config {
 	return &Config{
-		Enabled:     "true",
-		Name:	  "",
-		CatID:    DefaultAssemblyID,	
+		Name:	  			"",
+		Provider: 			DefaultProvider,
+		CatID:    			DefaultAssemblyID,	
+		Repository:			DefaultRepository,
+		RepositoryPath:     DefaultRepositoryPath,
 	}
+}
+
+//convert the config to just a map.
+func (c Config) toMap() map[string]string {
+	m := make(map[string]string)
+	m[chefsolo.Repository] = c.Repository
+	m[chefsolo.RepositoryPath] = c.RepositoryPath
+	return m
 }

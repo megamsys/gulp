@@ -27,9 +27,7 @@ import (
 
 type Payload struct {
 	Id        string `json:"id"`
-	Name      string `json:"name"`
 	CatId     string `json:"cat_id"`                    // assemblies_id
-	CatType   string `json:"cattype"`				    // 
 	Action    string `json:"action"`					// start, stop ...
 	Category  string `json:"category"`					// state, control, policy
 	CreatedAt string `json:"created_at"`
@@ -57,9 +55,7 @@ func (p *Payload) Convert() (*Requests, error) {
 	if p.CatId != "" {
 		r := &Requests{
 				Id: 		p.Id, 
-				Name: 		p.Name, 
 				CatId: 		p.CatId, 
-				CatType: 	p.CatType, 
 				Action: 	p.Action, 
 				Category: 	p.Category, 
 				CreatedAt: 	p.CreatedAt,

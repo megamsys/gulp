@@ -1,9 +1,3 @@
-package carton
-
-import (
-  "bytes"
-)
-
 /*
 ** Copyright [2013-2015] [Megam Systems]
 **
@@ -19,6 +13,13 @@ import (
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
+ 
+package carton
+
+import (
+  "bytes"
+)
+
 
 // CreateProcs represents a command for creating new cartons.
 type CreateProcess struct {
