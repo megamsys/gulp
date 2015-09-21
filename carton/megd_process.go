@@ -22,7 +22,7 @@ import (
 
 
 // CreateProcs represents a command for creating new cartons.
-type CreateProcess struct {
+/*type CreateProcess struct {
 	Name string
 }
 
@@ -33,14 +33,14 @@ func (s CreateProcess) String() string {
 	return buf.String()
 }
 
-func (s CreateProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Create(); err != nil {
+func (s CreateProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Create(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
-}
+}*/
 
 // DeleteProcs represents a command for delete cartons.
 type DeleteProcess struct {
@@ -54,12 +54,12 @@ func (s DeleteProcess) String() string {
 	return buf.String()
 }
 
-func (s DeleteProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Delete(); err != nil {
+func (s DeleteProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Delete(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
 }
 
@@ -75,12 +75,12 @@ func (s StartProcess) String() string {
 	return buf.String()
 }
 
-func (s StartProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Start(); err != nil {
+func (s StartProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Start(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
 }
 
@@ -96,12 +96,12 @@ func (s StopProcess) String() string {
 	return buf.String()
 }
 
-func (s StopProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Stop(); err != nil {
+func (s StopProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Stop(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
 }
 
@@ -117,12 +117,12 @@ func (s RestartProcess) String() string {
 	return buf.String()
 }
 
-func (s RestartProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Restart(); err != nil {
+func (s RestartProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Restart(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
 }
 
@@ -138,12 +138,12 @@ func (s StateupProcess) String() string {
 	return buf.String()
 }
 
-func (s StateupProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Stateup(); err != nil {
+func (s StateupProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Stateup(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
 }
 
@@ -159,11 +159,11 @@ func (s StatedownProcess) String() string {
 	return buf.String()
 }
 
-func (s StatedownProcess) Process(ca Cartons) error {
-	for _, c := range ca {
-		if err := c.Statedown(); err != nil {
+func (s StatedownProcess) Process(ca *Carton) error {
+//	for _, c := range ca {
+		if err := ca.Statedown(); err != nil {
 			return err
 		}
-	}
+//	}
 	return nil
 }

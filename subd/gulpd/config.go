@@ -17,6 +17,9 @@
 package gulpd
 
 import (
+	"bytes"
+	"fmt"
+	"text/tabwriter"
 	"github.com/megamsys/libgo/cmd"
 	"github.com/megamsys/gulp/provision/chefsolo"
 )
@@ -44,12 +47,19 @@ type Config struct {
 }
 
 func (c Config) String() string {
-	table := cmd.NewTable()
-	table.AddRow(cmd.Row{cmd.Colorfy("Config:", "white", "", "bold"), cmd.Colorfy("Activity", "green", "", "")})
-	table.AddRow(cmd.Row{"Name", c.Name})	
-	table.AddRow(cmd.Row{"CatID", c.CatID})	
-	table.AddRow(cmd.Row{"", ""})
-	return table.String() 
+	w := new(tabwriter.Writer)
+	var b bytes.Buffer
+	w.Init(&b, 0, 8, 0, '\t', 0)
+	b.Write([]byte(cmd.Colorfy("Config:", "white", "", "bold") + "\t" +
+		cmd.Colorfy("Gulpd", "green", "", "") + "\n"))
+	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
+	b.Write([]byte("CatID" + "\t" + c.CatID + "\n"))
+	b.Write([]byte("Provider" + "\t" + c.Provider + "\n"))
+	b.Write([]byte("Repository" + "\t" + c.Repository + "\n"))
+	b.Write([]byte("RepositoryPath" + "\t" + c.RepositoryPath ))
+	fmt.Fprintln(w)
+	w.Flush()
+	return b.String()
 }
 
 func NewConfig() *Config {

@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"io"
 //	"time"
-
+	"fmt"
 //	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 )
@@ -36,6 +36,7 @@ func Deploy(opts *DeployOpts) error {
 //	start := time.Now()
 	logWriter := LogWriter{Box: opts.B}
 	logWriter.Async()
+	fmt.Println("-------------------------------")
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := deployToProvisioner(opts, writer)
@@ -53,27 +54,5 @@ func deployToProvisioner(opts *DeployOpts, writer io.Writer) error {
 	return nil
 }
 
-// Create the deploy requirements 
-func Create(opts *DeployOpts) error {
-	var outBuffer bytes.Buffer
-//	start := time.Now()
-	logWriter := LogWriter{Box: opts.B}
-	logWriter.Async()
-	defer logWriter.Close()
-	writer := io.MultiWriter(&outBuffer, &logWriter)
-	err := create(opts, writer)
-	
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func create(opts *DeployOpts, writer io.Writer) error {
-	if deployer, ok := Provisioner.(provision.Deployer); ok {
-		return deployer.Create(opts.B, writer)
-	}
-	return nil
-}
 
 

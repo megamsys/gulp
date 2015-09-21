@@ -21,12 +21,11 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
-	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/services/gulpd"
-	"github.com/megamsys/gulp/services/httpd"
+	"github.com/megamsys/gulp/subd/gulpd"
+	"github.com/megamsys/gulp/subd/httpd"
 )
 
 // Server represents a container for the metadata and storage data and services.
@@ -72,11 +71,12 @@ func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
 }
 
 func (s *Server) appendHTTPDService(c *meta.Config, h *httpd.Config) {
-
-	enable, _ := strconv.ParseBool(h.Enabled)
-	if !enable {
+	e := *h
+	if !e.Enabled {
+		log.Warn("skip httpd service.")
 		return
 	}
+	
 	srv, err := httpd.NewService(c, h)
 	if err != nil {
 		return

@@ -30,7 +30,7 @@ func (s *S) TestConfig_Parse(c *check.C) {
 	// Parse configuration.
 	var h Config
 	if _, err := toml.Decode(`
-enabled = "true"
+enabled = true
 bind_address = ":8080"
 `, &h); err != nil {
 		//t.Fatal(err)

@@ -33,7 +33,7 @@ import (
 	"github.com/bmizerany/pat"
 	//	"github.com/megamsys/gulp/meta"
 
-	"github.com/megamsys/gulp/activities/docker/handler"
+//	"github.com/megamsys/gulp/activities/docker/handler"
 )
 
 type route struct {
@@ -97,10 +97,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		switch r.URL.Path {
 		case "/docker/logs":
-			handler.Logs(w, r)
+	//		handler.Logs(w, r)
 			//Does it require another handler? why cant activities be called frm here?
 		case "/docker/networks":
-			handler.Networks(w, r)
+	//		handler.Networks(w, r)
 		}
 	}
 	return

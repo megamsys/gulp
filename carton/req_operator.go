@@ -43,13 +43,13 @@ func (p *ReqOperator) Accept(r *MegdProcessor) error {
 	return md.Process(c)
 }
 
-func (p *ReqOperator) Get(cat_id string) (Cartons, error) {
+func (p *ReqOperator) Get(cat_id string) (*Carton, error) {
 	a, err := Get(cat_id)
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := a.MkCartons()
+	c, err := a.MkCarton()
 	if err != nil {
 		return nil, err
 	}
@@ -57,10 +57,10 @@ func (p *ReqOperator) Get(cat_id string) (Cartons, error) {
 }
 
 
-// MegdProcessor represents a single operation in Megamd.
+// MegdProcessor represents a single operation in Gulpd.
 type MegdProcessor interface {
 
-	Process(c Cartons) error
+	Process(c *Carton) error
 	String() string
 	//Required() ExecutionRequirements
 }

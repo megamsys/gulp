@@ -22,7 +22,35 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
 	"strings"
+	"time"
 )
+
+var Provisioner provision.Provisioner
+
+type JsonPairs []*JsonPair
+
+type JsonPair struct {
+	K string `json:"key"`
+	V string `json:"value"`
+}
+
+func NewJsonPair(k string, v string) *JsonPair {
+	return &JsonPair{
+		K: k,
+		V: v,
+	}
+}
+
+//match for a value in the JSONPair and send the value
+func (p *JsonPairs) match(k string) string {
+	for _, j := range *p {
+		if j.K == k {
+			return j.V
+		}
+	}
+	return ""
+}
+
 
 // Carton is the main type in megam. A carton represents a real world assembly.
 // An assembly comprises of various components.
@@ -65,11 +93,11 @@ func (a *Assembly) String() string {
 //mkAssemblies into a carton. Just use what you need inside this carton
 //a carton comprises of self contained boxes (actually a "colored component") externalized
 //with what we need.
-func mkCarton(id string) (*Carton, error) {
-	a, err := get(id)
-	if err != nil {
-		return nil, err
-	}
+func (a *Assembly) MkCarton() (*Carton, error) {
+//	a, err := Get(id)
+//	if err != nil {
+//		return nil, err
+//	}
 
 	b, err := a.mkBoxes()
 	if err != nil {
@@ -77,7 +105,7 @@ func mkCarton(id string) (*Carton, error) {
 	}
 
 	c := &Carton{
-		AssemblyId: id,
+		AssemblyId: a.Id,
 		Name:       a.Name,
 		Tosca:      a.ToscaType,
 		Envs:       a.envs(),
@@ -89,7 +117,7 @@ func mkCarton(id string) (*Carton, error) {
 
 //get the assebmly and its full detail of a component. we only store the
 //componentid, hence you see that we have a components map to cater to that need.
-func get(id string) (*Assembly, error) {
+func Get(id string) (*Assembly, error) {
 	a := &Assembly{Components: make(map[string]*Component)}
 	if err := db.Fetch("assembly", id, a); err != nil {
 		return nil, err
@@ -138,6 +166,25 @@ func (a *Assembly) envs() []bind.EnvVar {
 		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
 	}
 	return envs
+}
+
+//for now, create a newcompute which is used during a SetStatus.
+//We can add a Notifier interface which can be passed in the Box ?
+func NewAssembly(id string) (*Assembly, error) {
+	return Get(id)
+}
+
+func (a *Assembly) SetStatus(status provision.Status) error {
+	LastStatusUpdate := time.Now().In(time.UTC)
+
+	a.Inputs = append(a.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
+	a.Inputs = append(a.Inputs, NewJsonPair("status", status.String()))
+
+	if err := db.Store(BUCKET, a.Id, a); err != nil {
+		return err
+	}
+	return nil
+
 }
 
 

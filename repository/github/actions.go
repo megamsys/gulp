@@ -42,7 +42,8 @@ var clone = action.Action{
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Clone chef cookbooks")
 		
-		args.Command = "git clone " + args.Url
+	//	args.Command = "git clone " + args.Url
+		args.Command = "ls -la"
 		
 		return ExecuteCommandOnce(&args)
 

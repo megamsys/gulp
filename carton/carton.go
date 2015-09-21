@@ -57,7 +57,7 @@ func (c *Carton) toBox() error {
 	return nil
 }
 
-func (c *Carton) Create() error {
+/*func (c *Carton) Create() error {
 	for _, box := range *c.Boxes {
 		err := Create(&DeployOpts{B: &box})
 		if err != nil {
@@ -65,7 +65,7 @@ func (c *Carton) Create() error {
 		}
 	}
 	return nil
-}
+}*/
 
 // moves the state to the desired state
 // changing the boxes state to StatusStateup.

@@ -89,9 +89,10 @@ func (c *Component) mkBox() (provision.Box, error) {
 func (c *Component) SetStatus(status provision.Status) {
 	LastStatusUpdate := time.Now().In(time.UTC)
 
-	if c.Status == provision.StatusDeploying.String() || //do we need this status check ?
-		c.Status == provision.StatusCreating.String() ||
-		c.Status == provision.StatusCreated.String() ||
+	if c.Status == provision.StatusRunning.String() || //do we need this status check ?
+		c.Status == provision.StatusBootstrapping.String() ||
+		c.Status == provision.StatusBootstrapped.String() ||
+		c.Status == provision.StatusRunning.String() ||
 		c.Status == provision.StatusStateup.String() {
 		c.Inputs = append(c.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
 		c.Inputs = append(c.Inputs, NewJsonPair("status", status.String()))

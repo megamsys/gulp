@@ -79,8 +79,10 @@ func (b *Box) GetIp() string {
 // whenever the unit itself is available, even when the application process is
 // not.
 func (b *Box) Available() bool {
-	return b.Status == StatusDeploying ||
-		b.Status == StatusCreating ||
+	return b.Status == StatusBootstrapping ||
+		b.Status == StatusRunning ||
+		b.Status == StatusBootstrapped ||
+		b.Status == StatusStateup ||
 		b.Status == StatusError
 }
 

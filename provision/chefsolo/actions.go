@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-//	"sync"
 	"path"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/action"
 //	"github.com/megamsys/libgo/cmd"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/libgo/exec"
 )
 
 type runMachineActionsArgs struct {
@@ -85,5 +85,34 @@ var prepareConfig = action.Action{
 	Backward: func(ctx action.BWContext) {
 	
 	},
+}
+
+var deploy = action.Action{
+	Name: "deploy",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runMachineActionsArgs)
+		log.Debugf("create machine for box %s", args.box.GetFullName())
+
+		return ExecuteCommandOnce(&args)
+	},
+	Backward: func(ctx action.BWContext) {
+		
+	},
+}
+
+func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
+	
+	var e exec.OsExecutor
+	var commandWords []string
+	//commandWords = strings.Fields(args.provisioner.Command())
+    commandWords = args.provisioner.Command()
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, args.writer, args.writer); err != nil {
+			return nil, err
+		}
+	}
+
+	return &args, nil
+		
 }
 

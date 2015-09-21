@@ -23,9 +23,10 @@ import (
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
-	
+	"github.com/megamsys/libgo/action"
 	"sync"
 	"time"
+	"encoding/json"
 )
 
 const leaderWaitTimeout = 30 * time.Second
@@ -59,7 +60,7 @@ func (s *Service) Open() error {
 
 	log.Debug("starting gulpd service")
 
-	p, err := amqp.NewRabbitMQ(s.Meta.AMQP, QUEUE)
+	p, err := amqp.NewRabbitMQ(s.Meta.AMQP, s.Gulpd.Name)
 	if err != nil {
 		return err
 	}
@@ -71,9 +72,9 @@ func (s *Service) Open() error {
 			return err
 		}
 		
-		//before publish the queue, we need to verify assembly status
-		req := &carton.Requests{CatId: s.Gulpd.CatID, Category: carton.STATE, Action: provision.StatusBootstrapped.String()}
-  		s.publishAMQP(QUEUE, req.ToJson())
+		if err = s.updateStatusPipeline(); err != nil {
+			return err
+		}
 
 		go s.processQueue(swt)
 	}
@@ -115,23 +116,6 @@ func (s *Service) Close() error {
 // Err returns a channel for fatal errors that occur on the listener.
 func (s *Service) Err() <-chan error { return s.err }
 
-func (s *Service) publishAMQP(key string, json string) {
-	factor, aerr := amqp.Factory()
-	if aerr != nil {
-		log.Errorf("Failed to get the queue instance: %s", aerr)
-	}
-	//s := strings.Split(key, "/")
-	//pubsub, perr := factor.Get(s[len(s)-1])
-	pubsub, perr := factor.Get(key)
-	if perr != nil {
-		log.Errorf("Failed to get the queue instance: %s", perr)
-	}
-
-	serr := pubsub.Pub([]byte(json))
-	if serr != nil {
-		log.Errorf("Failed to publish the queue instance: %s", serr)
-	}
-}
 
 //this is an array, a property provider helps to load the provider specific stuff
 func (s *Service) setProvisioner() error {
@@ -160,6 +144,50 @@ func (s *Service) setProvisioner() error {
 	return nil
 }
 
+//1. &updateStatus in Riak - Bootstrapped..
+//2. &publishStatus in publish the bootstrapped message to cloudstandup queue 
+func (s *Service) updateStatusPipeline() error {
+	actions := []*action.Action{		
+		&updateStatusInRiak,
+		&publishStatus,
+	}
+	pipeline := action.NewPipeline(actions...)	
 
+	err := pipeline.Execute(s)
+	if err != nil {
+		log.Errorf("error on execute update pipeline for service %s - %s", "Gulpd", err)
+		return err
+	}
+	return nil
+}
+
+//just publish a message bootstrapped to the service.
+func (s *Service) pubStatus(status provision.Status) error {
+	log.Debugf("publish bootstrapped service %s to %s", "Gulpd", status.String())
+
+	p, err := amqp.NewRabbitMQ(meta.MC.AMQP, QUEUE)
+	if err != nil {
+		return err
+	}
+	
+    //before publish the queue, we need to verify assembly status
+    jsonMsg, err := json.Marshal(
+		carton.Requests{
+			CatId: 		s.Gulpd.CatID, 
+			Action:     status.String(),
+			Category:   carton.STATE,
+			CreatedAt:  time.Now().String(),
+		})
+
+	if err != nil {
+		return err
+	}	
+
+	if err := p.Pub(jsonMsg); err != nil {
+		return err
+	}
+	return nil
+
+}
 
 

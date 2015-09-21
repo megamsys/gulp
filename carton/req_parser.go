@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"strings"
-	"encoding/json"
 )
 
 var (
@@ -151,10 +150,3 @@ func (r *Requests) String() string {
 	}
 }
 
-func (r *Requests) ToJson() string {
-	if d, err := json.Marshal(r); err != nil {
-		return err.Error()
-	} else {
-	 	return string(d)
-	}
-}

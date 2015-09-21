@@ -27,6 +27,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
+	_ "github.com/megamsys/gulp/repository/github"
 //	"github.com/megamsys/gulp/meta"
 )
 
@@ -114,7 +115,7 @@ func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 }
 
 /* new state */
-func (p *chefsoloProvisioner) Create(box provision.Box, w io.Writer) error {
+func (p *chefsoloProvisioner) Deploy(box provision.Box, w io.Writer) error {
 
    var runList []string
     res1D := &Attributes{
@@ -146,6 +147,7 @@ func (p chefsoloProvisioner) createPipeline(box provision.Box, w io.Writer) erro
 	actions := []*action.Action{
 		&prepareJSON,
 		&prepareConfig,
+		&deploy,
 		&updateStatusInRiak,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -153,7 +155,7 @@ func (p chefsoloProvisioner) createPipeline(box provision.Box, w io.Writer) erro
 	args := runMachineActionsArgs{
 		box:             box,
 		writer:          w,
-		machineStatus:   provision.StatusCreated,
+		machineStatus:   provision.StatusRunning,
 		provisioner:     &p,
 	}
 

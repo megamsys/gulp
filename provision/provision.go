@@ -44,7 +44,7 @@ func (s Status) String() string {
 	return string(s)
 }
 
-func ParseStatus(status string) (Status, error) {
+/*func ParseStatus(status string) (Status, error) {
 	switch status {
 	case "deploying":
 		return StatusDeploying, nil
@@ -54,20 +54,11 @@ func ParseStatus(status string) (Status, error) {
 		return StatusError, nil
 	}
 	return Status(""), ErrInvalidStatus
-}
+}*/
 
 const (
-	// StatusDeploying is the initial status of a box in the database
-	// it should transition shortly to a more specific status
-	StatusDeploying = Status("deploying")
-
-	// StatusCreating is the status for box being provisioned by the
-	// provisioner, like in the deployment.
-	StatusCreating = Status("creating")
-
-	// StatusCreated is the status for box after being provisioned by the
-	// provisioner, updated by gulp
-	StatusCreated = Status("created")
+	// StatusRunning 
+	StatusRunning = Status("running")
 	
 	// StatusBootstrapping is the status for box being bootstrapping by the
 	// provisioner, like in the bootstrap.
@@ -120,7 +111,6 @@ type Carton interface {
 
 // Deployer is a provisioner that can deploy the box from a
 type Deployer interface {
-    Create(b *Box, w io.Writer) error
 	Deploy(b *Box, w io.Writer) error
 }
 
