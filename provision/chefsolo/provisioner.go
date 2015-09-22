@@ -21,13 +21,13 @@ import (
 	"fmt"
 	"io"
 	"path"
-	"strings"	
+//	"strings"	
     "encoding/json"
     "github.com/megamsys/libgo/action"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
-	_ "github.com/megamsys/gulp/repository/github"
+	_"github.com/megamsys/gulp/repository/github"
 //	"github.com/megamsys/gulp/meta"
 )
 
@@ -49,6 +49,8 @@ const (
 	
 	Repository = "repository"
 	RepositoryPath = "repository_path"
+	RECEIPE = "receipe"
+	
 )
 
 var mainChefSoloProvisioner *chefsoloProvisioner
@@ -115,26 +117,20 @@ func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 }
 
 /* new state */
-func (p *chefsoloProvisioner) Deploy(box provision.Box, w io.Writer) error {
+func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
 
-   var runList []string
-    res1D := &Attributes{
-        RunList:  []string{"recipe[megam_deps]" },
-        RiakHost: "api.megam.io",
-        //Node:	  &Node{MegamRiak:"api.megam.io"},
-        MegamRiak: "api.megam.io",
+   res1D := &Attributes{
+   		RunList: []string{ "recipe[apt]" },
         }
     DefaultAttributes, _ := json.Marshal(res1D)
-
-		p = &chefsoloProvisioner{
-			RunList:     runList,
-			Attributes:  string(DefaultAttributes),
-			Format:      DefaultFormat,
-			LogLevel:    DefaultLogLevel,
-			SandboxPath: DefaultSandBoxPath,
-			RootPath:    DefaultRootPath,
-			Sudo:        DefaultSudo,
-		}
+    
+    p.Attributes = string(DefaultAttributes)
+    p.Format     = DefaultFormat
+    p.LogLevel   = DefaultLogLevel
+    p.SandboxPath = DefaultSandBoxPath
+    p.RootPath    = DefaultRootPath
+    p.Sudo        = DefaultSudo
+	
 	log.Info("Provisioner = %+v\n", p)
 
 	return p.createPipeline(box, w)
@@ -143,7 +139,7 @@ func (p *chefsoloProvisioner) Deploy(box provision.Box, w io.Writer) error {
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..
-func (p chefsoloProvisioner) createPipeline(box provision.Box, w io.Writer) error {
+func (p chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&prepareJSON,
 		&prepareConfig,
@@ -188,10 +184,12 @@ func (p chefsoloProvisioner) Command() []string {
 		"--format", format,
 		"--log_level", logLevel,
 	}
-
-	if len(p.RunList) > 0 {
-		cmd = append(cmd, "--override-runlist", strings.Join(p.RunList, ","))
-	}
+    
+	//if len(p.RunList) > 0 {
+	//	cmd = append(cmd, "--override-runlist", strings.Join(p.RunList, ","))
+	//}
+	
+	log.Debugf("provisioner command is  %s", cmd)
 
 	if !p.Sudo {
 		return cmd

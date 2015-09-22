@@ -40,6 +40,7 @@ const (
 
 type Config struct {
 	Name		       string		 `toml:"name"`
+	CatsID			   string		 `toml:"cats_id"`
 	CatID              string 		 `toml:"cat_id"`	
 	Provider 		   string 	     `toml:"provider"`
 	Repository	       string        `toml:"repository"`

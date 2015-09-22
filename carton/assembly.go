@@ -22,7 +22,12 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
 	"strings"
-	"time"
+//	"encoding/json"
+//	"time"
+)
+
+const (
+	ASSEMBLYBUCKET = "assembly"
 )
 
 var Provisioner provision.Provisioner
@@ -62,7 +67,7 @@ type Policy struct {
 	Members []string `json:"members"`
 }
 
-type ambly struct {
+type Ambly struct {
 	Id           string        `json:"id"`
 	Name         string        `json:"name"`
 	JsonClaz     string        `json:"json_claz"`
@@ -74,11 +79,11 @@ type ambly struct {
 	Outputs      JsonPairs     `json:"outputs"`
 	Status       string        `json:"status"`
 	CreatedAt    string        `json:"created_at"`
+	ComponentIds []string      `json:"components"`
 }
 
 type Assembly struct {
-	ambly
-	ComponentIds []string `json:"components"`
+	Ambly	
 	Components   map[string]*Component
 }
 
@@ -115,13 +120,22 @@ func (a *Assembly) MkCarton() (*Carton, error) {
 	return c, nil
 }
 
+func fetch(id string) (*Ambly, error) {
+	a := &Ambly{}
+	if err := db.Fetch(ASSEMBLYBUCKET, id, a); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
 //get the assebmly and its full detail of a component. we only store the
 //componentid, hence you see that we have a components map to cater to that need.
 func Get(id string) (*Assembly, error) {
 	a := &Assembly{Components: make(map[string]*Component)}
-	if err := db.Fetch("assembly", id, a); err != nil {
+	if err := db.Fetch(ASSEMBLYBUCKET, id, a); err != nil {
 		return nil, err
 	}
+	
 	a.dig()
 	return a, nil
 }
@@ -170,17 +184,21 @@ func (a *Assembly) envs() []bind.EnvVar {
 
 //for now, create a newcompute which is used during a SetStatus.
 //We can add a Notifier interface which can be passed in the Box ?
-func NewAssembly(id string) (*Assembly, error) {
-	return Get(id)
+func NewAssembly(id string) (*Ambly, error) {
+	a, err := fetch(id)
+	if err != nil {
+		return nil, err
+	}	
+	return a, nil
 }
 
-func (a *Assembly) SetStatus(status provision.Status) error {
-	LastStatusUpdate := time.Now().In(time.UTC)
+func (a *Ambly) SetStatus(status provision.Status) error {
+	//LastStatusUpdate := time.Now().In(time.UTC)
 
-	a.Inputs = append(a.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
-	a.Inputs = append(a.Inputs, NewJsonPair("status", status.String()))
-
-	if err := db.Store(BUCKET, a.Id, a); err != nil {
+	//a.Inputs = append(a.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
+	//a.Inputs = append(a.Inputs, NewJsonPair("status", status.String()))
+	a.Status = status.String()
+	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
 		return err
 	}
 	return nil

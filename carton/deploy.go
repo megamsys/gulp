@@ -23,6 +23,7 @@ import (
 	"fmt"
 //	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	
 )
 
 type DeployOpts struct {
@@ -36,7 +37,6 @@ func Deploy(opts *DeployOpts) error {
 //	start := time.Now()
 	logWriter := LogWriter{Box: opts.B}
 	logWriter.Async()
-	fmt.Println("-------------------------------")
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := deployToProvisioner(opts, writer)
@@ -49,6 +49,7 @@ func Deploy(opts *DeployOpts) error {
 
 func deployToProvisioner(opts *DeployOpts, writer io.Writer) error {
 	if deployer, ok := Provisioner.(provision.Deployer); ok {
+	fmt.Println(deployer)
 		return deployer.Deploy(opts.B, writer)
 	}
 	return nil

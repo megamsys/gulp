@@ -24,6 +24,7 @@ import (
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
+	_"github.com/megamsys/gulp/provision/chefsolo"
 	"sync"
 	"time"
 	"encoding/json"
@@ -173,7 +174,7 @@ func (s *Service) pubStatus(status provision.Status) error {
     //before publish the queue, we need to verify assembly status
     jsonMsg, err := json.Marshal(
 		carton.Requests{
-			CatId: 		s.Gulpd.CatID, 
+			CatId: 		s.Gulpd.CatsID, 
 			Action:     status.String(),
 			Category:   carton.STATE,
 			CreatedAt:  time.Now().String(),

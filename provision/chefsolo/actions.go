@@ -30,7 +30,7 @@ import (
 )
 
 type runMachineActionsArgs struct {
-	box           provision.Box
+	box           *provision.Box
 	writer        io.Writer
 	machineStatus provision.Status
 	provisioner   *chefsoloProvisioner

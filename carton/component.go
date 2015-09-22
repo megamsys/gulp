@@ -19,12 +19,12 @@ import (
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
-	"time"
+//	"time"
 )
 
 const (
 	DOMAIN = "DOMAIN"
-	BUCKET = "components"
+	COMPONENTBUCKET = "components"
 )
 
 type Operations struct {
@@ -65,7 +65,7 @@ func (a *Component) String() string {
 **/
 func NewComponent(id string) (*Component, error) {
 	c := &Component{Id: id}
-	if err := db.Fetch(BUCKET, id, c); err != nil {
+	if err := db.Fetch(COMPONENTBUCKET, id, c); err != nil {
 		return nil, err
 	}
 	return c, nil
@@ -87,19 +87,20 @@ func (c *Component) mkBox() (provision.Box, error) {
 }
 
 func (c *Component) SetStatus(status provision.Status) {
-	LastStatusUpdate := time.Now().In(time.UTC)
+//	LastStatusUpdate := time.Now().In(time.UTC)
 
 	if c.Status == provision.StatusRunning.String() || //do we need this status check ?
 		c.Status == provision.StatusBootstrapping.String() ||
 		c.Status == provision.StatusBootstrapped.String() ||
 		c.Status == provision.StatusRunning.String() ||
 		c.Status == provision.StatusStateup.String() {
-		c.Inputs = append(c.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
-		c.Inputs = append(c.Inputs, NewJsonPair("status", status.String()))
+	//	c.Inputs = append(c.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
+	//	c.Inputs = append(c.Inputs, NewJsonPair("status", status.String()))
+		c.Status = status.String()
 	}
 
 	//	defer db.Close()
-	if err := db.Store(BUCKET, c.Id, c); err != nil {
+	if err := db.Store(COMPONENTBUCKET, c.Id, c); err != nil {
 		//return err
 	}
 

@@ -7,7 +7,6 @@ package carton
 import (
 	"errors"
 	"time"
-
 	log "github.com/Sirupsen/logrus"
 )
 
