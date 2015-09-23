@@ -192,17 +192,25 @@ func NewAssembly(id string) (*Ambly, error) {
 	return a, nil
 }
 
+//put status to assembly json in riak
 func (a *Ambly) SetStatus(status provision.Status) error {
-	//LastStatusUpdate := time.Now().In(time.UTC)
-
-	//a.Inputs = append(a.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
-	//a.Inputs = append(a.Inputs, NewJsonPair("status", status.String()))
 	a.Status = status.String()
 	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
 		return err
 	}
 	return nil
-
 }
+
+//put virtual machine ip address in riak
+func (a *Ambly) SetIPAddress(status string) error {
+
+	a.Outputs = append(a.Outputs, NewJsonPair("ip", status))
+	
+	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
+		return err
+	}
+	return nil
+}
+
 
 

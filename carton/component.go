@@ -86,25 +86,13 @@ func (c *Component) mkBox() (provision.Box, error) {
 	}, nil
 }
 
-func (c *Component) SetStatus(status provision.Status) {
-//	LastStatusUpdate := time.Now().In(time.UTC)
+func (c *Component) SetStatus(status provision.Status) error {
 
-	if c.Status == provision.StatusRunning.String() || //do we need this status check ?
-		c.Status == provision.StatusBootstrapping.String() ||
-		c.Status == provision.StatusBootstrapped.String() ||
-		c.Status == provision.StatusRunning.String() ||
-		c.Status == provision.StatusStateup.String() {
-	//	c.Inputs = append(c.Inputs, NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate.String()))
-	//	c.Inputs = append(c.Inputs, NewJsonPair("status", status.String()))
-		c.Status = status.String()
-	}
-
-	//	defer db.Close()
+	c.Status = status.String()
 	if err := db.Store(COMPONENTBUCKET, c.Id, c); err != nil {
-		//return err
+		return err
 	}
-
-	//return nil
+	return nil
 
 }
 

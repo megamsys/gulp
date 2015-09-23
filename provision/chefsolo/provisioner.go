@@ -81,6 +81,7 @@ type chefsoloProvisioner struct {
 
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
+  //  p.RunList = []string{ m["receipe"] }
 	return p.setupRequirements(m)
 }
 
@@ -118,7 +119,6 @@ func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 
 /* new state */
 func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
-
    res1D := &Attributes{
    		RunList: []string{ "recipe[apt]" },
         }
@@ -139,7 +139,7 @@ func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..
-func (p chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) error {
+func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&prepareJSON,
 		&prepareConfig,
@@ -147,12 +147,12 @@ func (p chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) err
 		&updateStatusInRiak,
 	}
 	pipeline := action.NewPipeline(actions...)
-
+    
 	args := runMachineActionsArgs{
 		box:             box,
 		writer:          w,
 		machineStatus:   provision.StatusRunning,
-		provisioner:     &p,
+		provisioner:     p,
 	}
 
 	err := pipeline.Execute(args)

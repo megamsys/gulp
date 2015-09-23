@@ -72,10 +72,12 @@ const (
 	// Sent by megamd to gulpd when it received StatusCreated.
 	StatusStateup = Status("stateup")
 
-
 	// StatusError is the status for units that failed to start, because of
 	// a box error.
 	StatusError = Status("error")
+	
+	// StatusIPError is the status for failed retrieve ip address
+	StatusIPError = Status("ip fetching error")
 )
 
 // Named is something that has a name, providing the GetName method.

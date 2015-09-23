@@ -41,7 +41,7 @@ var publishStatus = action.Action{
 }
 
 var updateStatusInRiak = action.Action{
-	Name: "updateStatusInRiak",
+	Name: "update-status-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		s := ctx.Params[0].(*Service)
 
@@ -57,6 +57,26 @@ var updateStatusInRiak = action.Action{
 		asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
 		
 		asm.SetStatus(provision.StatusError)
+	},
+}
+
+var updateIPInRiak = action.Action{
+	Name: "update-ip-riak",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		s := ctx.Params[0].(*Service)
+
+		ip := s.GetLocalIP()	
+		asm, _ := carton.NewAssembly(s.Gulpd.CatID)		
+		asm.SetIPAddress(ip)
+		
+		return asm, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		s := ctx.Params[0].(*Service)
+		
+		asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
+		
+		asm.SetIPAddress(provision.StatusIPError.String())
 	},
 }
 

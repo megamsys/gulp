@@ -44,7 +44,7 @@ var updateStatusInRiak = action.Action{
 
 		comp, _ := carton.NewComponent(args.box.ComponentId)		
 		
-		comp.SetStatus(args.machineStatus)
+		comp.SetStatus(provision.StatusRunning)
 		
 		return comp, nil
 	},
@@ -78,7 +78,7 @@ var prepareConfig = action.Action{
 		
         log.Debugf("Generate the config file ")
         
-		data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "cookbooks"))
+		data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "/chef-repo/cookbooks"))
 		data += "ssl_verify_mode :verify_peer\n"
 		return ioutil.WriteFile(path.Join(args.provisioner.SandboxPath, "solo.rb"), []byte(data), 0644), nil
 	},
@@ -92,6 +92,12 @@ var deploy = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
 		log.Debugf("create machine for box %s", args.box.GetFullName())
+
+		err := Logs(args, args.writer)
+		if err != nil {
+			log.Errorf("error on get logs - %s", err)
+			return nil, err
+		}
 
 		return ExecuteCommandOnce(&args)
 	},
@@ -116,3 +122,10 @@ func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
 		
 }
 
+
+func Logs(args runMachineActionsArgs, w io.Writer) error {
+log.Debugf("------------------------------")
+	log.Debugf("hook machine logs")
+	//if there is a file or something to be created, do it here.
+	return nil
+}
