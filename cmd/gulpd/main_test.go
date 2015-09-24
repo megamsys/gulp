@@ -19,6 +19,7 @@ import (
 	"github.com/megamsys/libgo/cmd"
 	"gopkg.in/check.v1"
 	"github.com/megamsys/gulp/cmd/gulpd/run"
+	"os"
 )
 
 
@@ -26,15 +27,16 @@ type S struct{}
 
 var _ = check.Suite(&S{})
 
-
 func (s *S) TestCommandsFromBaseManagerAreRegistered(c *check.C) {
-	baseManager := cmd.BuildBaseManager("gulpd", version, header)
+	baseManager := cmd.NewManager("gulpd", "0.9.1", os.Stdout, os.Stderr, os.Stdin, nil, nil)
 	manager := cmdRegistry("gulpd")
+
 	for name, instance := range baseManager.Commands {
 		command, ok := manager.Commands[name]
 		c.Assert(ok, check.Equals, true)
 		c.Assert(command, check.FitsTypeOf, instance)
 	}
+
 }
 
 func (s *S) TestStartIsRegistered(c *check.C) {

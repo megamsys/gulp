@@ -69,7 +69,7 @@ bzr:
 
 
 get-code:
-	go get $(GO_EXTRAFLAGS) -u -d -t ./...
+	go get $(GO_EXTRAFLAGS) -u -d -t -v ./...
 
 godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep
@@ -83,14 +83,11 @@ _go_test:
 
 _gulpd:
 	rm -f gulpd
-#	rm -f gulpc
 	go build $(GO_EXTRAFLAGS) -o gulpd ./cmd/gulpd
-#	go build $(GO_EXTRAFLAGS) -o gulpc ./cmd/gulpc
 
 _gulpdr:
-	sudo ./gulpd start --config conf/gulpd.toml
+	sudo ./gulpd start --config conf/gulpd.conf
 	rm -f gulpd
-#	rm -f gulpc
 
 _sh_tests:
 	@conf/trusty/megam/megam_test.sh

@@ -28,8 +28,8 @@ import (
 //	"time"
 
 	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/services/gulpd"
-	"github.com/megamsys/gulp/services/httpd"
+	"github.com/megamsys/gulp/subd/gulpd"
+	"github.com/megamsys/gulp/subd/httpd"
 )
 
 type Config struct {
@@ -65,7 +65,7 @@ func NewDemoConfig() (*Config, error) {
 func (c *Config) Validate() error {
 	if c.Meta.Dir == "" {
 		return errors.New("Meta.Dir must be specified")
-	} else if c.Gulpd.AssemblyID == "" {
+	} else if c.Gulpd.CatID == "" {
 		return errors.New("Gulpd.AssemblyID must be specified")
 	}
 	return nil

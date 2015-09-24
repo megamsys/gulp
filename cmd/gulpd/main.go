@@ -37,11 +37,17 @@ func init() {
   log.SetOutput(os.Stdout)
 }
 
+// Only log debug level when the -v flag is passed.
 func cmdRegistry(name string) *cmd.Manager {
-	m := cmd.BuildBaseManager(name, version, header)
+	m := cmd.BuildBaseManager(name, version, nil, func(modelvl int) {
+		if modelvl >= 1 {
+			log.SetLevel(log.DebugLevel)
+		}
+	})
 	m.Register(&run.Start{})
 	return m
 }
+
 
 //Run the commands from cli.
 func main() {

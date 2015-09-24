@@ -17,21 +17,15 @@
 package run
 
 import (
-	//	"bytes"
 	"fmt"
-	//	"net"
-	//	"net/http"
 	"os"
 	"runtime"
 	"runtime/pprof"
-	//	"strings"
-	//	"time"
-	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/services/gulpd"
-	"github.com/megamsys/gulp/services/httpd"
+	"github.com/megamsys/gulp/subd/gulpd"
+	"github.com/megamsys/gulp/subd/httpd"
 )
 
 // Server represents a container for the metadata and storage data and services.
@@ -65,30 +59,24 @@ func NewServer(c *Config, version string) (*Server, error) {
 		BindAddress: c.Meta.BindAddress,
 	}
 	// Append services.
-	//	s.appendGulpdService(c.Meta, c.Gulpd)
+	s.appendGulpdService(c.Meta, c.Gulpd)
 	s.appendHTTPDService(c.Meta, c.HTTPD)
 	return s, nil
 }
 
 func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
-	enable, _ := strconv.ParseBool(d.Enabled)
-	if !enable {
-		return
-	}
-	srv, err := gulpd.NewService(c, d)
-	if err != nil {
-		return
-	}
-	//	srv.ProvisioningWriter = s.ProvisioningWriter
+	srv := gulpd.NewService(c, d)
+	
 	s.Services = append(s.Services, srv)
 }
 
 func (s *Server) appendHTTPDService(c *meta.Config, h *httpd.Config) {
-
-	enable, _ := strconv.ParseBool(h.Enabled)
-	if !enable {
+	e := *h
+	if !e.Enabled {
+		log.Warn("skip httpd service.")
 		return
 	}
+	
 	srv, err := httpd.NewService(c, h)
 	if err != nil {
 		return

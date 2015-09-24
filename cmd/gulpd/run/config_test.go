@@ -17,38 +17,24 @@
 package run
 
 import (
+	"fmt"
 	"github.com/BurntSushi/toml"
-	//"gopkg.in/check.v1"
-	"testing"
-//	"fmt"
+	"gopkg.in/check.v1"
+	"os/user"
 )
 
-//type S struct{}
-
-//var _ = check.Suite(&S{})
-
 // Ensure the configuration can be parsed.
-func TestConfig_Parse(t *testing.T) {
-	// Parse configuration.
-	var conf Config
-	if _, err := toml.Decode(`
-[meta]
-hostname = "localhost"
-bind_address = ":9999"
-dir = "/var/lib/megam/gulpd/meta"
-riak = "192.168.1.100:8087"
-api  = "https://api.megam.io/v2"
-amqp = "amqp://guest:guest@192.168.1.100:5672/"
-[gulpd]
-[http]
-`, &conf); err != nil {
-		t.Fatal(err)
+func (s *S) TestConfig_Parse(c *check.C) {
+  var cm Config
+	u, _ := user.Current()
+	if _, err := toml.DecodeFile(u.HomeDir+"/code/megam/go/src/github.com/megamsys/gulp/conf/gulpd.conf", &cm); err != nil {
+		fmt.Println(err.Error())
 	}
 
- //   c.Assert(err, check.IsNil)
-//	c.Assert(conf.Meta.Hostname, check.Equals, "dfgdfg")
-//	c.Assert(conf.Meta.Riak, check.Equals, "192.168.1.100:8087")
-//	c.Assert(conf.Meta.Api, check.Equals, "https://api.megam.io/v2")
-
+	c.Assert(cm, check.NotNil)
+	c.Assert(cm.Meta.Hostname, check.Equals, "localhost")
+	c.Assert(cm.Meta.Riak, check.DeepEquals, []string{"localhost:8087"})
+	c.Assert(cm.Meta.Api, check.Equals, "https://api.megam.io/v2")
+	c.Assert(cm.Gulpd.Provider, check.Equals, "chefsolo")
+	c.Assert(cm.Gulpd.Repository, check.Equals, "github")
 }
-
