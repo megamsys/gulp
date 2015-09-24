@@ -20,14 +20,14 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"gopkg.in/check.v1"
-	"os/user"
+	"os"
 )
 
 // Ensure the configuration can be parsed.
 func (s *S) TestConfig_Parse(c *check.C) {
   var cm Config
-	u, _ := user.Current()
-	if _, err := toml.DecodeFile(u.HomeDir+"/code/megam/go/src/github.com/megamsys/gulp/conf/gulpd.conf", &cm); err != nil {
+	u, _ := os.Getwd()
+	if _, err := toml.DecodeFile(u +"/gulpd.conf", &cm); err != nil {
 		fmt.Println(err.Error())
 	}
 
