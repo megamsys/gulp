@@ -44,6 +44,9 @@ const (
 	
 	// DefaultAMQP is the default rabbitmq if one is not provided.
 	DefaultAMQP = "amqp://guest:guest@localhost:5672/"
+	
+	// DefaultGanglia is the default ganglia if one is not provided.
+	DefaultGanglia = "ganglia.megam.io"
 
 	// DefaultHeartbeatTimeout is the default heartbeat timeout for the store.
 	DefaultHeartbeatTimeout = 1000 * time.Millisecond
@@ -70,6 +73,7 @@ type Config struct {
 	Riak               []string      `toml:"riak"`
 	Api                string        `toml:"api"`
 	AMQP               string        `toml:"amqp"`
+	Ganglia			   string		 `toml:"ganglia"`
 	Peers              []string      `toml:"-"`	
 	ElectionTimeout    toml.Duration `toml:"election-timeout"`
 	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
@@ -88,6 +92,7 @@ func (c Config) String() string {
 	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
 	b.Write([]byte("API" + "\t" + c.Api + "\n"))
 	b.Write([]byte("AMQP" + "\t" + c.AMQP + "\n"))
+	b.Write([]byte("Ganglia" + "\t" + c.Ganglia + "\n"))
 	b.Write([]byte("Hostname" + "\t" + c.Hostname + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
@@ -117,7 +122,8 @@ func NewConfig() *Config {
 		BindAddress:        DefaultBindAddress,
 		Riak:               []string{DefaultRiak},
 		Api:                DefaultApi,
-		AMQP:               DefaultAMQP,		
+		AMQP:               DefaultAMQP,	
+		Ganglia:			DefaultGanglia,	
 		DockerPath:         DefaultDockerPath,
 		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
 		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),

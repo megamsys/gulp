@@ -18,6 +18,7 @@ package carton
 import (
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
 //	"time"
 )
@@ -42,7 +43,7 @@ type Artifacts struct {
 type Component struct {
 	Id                string        `json:"id"`
 	Name              string        `json:"name"`
-	ToscaType         string        `json:"tosca_type"`
+	Tosca             string        `json:"tosca_type"`
 	Inputs            JsonPairs     `json:"inputs"`
 	Outputs           JsonPairs     `json:"outputs"`
 	Artifacts         *Artifacts    `json:"artifacts"`
@@ -73,16 +74,18 @@ func NewComponent(id string) (*Component, error) {
 
 //make a box with the details for a provisioner.
 func (c *Component) mkBox() (provision.Box, error) {
+	repo := NewRepo(c.Operations, repository.CI)
 
 	return provision.Box{
-		ComponentId: c.Id,
-		Name:        c.Name,
-		DomainName:  c.Inputs.match(DOMAIN),
-		Tosca:       c.ToscaType,
-		Commit:      "",
-		Image:       "",
-		Provider:    c.Inputs.match(provision.PROVIDER),
-		Ip:          "",
+		Id:         c.Id,
+		Level:      provision.BoxSome,
+		Name:       c.Name,
+		DomainName: c.domain(),
+		Tosca:      c.Tosca,
+		Commit:     "",
+		Repo:       repo,
+		Provider:   c.provider(),
+		Ip:         "",
 	}, nil
 }
 
@@ -94,6 +97,14 @@ func (c *Component) SetStatus(status provision.Status) error {
 	}
 	return nil
 
+}
+
+func (c *Component) domain() string {
+	return c.Inputs.match(DOMAIN)
+}
+
+func (c *Component) provider() string {
+	return c.Inputs.match(provision.PROVIDER)
 }
 
 

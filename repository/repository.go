@@ -21,11 +21,57 @@ import (
 )
 
 const (
-	defaultManager = "github"	
+	defaultManager = "github"
+	CI             = "CI"
+	CI_ENABLED     = "enabled"
+	CI_TOKEN       = "token"
+	CI_SOURCE      = "source"
+	CI_USER        = "username"
+	CI_URL         = "url"
+	CI_TYPE        = "type"
+
+	// IMAGE indicates that the repo is an image
+	IMAGE = "image"
+
+	// Git indicates that the repo is a GIT
+	GIT = "git"
 )
+
 
 var managers map[string]InitializableRepository
 
+
+/* Repository represents a repository managed by the manager. */
+type Repo struct {
+	Enabled  bool
+	Type     string
+	Token    string
+	Source   string
+	GitURL   string
+	UserName string
+	CartonId string
+	BoxId    string
+}
+
+func (r Repo) IsEnabled() bool {
+	return r.Enabled
+}
+
+func (r Repo) GetType() string {
+	return r.Type
+}
+
+func (r Repo) GetSource() string {
+	return r.Source
+}
+
+func (r Repo) GetToken() string {
+	return r.Token
+}
+
+func (r Repo) Gitr() string {
+	return r.GitURL
+}
 
 type Repository interface {
 	

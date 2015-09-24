@@ -30,14 +30,14 @@ func NewHandler(c *Config) *Handler {
 
 }
 
-func (h *Handler) serveAMQP(r *carton.Requests) error {
+func (h *Handler) serveAMQP(r *carton.Requests, cookbook string) error {
 	p, err := carton.ParseRequest(r.CatId, r.Category, r.Action)
 	if err != nil {
 		return err
 	}
 
 	if rp := carton.NewReqOperator(r.CatId); rp != nil {
-		return rp.Accept(&p)
+		return rp.Accept(&p, cookbook)
 	}
 	return nil
 }

@@ -24,6 +24,18 @@ import (
 	"time"
 )
 
+const (
+	
+	// BoxSome indicates that there is atleast one box to deploy or delete.
+	BoxSome BoxLevel = iota
+
+	// BoxNone indicates that there are no boxes to deploy or delete but its parent can be.
+	BoxNone
+)
+
+// Boxlevel represents the deployment level.
+type BoxLevel int
+
 var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
 
 // Boxlog represents a log entry.
@@ -38,18 +50,21 @@ type Boxlog struct {
 // Box represents a provision unit. Can be a machine, container or anything
 // IP-addressable.
 type Box struct {
-	ComponentId string
-	AssemblyId  string
-	Name        string
-	DomainName  string
-	Tosca       string
-	Commit      string
-	Image       string
-	Repo        repository.Repository
-	Status      Status
-	Provider    string
-	Address     *url.URL
-	Ip          string
+	Id         string
+	CartonsId  string
+	CartonId   string
+	Level      BoxLevel
+	Name       string
+	DomainName string
+	Tosca      string
+//	Compute    BoxCompute
+	Repo       repository.Repo
+	Status     Status
+	Provider   string
+	Commit     string
+	Address    *url.URL
+	Ip         string
+	Cookbook   string
 }
 
 func (b *Box) String() string {
@@ -98,13 +113,13 @@ func (box *Box) Log(message, source, unit string) error {
 				Message: msg,
 				Source:  source,
 				Name:    box.Name,
-				Unit:    box.ComponentId,
+				Unit:    box.Id,
 			}
 			logs = append(logs, bl)
 		}
 	}
 	if len(logs) > 0 {
-		//notify(bl.Name, logs)
+	//	_ = notify(box.Name, logs)
 	}
 	return nil
 }

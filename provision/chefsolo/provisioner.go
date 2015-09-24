@@ -28,7 +28,7 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
 	_"github.com/megamsys/gulp/repository/github"
-//	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/meta"
 )
 
 const (
@@ -61,10 +61,10 @@ func init() {
 }
 
 type Attributes struct {
-    RunList   []string      `json:"run_list"`
-    RiakHost  string 		`json:"riak_host"`
-  //  Node      *Node			`json:"node"`
-    MegamRiak 	string		`json:"megam_riak"`
+    RunList   		[]string      	`json:"run_list"`
+    ToscaType 		string			`json:"tosca_type"`
+    RabbitmqURL 	string			`json:"rabbitmq_url"`
+    Monitor			string			`json:"monitor"`
 }
 
 
@@ -79,18 +79,27 @@ type chefsoloProvisioner struct {
 	Sudo        bool
 }
 
+type runRepositoryActionArgs struct {
+	repository   string
+	url          string
+}
+
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
   //  p.RunList = []string{ m["receipe"] }
-	return p.setupRequirements(m)
+    args := &runRepositoryActionArgs{
+		repository:      m[Repository],
+		url:             m[RepositoryPath],
+	}
+	return p.setupRequirements(args)
 }
 
 //this setup the requirements for provisioner using megam default repository
-func (p *chefsoloProvisioner) setupRequirements(m map[string]string) error {
-    a, err := repository.Get(m[Repository])
+func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) error {
+    a, err := repository.Get(args.repository)
 
 	if err != nil {
-		log.Errorf("fatal error, couldn't located the Repository %s", m[Repository])
+		log.Errorf("fatal error, couldn't located the Repository %s", args.repository)
 		return err
 	}
 	
@@ -98,12 +107,12 @@ func (p *chefsoloProvisioner) setupRequirements(m map[string]string) error {
 
 	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 		log.Debugf("Before repository initialization.")
-		err = initializableRepository.Initialize(m[RepositoryPath])
+		err = initializableRepository.Initialize(args.url)
 		if err != nil {
-			log.Errorf("fatal error, couldn't initialize the Repository %s", m[RepositoryPath])
+			log.Errorf("fatal error, couldn't initialize the Repository %s", args.url)
 			return err
 		} else {
-			log.Debugf("%s Initialized", m[Repository])
+			log.Debugf("%s Initialized", args.repository)
 			return nil
 		}
 	}
@@ -119,9 +128,14 @@ func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 
 /* new state */
 func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
+   
    res1D := &Attributes{
-   		RunList: []string{ "recipe[apt]" },
-        }
+   		RunList: 		[]string{ "recipe[" + box.Cookbook + "]" },
+   		ToscaType:		box.Tosca,
+   		RabbitmqURL:	meta.MC.AMQP,
+   		Monitor:		meta.MC.Ganglia,
+        }        
+     
     DefaultAttributes, _ := json.Marshal(res1D)
     
     p.Attributes = string(DefaultAttributes)
@@ -143,6 +157,7 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 	actions := []*action.Action{
 		&prepareJSON,
 		&prepareConfig,
+//		&prepareBoxRepository,
 		&deploy,
 		&updateStatusInRiak,
 	}

@@ -41,12 +41,23 @@ var updateStatusInRiak = action.Action{
 	Name: "update-status-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-
-		comp, _ := carton.NewComponent(args.box.ComponentId)		
-		
-		comp.SetStatus(provision.StatusRunning)
-		
-		return comp, nil
+				
+		switch args.box.Level {
+		case provision.BoxSome: 
+			if comp, err := carton.NewComponent(args.box.Id); err != nil {
+				return comp, err
+			} else if err = comp.SetStatus(provision.StatusRunning); err != nil {
+				return comp, err
+			}
+		case provision.BoxNone:
+			if asm, err := carton.NewAssembly(args.box.Id); err != nil {
+				return asm, err
+			} else if err = asm.SetStatus(provision.StatusRunning); err != nil {
+				return asm, err
+			}
+		default:
+		}	
+		return args, nil	
 	},
 	Backward: func(ctx action.BWContext) {
 	
@@ -87,6 +98,24 @@ var prepareConfig = action.Action{
 	},
 }
 
+/*var prepareBoxRepository = action.Action{
+	Name: "prepare-box-repository",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runMachineActionsArgs)
+		
+        log.Debugf("Generate the box requirements ")
+        
+        args := runRepositoryActionArgs{
+			repository:      m[Repository],
+			url:             m[RepositoryPath],
+		}
+		
+	},
+	Backward: func(ctx action.BWContext) {
+	
+	},
+}*/
+
 var deploy = action.Action{
 	Name: "deploy",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -124,8 +153,7 @@ func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
 
 
 func Logs(args runMachineActionsArgs, w io.Writer) error {
-log.Debugf("------------------------------")
-	log.Debugf("hook machine logs")
+	log.Debugf("chefsolo execution logs")
 	//if there is a file or something to be created, do it here.
 	return nil
 }

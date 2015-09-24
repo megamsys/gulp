@@ -31,6 +31,9 @@ const (
 	// DefaultProvider is the default provisioner used by our engine.
 	DefaultProvider = "chefsolo"
 	
+	// DefaultCookbook is the default cookbook used by chefsolo.
+	DefaultCookbook = "megam_run"
+	
 	//DefaultRepository is the default repository for megam
 	DefaultRepository = "github" 
 	
@@ -43,6 +46,7 @@ type Config struct {
 	CatsID			   string		 `toml:"cats_id"`
 	CatID              string 		 `toml:"cat_id"`	
 	Provider 		   string 	     `toml:"provider"`
+	Cookbook 		   string 	     `toml:"cookbook"`
 	Repository	       string        `toml:"repository"`
 	RepositoryPath     string        `toml:"repository_path"`
 }
@@ -56,6 +60,7 @@ func (c Config) String() string {
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
 	b.Write([]byte("CatID" + "\t" + c.CatID + "\n"))
 	b.Write([]byte("Provider" + "\t" + c.Provider + "\n"))
+	b.Write([]byte("Cookbook" + "\t" + c.Cookbook + "\n"))
 	b.Write([]byte("Repository" + "\t" + c.Repository + "\n"))
 	b.Write([]byte("RepositoryPath" + "\t" + c.RepositoryPath ))
 	fmt.Fprintln(w)
@@ -68,6 +73,7 @@ func NewConfig() *Config {
 		Name:	  			"",
 		Provider: 			DefaultProvider,
 		CatID:    			DefaultAssemblyID,	
+		Cookbook:    		DefaultCookbook,	
 		Repository:			DefaultRepository,
 		RepositoryPath:     DefaultRepositoryPath,
 	}

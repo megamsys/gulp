@@ -5,6 +5,7 @@ import (
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
+	"github.com/megamsys/gulp/repository"
 )
 
 type BoxLevel int
@@ -18,12 +19,18 @@ const (
 )
 
 type Carton struct {
+	Id         string //assemblyid
 	Name       string
-	AssemblyId string
+	CartonsId  string
 	Tosca      string
+//	Compute    provision.BoxCompute
+	Repo       repository.Repo
+	DomainName string
+	Provider   string
 	Envs       []bind.EnvVar
 	Boxes      *[]provision.Box
 }
+
 
 func (a *Carton) String() string {
 	if d, err := yaml.Marshal(a); err != nil {
@@ -33,23 +40,29 @@ func (a *Carton) String() string {
 	}
 }
 
-//If there are boxes, then it set the enum BoxAny or its BoxZero
-func (c *Carton) lvl() BoxLevel {
+//If there are boxes, then it set the enum BoxSome or its BoxZero
+func (c *Carton) lvl() provision.BoxLevel {
 	if len(*c.Boxes) > 0 {
-		return BoxAny
+		return provision.BoxSome
 	} else {
-		return BoxZero
+		return provision.BoxNone
 	}
 }
 
 //Converts a carton to a box, if there are no boxes below.
-func (c *Carton) toBox() error {
+func (c *Carton) toBox() error { //assemblies id.
 	switch c.lvl() {
-	case BoxZero:
+	case provision.BoxNone:
 		c.Boxes = &[]provision.Box{provision.Box{
-			AssemblyId: c.AssemblyId,
+			CartonId:   c.Id,    //this isn't needed.
+			Id:         c.Id,    //assembly id sent in ContextMap
+			CartonsId:  c.CartonsId,      //assembliesId,
+			Level:      c.lvl(), //based on the level, we decide to use the Box-Id as ComponentId or AssemblyId
 			Name:       c.Name,
-			DomainName: "",
+			DomainName: c.DomainName,
+	//		Compute:    c.Compute,
+			Repo:       c.Repo,
+			Provider:   c.Provider,
 			Tosca:      c.Tosca,
 		},
 		}

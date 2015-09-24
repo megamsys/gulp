@@ -20,6 +20,7 @@ import (
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
 	"strings"
 //	"encoding/json"
@@ -71,7 +72,7 @@ type Ambly struct {
 	Id           string        `json:"id"`
 	Name         string        `json:"name"`
 	JsonClaz     string        `json:"json_claz"`
-	ToscaType    string        `json:"tosca_type"`
+	Tosca        string        `json:"tosca_type"`
 	Requirements JsonPairs     `json:"requirements"`
 	Policies     []*Policy     `json:"policies"`
 	Inputs       JsonPairs     `json:"inputs"`
@@ -98,25 +99,28 @@ func (a *Assembly) String() string {
 //mkAssemblies into a carton. Just use what you need inside this carton
 //a carton comprises of self contained boxes (actually a "colored component") externalized
 //with what we need.
-func (a *Assembly) MkCarton() (*Carton, error) {
-//	a, err := Get(id)
-//	if err != nil {
-//		return nil, err
-//	}
-
-	b, err := a.mkBoxes()
+func (a *Assembly) MkCarton(cookbook string) (*Carton, error) {
+	
+//	b, err := a.mkBoxes(aies)
+	b, err := a.mkBoxes("", cookbook)
 	if err != nil {
 		return nil, err
 	}
 
+	repo := NewRepo(a.Operations, repository.CI)
+
 	c := &Carton{
-		AssemblyId: a.Id,
+		Id:         a.Id,   //assembly id
+		CartonsId:  "", //assemblies id
 		Name:       a.Name,
-		Tosca:      a.ToscaType,
+		Tosca:      a.Tosca,
 		Envs:       a.envs(),
+		Repo:       repo,
+		DomainName: a.domain(),
+//		Compute:    a.newCompute(),
+		Provider:   a.provider(),
 		Boxes:      &b,
 	}
-
 	return c, nil
 }
 
@@ -156,7 +160,7 @@ func (a *Assembly) dig() error {
 
 //lets make boxes with components to be mutated later or, and the required
 //information for a launch.
-func (a *Assembly) mkBoxes() ([]provision.Box, error) {
+func (a *Assembly) mkBoxes(aies string, cookbook string) ([]provision.Box, error) {
 	newBoxs := make([]provision.Box, 0, len(a.Components))
 
 	for _, comp := range a.Components {
@@ -164,7 +168,12 @@ func (a *Assembly) mkBoxes() ([]provision.Box, error) {
 			if b, err := comp.mkBox(); err != nil {
 				return nil, err
 			} else {
-				b.AssemblyId = a.Id
+				b.CartonId = a.Id
+				b.CartonsId = aies
+				b.Repo.CartonId = a.Id
+				b.Repo.BoxId = comp.Id
+				b.Cookbook = cookbook
+	//			b.Compute = a.newCompute()
 				newBoxs = append(newBoxs, b)
 			}
 		}
@@ -180,6 +189,14 @@ func (a *Assembly) envs() []bind.EnvVar {
 		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
 	}
 	return envs
+}
+
+func (a *Assembly) domain() string {
+	return a.Inputs.match(DOMAIN)
+}
+
+func (a *Assembly) provider() string {
+	return a.Inputs.match(provision.PROVIDER)
 }
 
 //for now, create a newcompute which is used during a SetStatus.

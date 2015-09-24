@@ -29,8 +29,8 @@ func NewReqOperator(id string) *ReqOperator {
 	return &ReqOperator{Id: id}
 }
 
-func (p *ReqOperator) Accept(r *MegdProcessor) error {
-	c, err := p.Get(p.Id)
+func (p *ReqOperator) Accept(r *MegdProcessor, cookbook string) error {
+	c, err := p.Get(p.Id, cookbook)
 
 	if err != nil {
 		return err
@@ -43,13 +43,13 @@ func (p *ReqOperator) Accept(r *MegdProcessor) error {
 	return md.Process(c)
 }
 
-func (p *ReqOperator) Get(cat_id string) (*Carton, error) {
+func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
 	a, err := Get(cat_id)
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := a.MkCarton()
+	c, err := a.MkCarton(cookbook)
 	if err != nil {
 		return nil, err
 	}

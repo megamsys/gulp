@@ -115,7 +115,7 @@ func (s *Service) processQueue(drain chan []byte) error {
 		if err != nil {
 			return err
 		}
-		go s.Handler.serveAMQP(pc)
+		go s.Handler.serveAMQP(pc, s.Gulpd.Cookbook)
 	}
 	return nil
 }
