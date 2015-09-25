@@ -19,65 +19,97 @@ import (
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/subd/gulpd/machine"
 )
+
+type runMachineActionsArgs struct {
+	CatID     string
+	CatsID	  string
+	Assembly  *carton.Ambly
+}
 
 
 var publishStatus = action.Action{
 	Name: "publish-status",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		args := ctx.Params[0].(*Service)
+		args := ctx.Params[0].(*runMachineActionsArgs)
 
-		err := args.pubStatus(provision.StatusBootstrapped)				
+		mach := machine.Machine{
+			CatID:       args.CatID,
+			CatsID:		 args.CatsID,
+			Assembly:    args.Assembly,			
+		}
+
+		err := mach.PubStatus(provision.StatusBootstrapped)				
 		
-		return args, err
+		return mach, err
 	},
 	Backward: func(ctx action.BWContext) {
-		s := ctx.Params[0].(*Service)
+		args := ctx.Params[0].(*runMachineActionsArgs)		
 		
-		asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
-		
-		asm.SetStatus(provision.StatusError)
+		args.Assembly.SetStatus(provision.StatusError)
 	},
 }
 
 var updateStatusInRiak = action.Action{
 	Name: "update-status-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		s := ctx.Params[0].(*Service)
-
-		asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
+		args := ctx.Params[0].(*runMachineActionsArgs)
+				
+		args.Assembly.SetStatus(provision.StatusBootstrapped)
 		
-		asm.SetStatus(provision.StatusBootstrapped)
-		
-		return asm, nil
+		return args, nil
 	},
 	Backward: func(ctx action.BWContext) {
-		s := ctx.Params[0].(*Service)
+		args := ctx.Params[0].(*runMachineActionsArgs)		
 		
-		asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
-		
-		asm.SetStatus(provision.StatusError)
+		args.Assembly.SetStatus(provision.StatusError)
 	},
 }
 
 var updateIPInRiak = action.Action{
 	Name: "update-ip-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		s := ctx.Params[0].(*Service)
-
-		ip := s.GetLocalIP()	
-		asm, _ := carton.NewAssembly(s.Gulpd.CatID)		
-		asm.SetIPAddress(ip)
+		args := ctx.Params[0].(*runMachineActionsArgs)
+						
+		mach := machine.Machine{
+			CatID:       args.CatID,
+			CatsID:		 args.CatsID,
+			Assembly:    args.Assembly,			
+		}
 		
-		return asm, nil
+		ip := mach.GetLocalIP()	
+				
+		args.Assembly.SetIPAddress(ip)
+		
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
-		s := ctx.Params[0].(*Service)
+		args := ctx.Params[0].(*runMachineActionsArgs)		
 		
-		asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
-		
-		asm.SetIPAddress(provision.StatusIPError.String())
+		args.Assembly.SetIPAddress(provision.StatusIPError.String())
 	},
 }
 
+var updateSshkey = action.Action{
+	Name: "update-sshkey",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(*runMachineActionsArgs)
+				
+		mach := machine.Machine{
+			CatID:       args.CatID,
+			CatsID:		 args.CatsID,
+			Assembly:    args.Assembly,			
+		}
+
+		err := mach.UpdateSshkey()
+		
+		return mach, err
+	},
+	Backward: func(ctx action.BWContext) {
+		args := ctx.Params[0].(*runMachineActionsArgs)		
+		
+		args.Assembly.SetStatus(provision.StatusSshKeyError)
+	},
+}
 

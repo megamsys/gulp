@@ -78,6 +78,9 @@ const (
 	
 	// StatusIPError is the status for failed retrieve ip address
 	StatusIPError = Status("ip fetching error")
+	
+	// StatusSshKeyError is the status for failed append the sshkey 
+	StatusSshKeyError = Status("sshkey uploading error")
 )
 
 // Named is something that has a name, providing the GetName method.
