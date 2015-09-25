@@ -27,8 +27,8 @@ import (
 	_"github.com/megamsys/gulp/provision/chefsolo"
 	"sync"
 	"time"
-	"net"
-	"encoding/json"
+//	"net"
+//	"encoding/json"
 )
 
 const leaderWaitTimeout = 30 * time.Second
@@ -82,23 +82,6 @@ func (s *Service) Open() error {
 	}
 
 	return nil	
-}
-
-// GetLocalIP returns the non loopback local IP of the host
-func (s *Service) GetLocalIP() string {
-    addrs, err := net.InterfaceAddrs()
-    if err != nil {
-        return ""
-    }
-    for _, address := range addrs {
-        // check the address type and if it is not a loopback the display it
-        if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-            if ipnet.IP.To4() != nil {
-                return ipnet.IP.String()
-            }
-        }
-    }
-    return ""
 }
 
 // processQueue continually drains the given queue  and processes the queue request
@@ -166,48 +149,27 @@ func (s *Service) setProvisioner() error {
 //1. &updateStatus in Riak - Bootstrapped..
 //2. &publishStatus in publish the bootstrapped message to cloudstandup queue 
 func (s *Service) updateStatusPipeline() error {
-	actions := []*action.Action{		
-		&updateStatusInRiak,
+	actions := []*action.Action{	
 		&updateIPInRiak,
+		&updateSshkey,	
+		&updateStatusInRiak,		
 		&publishStatus,
 	}
 	pipeline := action.NewPipeline(actions...)	
 
-	err := pipeline.Execute(s)
+	asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
+	
+	args := &runMachineActionsArgs{
+			CatID:       s.Gulpd.CatID,
+			CatsID:		 s.Gulpd.CatsID,
+			Assembly:    asm,			
+		}
+
+	err := pipeline.Execute(args)
 	if err != nil {
 		log.Errorf("error on execute update pipeline for service %s - %s", "Gulpd", err)
 		return err
 	}
 	return nil
 }
-
-//just publish a message bootstrapped to the service.
-func (s *Service) pubStatus(status provision.Status) error {
-	log.Debugf("publish bootstrapped service %s to %s", "Gulpd", status.String())
-
-	p, err := amqp.NewRabbitMQ(meta.MC.AMQP, QUEUE)
-	if err != nil {
-		return err
-	}
-	
-    //before publish the queue, we need to verify assembly status
-    jsonMsg, err := json.Marshal(
-		carton.Requests{
-			CatId: 		s.Gulpd.CatsID, 
-			Action:     status.String(),
-			Category:   carton.STATE,
-			CreatedAt:  time.Now().String(),
-		})
-
-	if err != nil {
-		return err
-	}	
-
-	if err := p.Pub(jsonMsg); err != nil {
-		return err
-	}
-	return nil
-
-}
-
 

@@ -45,6 +45,19 @@ func Fetch(bkt string, key string, data interface{}) error {
 	return nil
 }
 
+func FetchObject(bkt string, key string) (string, error) {
+	s, err := newConn(bkt)
+	if err != nil {
+		return "", err
+	}
+	defer s.Close()
+	out := &db.SomeObject{}
+	if err = s.FetchObject(key, out); err != nil {
+		return "", err
+	}
+	return out.Data, nil
+}
+
 func Store(bkt string, key string, data interface{}) error {
 	s, err := newConn(bkt)
 	if err != nil {

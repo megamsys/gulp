@@ -29,6 +29,7 @@ import (
 
 const (
 	ASSEMBLYBUCKET = "assembly"
+	SSHKEY = "sshkey"
 )
 
 var Provisioner provision.Provisioner
@@ -189,6 +190,10 @@ func (a *Assembly) envs() []bind.EnvVar {
 		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
 	}
 	return envs
+}
+
+func (a *Ambly) Sshkey() string {
+	return a.Inputs.match(SSHKEY)
 }
 
 func (a *Assembly) domain() string {
