@@ -2,7 +2,7 @@ package machine
 
 import (
 	"encoding/json"
-	"fmt"
+//	"fmt"
 	"time"
 	"os"
 	"github.com/megamsys/gulp/carton"
@@ -81,7 +81,8 @@ func (m *Machine) UpdateSshkey() error {
 		return err
 	}
 	
-	f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	//f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile("/home/rajthilak/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
     	return err
 	}

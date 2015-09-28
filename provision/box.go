@@ -119,7 +119,7 @@ func (box *Box) Log(message, source, unit string) error {
 		}
 	}
 	if len(logs) > 0 {
-	//	_ = notify(box.Name, logs)
+		_ = notify(box.Name, logs)
 	}
 	return nil
 }

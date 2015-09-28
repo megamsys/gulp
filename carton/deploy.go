@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"io"
 //	"time"
-	"fmt"
+//	"fmt"
 //	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	
@@ -49,7 +49,6 @@ func Deploy(opts *DeployOpts) error {
 
 func deployToProvisioner(opts *DeployOpts, writer io.Writer) error {
 	if deployer, ok := Provisioner.(provision.Deployer); ok {
-	fmt.Println(deployer)
 		return deployer.Deploy(opts.B, writer)
 	}
 	return nil

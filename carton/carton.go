@@ -4,6 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/controls"
 	"gopkg.in/yaml.v2"
 	"github.com/megamsys/gulp/repository"
 )
@@ -103,14 +104,35 @@ func (c *Carton) Delete() error {
 }
 
 func (c *Carton) Start() error {
+	for _, box := range *c.Boxes {
+		err := controls.Start(&box, "", nil)
+		if err != nil {
+			log.Errorf("Unable to start the box  %s", err)
+			return err
+		}
+	}
 	return nil
 }
 
 func (c *Carton) Stop() error {
+	for _, box := range *c.Boxes {
+		err := controls.Stop(&box, "", nil)
+		if err != nil {
+			log.Errorf("Unable to stop the box %s", err)
+			return err
+		}
+	}
 	return nil
 }
 
 func (c *Carton) Restart() error {
+	for _, box := range *c.Boxes {
+		err := controls.Restart(&box, "", nil)
+		if err != nil {
+			log.Errorf("[start] error on start the box %s - %s", box.Name, err)
+			return err
+		}
+	}
 	return nil
 }
 
