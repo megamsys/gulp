@@ -15,3 +15,112 @@
  */
 
 package controls
+
+import (
+	"io"
+	"strings"
+	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/libgo/action"
+	)
+
+// Status represents the status of a unit in megamd
+type Status string
+
+func (s Status) String() string {
+	return string(s)
+}
+
+const (
+
+	START = "start"
+	STOP = "stop"
+	RESTART = "restart"
+
+	// StatusStarted 
+	StatusStarted = Status("started")
+	
+	// StatusStopped 
+	StatusStopped = Status("stopped")
+	
+	// StatusRestarted 
+	StatusRestarted = Status("restarted")
+	
+	// StatusError is the status for units that failed to start, because of
+	// a box error.
+	StatusError = Status("error")
+	
+	)
+
+
+func Restart(box *provision.Box, process string, w io.Writer) error {
+	actions := []*action.Action{
+		&restart,		
+//		&updateStatusInRiak,
+	}
+	pipeline := action.NewPipeline(actions...)
+	
+	ctype := strings.Split(box.GetTosca(), ".")
+    
+	args := runControlActionsArgs{
+		box:             box,
+		writer:          w,
+		machineStatus:   StatusRestarted,
+		command: 		 STOP + " " + ctype[2] + "; " + START + " " + ctype[2] + " > /var/log/megam/gulpd.log",
+	}
+
+	err := pipeline.Execute(args)
+	if err != nil {
+		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
+		return err
+	}
+	return nil	 
+}
+
+func Start(box *provision.Box, process string, w io.Writer) error {
+	actions := []*action.Action{
+		&start,		
+//		&updateStatusInRiak,
+	}
+	pipeline := action.NewPipeline(actions...)
+	
+	ctype := strings.Split(box.GetTosca(), ".")
+    
+	args := runControlActionsArgs{
+		box:             box,
+		writer:          w,
+		machineStatus:   StatusStarted,
+		command: 		 START + " " + ctype[2] + " > /var/log/megam/gulpd.log",
+	}
+
+	err := pipeline.Execute(args)
+	if err != nil {
+		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
+		return err
+	}
+	return nil	 
+}
+
+func Stop(box *provision.Box, process string, w io.Writer) error {
+	actions := []*action.Action{
+		&stop,		
+//		&updateStatusInRiak,
+	}
+	pipeline := action.NewPipeline(actions...)
+	
+	ctype := strings.Split(box.GetTosca(), ".")
+    
+	args := runControlActionsArgs{
+		box:             box,
+		writer:          w,
+		machineStatus:   StatusStopped,
+		command: 		 STOP + " " + ctype[2] + " > /var/log/megam/gulpd.log",
+	}
+
+	err := pipeline.Execute(args)
+	if err != nil {
+		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
+		return err
+	}
+	return nil	 
+}

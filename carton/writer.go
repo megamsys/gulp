@@ -66,6 +66,6 @@ func (w *LogWriter) Write(data []byte) (int, error) {
 }
 
 func (w *LogWriter) write(data []byte) error {
-	//return w.Box.Log(string(data), source, "megd")
+	return w.Box.Log(string(data), "gulpd", "box")
 	return nil
 }

@@ -203,7 +203,6 @@ func (p chefsoloProvisioner) Command() []string {
 	//if len(p.RunList) > 0 {
 	//	cmd = append(cmd, "--override-runlist", strings.Join(p.RunList, ","))
 	//}
-	
 	log.Debugf("provisioner command is  %s", cmd)
 
 	if !p.Sudo {

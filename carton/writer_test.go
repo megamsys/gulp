@@ -1,16 +1,12 @@
-// Copyright 2015 tsuru authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package carton
 
 import (
-	"time"
+//	"time"
 
-	"github.com/megamsys/gulp/provision"
-	"gopkg.in/check.v1"
+//	"github.com/megamsys/gulp/provision"
+//	"gopkg.in/check.v1"
 )
-
+/*
 type WriterSuite struct {
 	//	conn *db.Storage
 }
@@ -18,7 +14,7 @@ type WriterSuite struct {
 var _ = check.Suite(&WriterSuite{})
 
 func (s *WriterSuite) TestLogWriter(c *check.C) {
-	a := provision.Box{}
+	a := provision.Box{Name: "testing"}
 	writer := LogWriter{Box: &a}
 	data := []byte("ble")
 	_, err := writer.Write(data)
@@ -68,4 +64,4 @@ func (s *WriterSuite) TestLogWriterAsyncCopySlice(c *check.C) {
 	//		c.Assert(logs[i].Message, check.Equals, "ble")
 	//		c.Assert(logs[i].Source, check.Equals, "tsuru")
 	//	}
-}
+}*/
