@@ -31,36 +31,8 @@ import (
 type runControlActionsArgs struct {
 	box           *provision.Box
 	writer        io.Writer
-	machineStatus Status
 	command       string
 }
-
-
-/*var updateStatusInRiak = action.Action{
-	Name: "update-status-riak",
-	Forward: func(ctx action.FWContext) (action.Result, error) {
-		args := ctx.Params[0].(runControlActionsArgs)
-				
-		mach := machine.Machine{
-			Id:    args.box.Id,
-			Level: args.box.Level,			
-		}
-		mach.SetStatus(args.machineStatus)
-		return mach, nil	
-	},
-	Backward: func(ctx action.BWContext) {
-		args := ctx.Params[0].(runControlActionsArgs)
-		rollBackStatus(args)
-	},
-}*/
-
-/*func rollBackStatus(args runControlActionsArgs) {
-		mach := machine.Machine{
-			Id:    args.box.Id,
-			Level: args.box.Level,			
-		}
-		mach.SetStatus(StatusError)
-}*/
 
 var start = action.Action{
 	Name: "start",
@@ -71,8 +43,7 @@ var start = action.Action{
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-		//args := ctx.Params[0].(runControlActionsArgs)
-//		rollBackStatus(args)
+	
 	},
 }
 
@@ -85,8 +56,7 @@ var stop = action.Action{
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-		//args := ctx.Params[0].(runControlActionsArgs)
-//		rollBackStatus(args)
+		
 	},
 }
 
@@ -99,8 +69,7 @@ var restart = action.Action{
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-		//args := ctx.Params[0].(runControlActionsArgs)
-//		rollBackStatus(args)
+		
 	},
 }
 

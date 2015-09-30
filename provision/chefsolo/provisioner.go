@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"io"
 	"path"
-//	"strings"	
+	"strings"	
     "encoding/json"
     "github.com/megamsys/libgo/action"
 	log "github.com/Sirupsen/logrus"
@@ -131,7 +131,7 @@ func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
    
    res1D := &Attributes{
    		RunList: 		[]string{ "recipe[" + box.Cookbook + "]" },
-   		ToscaType:		box.Tosca,
+   		ToscaType:		strings.Split(box.Tosca, ".")[2],
    		RabbitmqURL:	meta.MC.AMQP,
    		Monitor:		meta.MC.Ganglia,
         }        
