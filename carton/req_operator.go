@@ -48,12 +48,19 @@ func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	ca, err := a.MkCarton(cookbook) 
+	if err != nil {
+			return nil, err
+	} else {
+			ca.toBox(cookbook) //on success, make a carton2box if BoxLevel is BoxZero
+	}
 
-	c, err := a.MkCarton(cookbook)
+	//c, err := a.MkCarton(cookbook)
 	if err != nil {
 		return nil, err
 	}
-	return c, nil
+	return ca, nil
 }
 
 

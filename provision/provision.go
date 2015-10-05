@@ -81,6 +81,16 @@ const (
 	
 	// StatusSshKeyError is the status for failed append the sshkey 
 	StatusSshKeyError = Status("sshkey uploading error")
+	
+	// StatusStarted 
+	StatusStarted = Status("started")
+	
+	// StatusStopped 
+	StatusStopped = Status("stopped")
+	
+	// StatusRestarted 
+	StatusRestarted = Status("restarted")	
+	
 )
 
 // Named is something that has a name, providing the GetName method.
