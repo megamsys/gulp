@@ -144,11 +144,11 @@ func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
 	//commandWords = strings.Fields(args.provisioner.Command())
     commandWords = args.provisioner.Command()
     
-    basePath := "/var/log/megam/logs" 
-	dir := path.Join(basePath, args.box.Name)
+    basePath := "/var/lib/megam/logs" 
+	dir := path.Join(basePath, args.box.Name + "." + args.box.DomainName + "_exchange")
 	
-	fileOutPath := path.Join(dir, args.box.Name + "_out" )
-	fileErrPath := path.Join(dir, args.box.Name + "_err" )
+	fileOutPath := path.Join(dir, args.box.Name + "." + args.box.DomainName + "_exchange" + "_out" )
+	fileErrPath := path.Join(dir, args.box.Name + "." + args.box.DomainName + "_exchange" + "_err" )
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		log.Info("Creating directory: %s\n", dir)
 		if errm := os.MkdirAll(dir, 0777); errm != nil {

@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	DOMAIN = "DOMAIN"
+	DOMAIN = "domain"
 	COMPONENTBUCKET = "components"
 )
 

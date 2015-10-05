@@ -161,8 +161,7 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 		&deploy,
 		&updateStatusInRiak,
 	}
-	pipeline := action.NewPipeline(actions...)
-    
+	pipeline := action.NewPipeline(actions...) 
 	args := runMachineActionsArgs{
 		box:             box,
 		writer:          w,
