@@ -16,7 +16,13 @@
 package provision
 
 import (
+	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/loggers"
+	log "github.com/Sirupsen/logrus"
+	_ "github.com/megamsys/gulp/loggers/file"
+	_ "github.com/megamsys/gulp/loggers/queue"
 	"gopkg.in/yaml.v2"
 	"net/url"
 	"regexp"
@@ -25,7 +31,7 @@ import (
 )
 
 const (
-	
+
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
 
@@ -57,8 +63,8 @@ type Box struct {
 	Name       string
 	DomainName string
 	Tosca      string
-//	Compute    BoxCompute
-	Repo       repository.Repo
+	Repo       *repository.Repo
+	Operations []*operations.Operate
 	Status     Status
 	Provider   string
 	Commit     string
@@ -119,7 +125,27 @@ func (box *Box) Log(message, source, unit string) error {
 		}
 	}
 	if len(logs) > 0 {
-		_ = notify(box.Name, logs)
+		for _, logger := range meta.MC.Loggers {
+			a, err := loggers.Get(logger)
+
+			if err != nil {
+				log.Errorf("fatal error, couldn't located the Logger %s", logger)
+				return err
+			}
+
+			Logger = a
+
+			if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
+				err = initializableLogger.Notify(box.Name+"."+box.DomainName, logs)
+				if err != nil {
+					log.Errorf("fatal error, couldn't initialize the Logger %s", logger)
+					return err
+				} else {
+					log.Debugf("push logs to Logger %s", logger)
+				}
+			}
+			//_ = notify(box.Name+"."+box.DomainName, logs)
+		}
 	}
 	return nil
 }

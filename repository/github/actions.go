@@ -16,55 +16,73 @@
 package github
 
 import (
-//	"errors"
-//	"fmt"
+	//	"errors"
+	//	"fmt"
 	"io"
-//	"io/ioutil"
-//	"os"
-//	"path"
-	"strings"
+	//	"io/ioutil"
+	//	"os"
+	//	"path"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
-//	"github.com/megamsys/gulp/provision"
-//	"github.com/megamsys/gulp/carton"
+	"strings"
+	//	"github.com/megamsys/gulp/provision"
+	//	"github.com/megamsys/gulp/carton"
 )
 
 type runActionsArgs struct {
-	Writer        io.Writer
-	Url           string
-	Command       string
+	writer   io.Writer
+	filename string
+	dir      string
+	url      string
+	command  string
+}
+
+var remove_old_file = action.Action{
+	Name: "remove-old-file",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runActionsArgs)
+		log.Debugf("Remove [%s] file ", args.filename)
+
+		args.command = "rm -rf " + args.dir + "/" + args.filename
+		log.Debugf("Execute Command [%s]  ", args.command)
+		return ExecuteCommandOnce(&args)
+
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
 }
 
 var clone = action.Action{
 	Name: "clone",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
-		log.Debugf("Clone chef cookbooks")
-		
-	//	args.Command = "git clone " + args.Url
-		args.Command = "ls -la"
-		
+		log.Debugf("Clone [%s] ", args.url)
+
+		//args.command = "git clone " + args.url + " " + args.dir + "/" + args.filename
+		args.command = "ls -la"
+		log.Debugf("Execute Command [%s] ", args.command)
 		return ExecuteCommandOnce(&args)
 
 	},
 	Backward: func(ctx action.BWContext) {
-	
+
 	},
 }
 
 func ExecuteCommandOnce(args *runActionsArgs) (action.Result, error) {
-	
+
 	var e exec.OsExecutor
 	var commandWords []string
-	commandWords = strings.Fields(args.Command)
+	commandWords = strings.Fields(args.command)
 
 	if len(commandWords) > 0 {
-		if err := e.Execute(commandWords[0], commandWords[1:], nil, args.Writer, args.Writer); err != nil {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, args.writer, args.writer); err != nil {
 			return nil, err
 		}
 	}
 
 	return &args, nil
-		
+
 }

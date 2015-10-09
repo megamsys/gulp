@@ -17,7 +17,7 @@
 package chefsolo
 
 import (
-//	"os"
+	//	"os"
 	"gopkg.in/check.v1"
 	"testing"
 )
@@ -27,7 +27,6 @@ func Test(t *testing.T) {
 }
 
 type S struct{}
-
 
 var _ = check.Suite(&S{})
 
@@ -39,7 +38,7 @@ func (s *S) TestPrepareFiles(c *check.C) {
 			SandboxPath: "/tmp/chef-solo/sandbox",
 			RootPath:    "/tmp/chef-solo",
 		}
-		c.Assert(p.PrepareFiles(), check.IsNil)		
+		c.Assert(p.PrepareFiles(), check.IsNil)
 }
 
 func (s *S) TestPrepareFiles_CustomJSON(c *check.C) {
@@ -51,8 +50,5 @@ func (s *S) TestPrepareFiles_CustomJSON(c *check.C) {
 			RootPath:    "/tmp/chef-solo",
 		}
 	c.Assert(p.PrepareFiles(), check.IsNil)
-	
+
 }*/
-
-
-

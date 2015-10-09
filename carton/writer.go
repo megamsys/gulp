@@ -6,8 +6,8 @@ package carton
 
 import (
 	"errors"
-	"time"
 	log "github.com/Sirupsen/logrus"
+	"time"
 )
 
 type Logger interface {

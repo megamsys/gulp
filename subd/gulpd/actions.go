@@ -20,6 +20,7 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/subd/gulpd/machine"
+//	log "github.com/Sirupsen/logrus"
 )
 
 type runMachineActionsArgs struct {
@@ -79,7 +80,6 @@ var updateIPInRiak = action.Action{
 		}
 		
 		ip := mach.GetLocalIP()	
-				
 		args.Assembly.SetIPAddress(ip)
 		
 		return mach, nil

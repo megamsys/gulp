@@ -39,6 +39,7 @@ func Fetch(bkt string, key string, data interface{}) error {
 		return err
 	}
 	defer s.Close()
+	log.Debugf("  [riak] fetch (%s,%s)", bkt, key)
 	if err = s.FetchStruct(key, data); err != nil {
 		return err
 	}
@@ -51,6 +52,7 @@ func FetchObject(bkt string, key string) (string, error) {
 		return "", err
 	}
 	defer s.Close()
+	log.Debugf("  [riak] fetch object (%s,%s)", bkt, key)
 	out := &db.SomeObject{}
 	if err = s.FetchObject(key, out); err != nil {
 		return "", err
@@ -64,6 +66,7 @@ func Store(bkt string, key string, data interface{}) error {
 		return err
 	}
 	defer s.Close()
+	log.Debugf("  [riak] store (%s,%s)", bkt, key)
 	if err = s.StoreStruct(key, data); err != nil {
 		return err
 	}

@@ -1,13 +1,29 @@
+/*
+** Copyright [2013-2015] [Megam Systems]
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+ */
 package carton
 
 import (
-//	"fmt"
+	//	"fmt"
+	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
-	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/controls"
+	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
-	"github.com/megamsys/gulp/repository"
+	"io"
 )
 
 type BoxLevel int
@@ -25,14 +41,11 @@ type Carton struct {
 	Name       string
 	CartonsId  string
 	Tosca      string
-//	Compute    provision.BoxCompute
-	Repo       repository.Repo
 	DomainName string
 	Provider   string
 	Envs       []bind.EnvVar
 	Boxes      *[]provision.Box
 }
-
 
 func (a *Carton) String() string {
 	if d, err := yaml.Marshal(a); err != nil {
@@ -56,14 +69,12 @@ func (c *Carton) toBox(cookbook string) error { //assemblies id.
 	switch c.lvl() {
 	case provision.BoxNone:
 		c.Boxes = &[]provision.Box{provision.Box{
-			CartonId:   c.Id,    //this isn't needed.
-			Id:         c.Id,    //assembly id sent in ContextMap
-			CartonsId:  c.CartonsId,      //assembliesId,
-			Level:      c.lvl(), //based on the level, we decide to use the Box-Id as ComponentId or AssemblyId
+			CartonId:   c.Id,        //this isn't needed.
+			Id:         c.Id,        //assembly id sent in ContextMap
+			CartonsId:  c.CartonsId, //assembliesId,
+			Level:      c.lvl(),     //based on the level, we decide to use the Box-Id as ComponentId or AssemblyId
 			Name:       c.Name,
 			DomainName: c.DomainName,
-	//		Compute:    c.Compute,
-			Repo:       c.Repo,
 			Provider:   c.Provider,
 			Tosca:      c.Tosca,
 			Cookbook:   cookbook,
@@ -85,7 +96,7 @@ func (c *Carton) toBox(cookbook string) error { //assemblies id.
 
 // moves the state to the desired state
 // changing the boxes state to StatusStateup.
-func (c *Carton) Stateup() error { 
+func (c *Carton) Stateup() error {
 	for _, box := range *c.Boxes {
 		err := Deploy(&DeployOpts{B: &box})
 		if err != nil {
@@ -101,66 +112,37 @@ func (c *Carton) Statedown() error {
 	return nil
 }
 
+func (c *Carton) CIState() error {
+	return nil
+}
+
 func (c *Carton) Delete() error {
 	return nil
 }
 
-func (c *Carton) Start() error {
+func (c *Carton) LCoperation(lcoperation string) error {
 	for _, box := range *c.Boxes {
-		err := controls.Start(&box, "", nil)
-		if err != nil {
-			log.Errorf("Unable to start the box  %s", err)
-			if err := SetStatus(box.Id, box.Level, provision.StatusError); err != nil {
-				log.Errorf("[start] error on status update the box %s - %s", box.Name, err)
-				return err
-			}	
-			return err
-		} else {
-			if err := SetStatus(box.Id, box.Level, provision.StatusStarted); err != nil {
-				log.Errorf("[start] error on status update the box %s - %s", box.Name, err)
-				return err
-			}	
-		}		
-	}
-	return nil
-}
 
-func (c *Carton) Stop() error {
-	for _, box := range *c.Boxes {
-		err := controls.Stop(&box, "", nil)
-		if err != nil {
-			log.Errorf("Unable to stop the box %s", err)
-			if err := SetStatus(box.Id, box.Level, provision.StatusError); err != nil {
-				log.Errorf("[stop] error on status update the box %s - %s", box.Name, err)
-				return err
-			}	
-			return err
-		} else {
-			if err := SetStatus(box.Id, box.Level, provision.StatusStopped); err != nil {
-				log.Errorf("[start] error on status update the box %s - %s", box.Name, err)
-				return err
-			}	
-		}	
-	}
-	return nil
-}
+		var outBuffer bytes.Buffer
+		logWriter := LogWriter{Box: &box}
+		logWriter.Async()
+		defer logWriter.Close()
+		writer := io.MultiWriter(&outBuffer, &logWriter)
 
-func (c *Carton) Restart() error {
-	for _, box := range *c.Boxes {
-		err := controls.Restart(&box, "", nil)
+		status, err := controls.ParseControl(&box, lcoperation, writer)
 		if err != nil {
-			log.Errorf("[start] error on restart the box %s - %s", box.Name, err)
+			log.Errorf("Unable to %s the box  %s", lcoperation, err)
 			if err := SetStatus(box.Id, box.Level, provision.StatusError); err != nil {
-				log.Errorf("[restart] error on status update the box %s - %s", box.Name, err)
+				log.Errorf("[%s] error on status update the box %s - %s", lcoperation, box.Name, err)
 				return err
-			}			
+			}
 			return err
 		} else {
-			if err := SetStatus(box.Id, box.Level, provision.StatusRestarted); err != nil {
-				log.Errorf("[restart] error on status update the box %s - %s", box.Name, err)
+			if err := SetStatus(box.Id, box.Level, status); err != nil {
+				log.Errorf("[%s] error on status update the box %s - %s", lcoperation, box.Name, err)
 				return err
-			}	
-		}	
+			}
+		}
 	}
 	return nil
 }
@@ -169,7 +151,6 @@ func (c *Carton) Restart() error {
 func (c *Carton) GetTosca() string {
 	return c.Tosca
 }
-
 
 // Envs returns a map representing the apps environment variables.
 func (c *Carton) GetEnvs() []bind.EnvVar {

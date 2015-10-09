@@ -28,6 +28,7 @@ var (
 	DELETE    = "delete"
 	STATEUP   = "stateup"
 	STATEDOWN = "statedown"
+	CISTATE	  = "cistate"
 
 	//the control actions available are.
 	CONTROL = "control"
@@ -81,8 +82,12 @@ func (p *ReqParser) parseState(action string) (MegdProcessor, error) {
 		return StatedownProcess{
 			Name: p.name,
 		}, nil
+	case CISTATE:
+		return CIStateProcess{
+			Name: p.name,
+		}, nil
 	default:
-		return nil, newParseError([]string{STATE, action}, []string{STATEUP, STATEDOWN})
+		return nil, newParseError([]string{STATE, action}, []string{STATEUP, STATEDOWN, CISTATE})
 	}
 }
 

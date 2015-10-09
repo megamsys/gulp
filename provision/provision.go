@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/carton/bind"
 )
 
@@ -36,6 +37,8 @@ var (
 )
 
 var Repository repository.Repository
+
+var Logger loggers.Logger
 
 // Status represents the status of a unit in megamd
 type Status string

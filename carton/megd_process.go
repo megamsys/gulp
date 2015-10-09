@@ -20,7 +20,6 @@ import (
   "bytes"
 )
 
-
 // CreateProcs represents a command for creating new cartons.
 /*type CreateProcess struct {
 	Name string
@@ -77,7 +76,7 @@ func (s StartProcess) String() string {
 
 func (s StartProcess) Process(ca *Carton) error {
 //	for _, c := range ca {
-		if err := ca.Start(); err != nil {
+		if err := ca.LCoperation(START); err != nil {
 			return err
 		}
 //	}
@@ -98,7 +97,7 @@ func (s StopProcess) String() string {
 
 func (s StopProcess) Process(ca *Carton) error {
 //	for _, c := range ca {
-		if err := ca.Stop(); err != nil {
+		if err := ca.LCoperation(STOP); err != nil {
 			return err
 		}
 //	}
@@ -119,7 +118,7 @@ func (s RestartProcess) String() string {
 
 func (s RestartProcess) Process(ca *Carton) error {
 //	for _, c := range ca {
-		if err := ca.Restart(); err != nil {
+		if err := ca.LCoperation(RESTART); err != nil {
 			return err
 		}
 //	}
@@ -167,3 +166,23 @@ func (s StatedownProcess) Process(ca *Carton) error {
 //	}
 	return nil
 }
+
+// CIStateProcess represents a command for continuos integration  cartons.
+type CIStateProcess struct {
+	Name string
+}
+
+func (s CIStateProcess) String() string {
+	var buf bytes.Buffer
+	_, _ = buf.WriteString("CISTATE CARTON ")
+	_, _ = buf.WriteString(s.Name)
+	return buf.String()
+}
+
+func (s CIStateProcess) Process(ca *Carton) error {
+		if err := ca.CIState(); err != nil {
+			return err
+		}
+	return nil
+}
+

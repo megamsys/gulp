@@ -2,10 +2,10 @@ package provision
 
 import (
 	"encoding/json"
-//	"fmt"
+	//	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/libgo/amqp"
 	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/libgo/amqp"
 )
 
 var LogPubSubQueueSuffix = "_log"

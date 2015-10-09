@@ -32,7 +32,6 @@ import (
 //	"gopkg.in/check.v1"
 )
 
-
 /*func (s *S) TestInsertEmptyContainerInDBForward(c *check.C) {
 	app := provisiontest.NewFakeApp("myapp", "python", 1)
 	args := runContainerActionsArgs{
@@ -62,5 +61,3 @@ import (
 	c.Assert(err, check.IsNil)
 	c.Assert(retrieved.Name, check.Equals, cont.Name)
 }*/
-
-

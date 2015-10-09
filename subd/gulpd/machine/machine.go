@@ -59,6 +59,7 @@ func (m *Machine) PubStatus(status provision.Status) error {
 
 // GetLocalIP returns the non loopback local IP of the host
 func (m *Machine) GetLocalIP() string {
+    ip := ""
     addrs, err := net.InterfaceAddrs()
     if err != nil {
         return ""
@@ -67,11 +68,12 @@ func (m *Machine) GetLocalIP() string {
         // check the address type and if it is not a loopback the display it
         if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
             if ipnet.IP.To4() != nil {
-                return ipnet.IP.String()
+                //return ipnet.IP.String()
+                ip = ipnet.IP.String()
             }
         }
     }
-    return ""
+    return ip
 }
 
 // append user sshkey into authorized_keys file
@@ -81,8 +83,8 @@ func (m *Machine) UpdateSshkey() error {
 		return err
 	}
 	
-	f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
-	//f, err := os.OpenFile("/home/rajthilak/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	//f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile("/home/rajthilak/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
     	return err
 	}

@@ -17,84 +17,118 @@
 package controls
 
 import (
-	"io"
-	"strings"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
-	)
+	"io"
+	"strings"
+)
 
 const (
+	CONTROL = "control"
 
+	// start control is represents lifecycle start operation of virtual machine
 	START = "start"
+
+	// stop control is represents lifecycle stop operation of virtual machine
 	STOP = "stop"
+
+	// restart control is represents lifecycle restart operation of virtual machine
 	RESTART = "restart"
-	
-	)
+)
 
-
-func Restart(box *provision.Box, process string, w io.Writer) error {
-	actions := []*action.Action{
-		&restart,		
+func ParseControl(box *provision.Box, action string, w io.Writer) (provision.Status, error) {
+	switch action {
+	case START:
+		return cstart(box, w)
+	case STOP:
+		return cstop(box, w)
+	case RESTART:
+		return crestart(box, w)
+	default:
+		return "", newParseError([]string{CONTROL, action}, []string{START, STOP, RESTART})
 	}
-	pipeline := action.NewPipeline(actions...)
-	
-	ctype := strings.Split(box.GetTosca(), ".")
-    
-	args := runControlActionsArgs{
-		box:             box,
-		writer:          w,
-		command: 		 STOP + " " + ctype[2] + "; " + START + " " + ctype[2] + " > /var/log/megam/gulpd.log",
-	}
-
-	err := pipeline.Execute(args)
-	if err != nil {
-		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
-		return err
-	}
-	return nil	 
 }
 
-func Start(box *provision.Box, process string, w io.Writer) error {
+func crestart(box *provision.Box, w io.Writer) (provision.Status, error) {
 	actions := []*action.Action{
-		&start,		
+		&restart,
 	}
 	pipeline := action.NewPipeline(actions...)
-	
+
 	ctype := strings.Split(box.GetTosca(), ".")
-    
+
 	args := runControlActionsArgs{
-		box:             box,
-		writer:          w,
-		command: 		 START + " " + ctype[2] + " > /var/log/megam/gulpd.log",
+		box:     box,
+		writer:  w,
+		command: STOP + " " + ctype[2] + "; " + START + " " + ctype[2],
 	}
 
 	err := pipeline.Execute(args)
 	if err != nil {
 		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
-		return err
+		return "", err
 	}
-	return nil	 
+	return provision.StatusRestarted, nil
 }
 
-func Stop(box *provision.Box, process string, w io.Writer) error {
+func cstart(box *provision.Box, w io.Writer) (provision.Status, error) {
 	actions := []*action.Action{
-		&stop,		
+		&start,
 	}
 	pipeline := action.NewPipeline(actions...)
-	
+
 	ctype := strings.Split(box.GetTosca(), ".")
-    
+
 	args := runControlActionsArgs{
-		box:             box,
-		writer:          w,
-		command: 		 STOP + " " + ctype[2] + " > /var/log/megam/gulpd.log",
+		box:     box,
+		writer:  w,
+		command: START + " " + ctype[2],
 	}
 
 	err := pipeline.Execute(args)
 	if err != nil {
 		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
-		return err
+		return "", err
 	}
-	return nil	 
+	return provision.StatusStarted, nil
+}
+
+func cstop(box *provision.Box, w io.Writer) (provision.Status, error) {
+	actions := []*action.Action{
+		&stop,
+	}
+	pipeline := action.NewPipeline(actions...)
+
+	ctype := strings.Split(box.GetTosca(), ".")
+
+	args := runControlActionsArgs{
+		box:     box,
+		writer:  w,
+		command: STOP + " " + ctype[2],
+	}
+
+	err := pipeline.Execute(args)
+	if err != nil {
+		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
+		return "", err
+	}
+	return provision.StatusStopped, nil
+}
+
+// ParseError represents an error that occurred during parsing.
+type ParseError struct {
+	Found    string
+	Expected []string
+}
+
+// newParseError returns a new instance of ParseError.
+func newParseError(found []string, expected []string) *ParseError {
+	return &ParseError{Found: strings.Join(found, ","), Expected: expected}
+}
+
+// Error returns the string representation of the error.
+func (e *ParseError) Error() string {
+	return fmt.Sprintf("found %s, expected %s", e.Found, strings.Join(e.Expected, ", "))
 }

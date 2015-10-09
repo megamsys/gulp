@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package repository
 
 import (
@@ -37,9 +37,7 @@ const (
 	GIT = "git"
 )
 
-
 var managers map[string]InitializableRepository
-
 
 /* Repository represents a repository managed by the manager. */
 type Repo struct {
@@ -47,10 +45,11 @@ type Repo struct {
 	Type     string
 	Token    string
 	Source   string
-	GitURL   string
+	Url      string
 	UserName string
 	CartonId string
 	BoxId    string
+	OneClick string
 }
 
 func (r Repo) IsEnabled() bool {
@@ -69,12 +68,11 @@ func (r Repo) GetToken() string {
 	return r.Token
 }
 
-func (r Repo) Gitr() string {
-	return r.GitURL
+func (r Repo) GetUrl() string {
+	return r.Url
 }
 
 type Repository interface {
-	
 }
 
 // RepositoryManager represents a manager of application repositories.

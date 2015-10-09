@@ -18,39 +18,40 @@
 package chefsolo
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
-	"path"
-	"strings"	
-    "encoding/json"
-    "github.com/megamsys/libgo/action"
 	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
-	_"github.com/megamsys/gulp/repository/github"
-	"github.com/megamsys/gulp/meta"
+	_ "github.com/megamsys/gulp/repository/github"
+	"github.com/megamsys/libgo/action"
+	"io"
+	"path"
+	"strings"
 )
 
 const (
 	// DefaultFormat is the default output format of Chef.
 	DefaultFormat = "doc"
 
-    // DefaultLogLevel is the set log level (default: info)
+	// DefaultLogLevel is the set log level (default: info)
 	DefaultLogLevel = "info"
-	
+
 	//set the default sandbox path
 	DefaultSandBoxPath = "/var/lib/megam"
-	
+
 	//set the default root path
 	DefaultRootPath = "/var/lib/megam"
-	
+
 	//Do not run commands with sudo (enabled by default)
 	DefaultSudo = true
-	
-	Repository = "repository"
+
+	Repository     = "repository"
 	RepositoryPath = "repository_path"
-	RECEIPE = "receipe"
-	
+	RECEIPE        = "receipe"
+
+	SOURCE = "source"
 )
 
 var mainChefSoloProvisioner *chefsoloProvisioner
@@ -61,12 +62,11 @@ func init() {
 }
 
 type Attributes struct {
-    RunList   		[]string      	`json:"run_list"`
-    ToscaType 		string			`json:"tosca_type"`
-    RabbitmqURL 	string			`json:"rabbitmq_url"`
-    Monitor			string			`json:"monitor"`
+	RunList     []string `json:"run_list"`
+	ToscaType   string   `json:"tosca_type"`
+	RabbitmqURL string   `json:"rabbitmq_url"`
+	Monitor     string   `json:"monitor"`
 }
-
 
 // Provisioner is a provisioner based on Chef Solo.
 type chefsoloProvisioner struct {
@@ -80,29 +80,29 @@ type chefsoloProvisioner struct {
 }
 
 type runRepositoryActionArgs struct {
-	repository   string
-	url          string
+	repository string
+	url        string
 }
 
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
-  //  p.RunList = []string{ m["receipe"] }
-    args := &runRepositoryActionArgs{
-		repository:      m[Repository],
-		url:             m[RepositoryPath],
+	//  p.RunList = []string{ m["receipe"] }
+	args := &runRepositoryActionArgs{
+		repository: m[Repository],
+		url:        m[RepositoryPath],
 	}
 	return p.setupRequirements(args)
 }
 
 //this setup the requirements for provisioner using megam default repository
 func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) error {
-    a, err := repository.Get(args.repository)
+	a, err := repository.Get(args.repository)
 
 	if err != nil {
 		log.Errorf("fatal error, couldn't located the Repository %s", args.repository)
 		return err
 	}
-	
+
 	provision.Repository = a
 
 	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
@@ -119,7 +119,6 @@ func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) e
 	return nil
 }
 
-
 func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 	out := "chefsolo provisioner reports the following:\n"
 	out += fmt.Sprintf("    chef-solo provisioner initiated. ")
@@ -128,23 +127,23 @@ func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 
 /* new state */
 func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
-   
-   res1D := &Attributes{
-   		RunList: 		[]string{ "recipe[" + box.Cookbook + "]" },
-   		ToscaType:		strings.Split(box.Tosca, ".")[2],
-   		RabbitmqURL:	meta.MC.AMQP,
-   		Monitor:		meta.MC.Ganglia,
-        }        
-     
-    DefaultAttributes, _ := json.Marshal(res1D)
-    
-    p.Attributes = string(DefaultAttributes)
-    p.Format     = DefaultFormat
-    p.LogLevel   = DefaultLogLevel
-    p.SandboxPath = DefaultSandBoxPath
-    p.RootPath    = DefaultRootPath
-    p.Sudo        = DefaultSudo
-	
+
+	res1D := &Attributes{
+		RunList:     []string{"recipe[" + box.Cookbook + "]"},
+		ToscaType:   strings.Split(box.Tosca, ".")[2],
+		RabbitmqURL: meta.MC.AMQP,
+		Monitor:     meta.MC.Ganglia,
+	}
+
+	DefaultAttributes, _ := json.Marshal(res1D)
+
+	p.Attributes = string(DefaultAttributes)
+	p.Format = DefaultFormat
+	p.LogLevel = DefaultLogLevel
+	p.SandboxPath = DefaultSandBoxPath
+	p.RootPath = DefaultRootPath
+	p.Sudo = DefaultSudo
+
 	log.Info("Provisioner = %+v\n", p)
 
 	return p.createPipeline(box, w)
@@ -157,16 +156,16 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 	actions := []*action.Action{
 		&prepareJSON,
 		&prepareConfig,
-//		&prepareBoxRepository,
+		&prepareBoxRepository,
 		&deploy,
 		&updateStatusInRiak,
 	}
-	pipeline := action.NewPipeline(actions...) 
+	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
-		box:             box,
-		writer:          w,
-		machineStatus:   provision.StatusRunning,
-		provisioner:     p,
+		box:           box,
+		writer:        w,
+		machineStatus: provision.StatusRunning,
+		provisioner:   p,
 	}
 
 	err := pipeline.Execute(args)
@@ -176,7 +175,6 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 	}
 	return nil
 }
-
 
 // Command returns the command string which will invoke the provisioner on the
 // prepared machine.
@@ -198,7 +196,7 @@ func (p chefsoloProvisioner) Command() []string {
 		"--format", format,
 		"--log_level", logLevel,
 	}
-    
+
 	//if len(p.RunList) > 0 {
 	//	cmd = append(cmd, "--override-runlist", strings.Join(p.RunList, ","))
 	//}

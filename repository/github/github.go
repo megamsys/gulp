@@ -18,9 +18,11 @@ package github
 
 import (
 	//"fmt"
+	"strings"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/gulp/meta"
 )
 
 func init() {
@@ -36,13 +38,18 @@ type githubManager struct{}
 func (m githubManager) Initialize(url string) error {
 	
 	actions := []*action.Action{
+		&remove_old_file,
 		&clone,
 	}
 	pipeline := action.NewPipeline(actions...)
+	
+	s := strings.Split(url, "/")[4]
 
 	args := runActionsArgs{		
 	//	Writer:        w,
-		Url:   url,
+		url:   			url,
+		dir:   			meta.MC.Dir,
+		filename: 		strings.Split(s, ".")[0],
 	}
 
 	err := pipeline.Execute(args)
