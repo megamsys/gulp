@@ -1,15 +1,30 @@
 *.class
 *.log
-#gulpd
-Godeps/_workspace
-# sbt specific
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
+gulpd
+cpuprof
+memprof
 
-# Scala-IDE specific
-bin/
-.scala_dependencies
+# Unignore all dirs
+!*/gulp
+
+# Folders
+_obj
+_test
+Godeps/_workspace
+
+# Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+*.exe
+*.test
+*.prof
+*.deb
