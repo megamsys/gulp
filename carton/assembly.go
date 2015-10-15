@@ -16,20 +16,20 @@
 package carton
 
 import (
+	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
 	"strings"
-//	"encoding/json"
-//	"time"
+	//	"encoding/json"
+	//	"fmt"
 )
 
 const (
 	ASSEMBLYBUCKET = "assembly"
-	SSHKEY = "sshkey"
+	SSHKEY         = "sshkey"
 )
 
 var Provisioner provision.Provisioner
@@ -58,7 +58,6 @@ func (p *JsonPairs) match(k string) string {
 	return ""
 }
 
-
 // Carton is the main type in megam. A carton represents a real world assembly.
 // An assembly comprises of various components.
 // This struct provides and easy way to manage information about an assembly, instead passing it around
@@ -70,23 +69,21 @@ type Policy struct {
 }
 
 type Ambly struct {
-	Id           string        `json:"id"`
-	Name         string        `json:"name"`
-	JsonClaz     string        `json:"json_claz"`
-	Tosca        string        `json:"tosca_type"`
-	Requirements JsonPairs     `json:"requirements"`
-	Policies     []*Policy     `json:"policies"`
-	Inputs       JsonPairs     `json:"inputs"`
-	Operations   []*Operations `json:"operations"`
-	Outputs      JsonPairs     `json:"outputs"`
-	Status       string        `json:"status"`
-	CreatedAt    string        `json:"created_at"`
-	ComponentIds []string      `json:"components"`
+	Id           string    `json:"id"`
+	Name         string    `json:"name"`
+	JsonClaz     string    `json:"json_claz"`
+	Tosca        string    `json:"tosca_type"`
+	Policies     []*Policy `json:"policies"`
+	Inputs       JsonPairs `json:"inputs"`
+	Outputs      JsonPairs `json:"outputs"`
+	Status       string    `json:"status"`
+	CreatedAt    string    `json:"created_at"`
+	ComponentIds []string  `json:"components"`
 }
 
 type Assembly struct {
-	Ambly	
-	Components   map[string]*Component
+	Ambly
+	Components map[string]*Component
 }
 
 func (a *Assembly) String() string {
@@ -101,24 +98,22 @@ func (a *Assembly) String() string {
 //a carton comprises of self contained boxes (actually a "colored component") externalized
 //with what we need.
 func (a *Assembly) MkCarton(cookbook string) (*Carton, error) {
-	
-//	b, err := a.mkBoxes(aies)
+
+	//	b, err := a.mkBoxes(aies)
 	b, err := a.mkBoxes("", cookbook)
 	if err != nil {
 		return nil, err
 	}
 
-	repo := NewRepo(a.Operations, repository.CI)
+	//repo := NewRepo(a.Operations, repository.CI)
 
 	c := &Carton{
-		Id:         a.Id,   //assembly id
-		CartonsId:  "", //assemblies id
+		Id:         a.Id, //assembly id
+		CartonsId:  "",   //assemblies id
 		Name:       a.Name,
 		Tosca:      a.Tosca,
 		Envs:       a.envs(),
-		Repo:       repo,
 		DomainName: a.domain(),
-//		Compute:    a.newCompute(),
 		Provider:   a.provider(),
 		Boxes:      &b,
 	}
@@ -140,7 +135,7 @@ func Get(id string) (*Assembly, error) {
 	if err := db.Fetch(ASSEMBLYBUCKET, id, a); err != nil {
 		return nil, err
 	}
-	
+
 	a.dig()
 	return a, nil
 }
@@ -172,9 +167,10 @@ func (a *Assembly) mkBoxes(aies string, cookbook string) ([]provision.Box, error
 				b.CartonId = a.Id
 				b.CartonsId = aies
 				b.Repo.CartonId = a.Id
+				b.DomainName = a.domain()
 				b.Repo.BoxId = comp.Id
 				b.Cookbook = cookbook
-	//			b.Compute = a.newCompute()
+				//			b.Compute = a.newCompute()
 				newBoxs = append(newBoxs, b)
 			}
 		}
@@ -210,7 +206,7 @@ func NewAssembly(id string) (*Ambly, error) {
 	a, err := fetch(id)
 	if err != nil {
 		return nil, err
-	}	
+	}
 	return a, nil
 }
 
@@ -225,14 +221,14 @@ func (a *Ambly) SetStatus(status provision.Status) error {
 
 //put virtual machine ip address in riak
 func (a *Ambly) SetIPAddress(status string) error {
-
-	a.Outputs = append(a.Outputs, NewJsonPair("ip", status))
-	
-	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
-		return err
+	if status != "" {
+		a.Outputs = append(a.Outputs, NewJsonPair("ip", status))
+		if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
+			return err
+		}
+	} else {
+		return errors.New(provision.StatusIPError.String())
 	}
+
 	return nil
 }
-
-
-

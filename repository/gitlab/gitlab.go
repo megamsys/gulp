@@ -13,14 +13,14 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package gitlab
 
 import (
-//	"errors"
-//	"fmt"
-//	"io"
-//	"net/http"
+	//	"errors"
+	//	"fmt"
+	//	"io"
+	//	"net/http"
 	"github.com/megamsys/gulp/repository"
 )
 
@@ -32,11 +32,8 @@ const endpointConfig = "git:api-server"
 
 type gitlabManager struct{}
 
-
 func (m gitlabManager) Initialize(url string) error {
-	
+
 	return nil
 
 }
-
-

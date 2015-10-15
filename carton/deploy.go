@@ -19,28 +19,27 @@ package carton
 import (
 	"bytes"
 	"io"
-//	"time"
-//	"fmt"
-//	log "github.com/Sirupsen/logrus"
+	//	"time"
+	//	"fmt"
+	//	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
-	
 )
 
 type DeployOpts struct {
-	B      *provision.Box
-	Image 	string
+	B     *provision.Box
+	Image string
 }
 
-// Deploy runs a deployment of an application. 
+// Deploy runs a deployment of an application.
 func Deploy(opts *DeployOpts) error {
 	var outBuffer bytes.Buffer
-//	start := time.Now()
+	//	start := time.Now()
 	logWriter := LogWriter{Box: opts.B}
 	logWriter.Async()
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := deployToProvisioner(opts, writer)
-	
+
 	if err != nil {
 		return err
 	}
@@ -53,6 +52,3 @@ func deployToProvisioner(opts *DeployOpts, writer io.Writer) error {
 	}
 	return nil
 }
-
-
-

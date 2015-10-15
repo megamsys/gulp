@@ -16,34 +16,34 @@
 package controls
 
 import (
-//	"fmt"
+	//	"fmt"
 	"io"
-//	"io/ioutil"
-//	"path"
-	"strings"
+	//	"io/ioutil"
+	//	"path"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/provision"
-//	"github.com/megamsys/gulp/controls/machine"
+	"github.com/megamsys/libgo/action"
+	"strings"
+	//	"github.com/megamsys/gulp/controls/machine"
 	"github.com/megamsys/libgo/exec"
 )
 
 type runControlActionsArgs struct {
-	box           *provision.Box
-	writer        io.Writer
-	command       string
+	box     *provision.Box
+	writer  io.Writer
+	command string
 }
 
 var start = action.Action{
 	Name: "start",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runControlActionsArgs)
-		log.Debugf("create machine for box %s", args.box.GetFullName())		
+		log.Debugf("create machine for box %s", args.box.GetFullName())
 
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-	
+
 	},
 }
 
@@ -51,12 +51,12 @@ var stop = action.Action{
 	Name: "stop",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runControlActionsArgs)
-		log.Debugf("create machine for box %s", args.box.GetFullName())		
+		log.Debugf("create machine for box %s", args.box.GetFullName())
 
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-		
+
 	},
 }
 
@@ -64,20 +64,20 @@ var restart = action.Action{
 	Name: "restart",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runControlActionsArgs)
-		log.Debugf("create machine for box %s", args.box.GetFullName())		
+		log.Debugf("create machine for box %s", args.box.GetFullName())
 
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-		
+
 	},
 }
 
 func ExecuteCommandOnce(args *runControlActionsArgs) (action.Result, error) {
-	
+
 	var e exec.OsExecutor
 	var commandWords []string
-    commandWords = strings.Fields(args.command)
+	commandWords = strings.Fields(args.command)
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, args.writer, args.writer); err != nil {
 			return nil, err
@@ -85,7 +85,5 @@ func ExecuteCommandOnce(args *runControlActionsArgs) (action.Result, error) {
 	}
 
 	return &args, nil
-		
+
 }
-
-

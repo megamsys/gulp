@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/carton/bind"
 )
 
@@ -36,6 +37,8 @@ var (
 )
 
 var Repository repository.Repository
+
+var Logger loggers.Logger
 
 // Status represents the status of a unit in megamd
 type Status string
@@ -151,7 +154,7 @@ type ProvisionerRequirements interface {
 
 // InitializableProvisioner is a provisioner that provides an initialization
 // method that should be called when the carton is started,
-//additionally provide a map of configuration info.
+// additionally provide a map of configuration info.
 type InitializableProvisioner interface {
 	Initialize(m map[string]string) error
 }

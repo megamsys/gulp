@@ -60,6 +60,9 @@ const (
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
 	
+	DefaultFileLogger = "file"
+	DefaultQueueLogger = "queue"
+	
 )
 
 var MC *Config
@@ -79,6 +82,7 @@ type Config struct {
 	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
 	LeaderLeaseTimeout toml.Duration `toml:"leader-lease-timeout"`
 	DockerPath         string        `toml:"docker_path"`	
+	Loggers			   []string      `toml:"loggers"`
 }
 
 func (c Config) String() string {
@@ -94,6 +98,7 @@ func (c Config) String() string {
 	b.Write([]byte("AMQP" + "\t" + c.AMQP + "\n"))
 	b.Write([]byte("Ganglia" + "\t" + c.Ganglia + "\n"))
 	b.Write([]byte("Hostname" + "\t" + c.Hostname + "\n"))
+	b.Write([]byte("Loggers" + "\t" + strings.Join(c.Loggers, ",") + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
 	return b.String()
@@ -127,7 +132,8 @@ func NewConfig() *Config {
 		DockerPath:         DefaultDockerPath,
 		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
 		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),
-		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),		
+		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),	
+		Loggers:            []string{DefaultFileLogger, DefaultQueueLogger},	
 	}
 }
 

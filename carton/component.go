@@ -17,22 +17,17 @@ package carton
 
 import (
 	"github.com/megamsys/gulp/db"
+	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
-//	"time"
+	//	"time"
 )
 
 const (
-	DOMAIN = "domain"
+	DOMAIN          = "domain"
 	COMPONENTBUCKET = "components"
 )
-
-type Operations struct {
-	OperationType         string    `json:"operation_type"`
-	Description           string    `json:"description"`
-	OperationRequirements JsonPairs `json:"operation_requirements"`
-}
 
 type Artifacts struct {
 	ArtifactType         string    `json:"artifact_type"`
@@ -41,16 +36,17 @@ type Artifacts struct {
 }
 
 type Component struct {
-	Id                string        `json:"id"`
-	Name              string        `json:"name"`
-	Tosca             string        `json:"tosca_type"`
-	Inputs            JsonPairs     `json:"inputs"`
-	Outputs           JsonPairs     `json:"outputs"`
-	Artifacts         *Artifacts    `json:"artifacts"`
-	RelatedComponents []string      `json:"related_components"`
-	Operations        []*Operations `json:"operations"`
-	Status            string        `json:"status"`
-	CreatedAt         string        `json:"created_at"`
+	Id                string                `json:"id"`
+	Name              string                `json:"name"`
+	Tosca             string                `json:"tosca_type"`
+	Inputs            JsonPairs             `json:"inputs"`
+	Outputs           JsonPairs             `json:"outputs"`
+	Artifacts         *Artifacts            `json:"artifacts"`
+	Repo              *repository.Repo      `json:"repo"`
+	RelatedComponents []string              `json:"related_components"`
+	Operations        []*operations.Operate `json:"operations"`
+	Status            string                `json:"status"`
+	CreatedAt         string                `json:"created_at"`
 }
 
 func (a *Component) String() string {
@@ -74,16 +70,15 @@ func NewComponent(id string) (*Component, error) {
 
 //make a box with the details for a provisioner.
 func (c *Component) mkBox() (provision.Box, error) {
-	repo := NewRepo(c.Operations, repository.CI)
 
 	return provision.Box{
 		Id:         c.Id,
 		Level:      provision.BoxSome,
 		Name:       c.Name,
-		DomainName: c.domain(),
 		Tosca:      c.Tosca,
 		Commit:     "",
-		Repo:       repo,
+		Repo:       c.Repo,
+		Operations: c.Operations,
 		Provider:   c.provider(),
 		Ip:         "",
 	}, nil
@@ -99,12 +94,6 @@ func (c *Component) SetStatus(status provision.Status) error {
 
 }
 
-func (c *Component) domain() string {
-	return c.Inputs.match(DOMAIN)
-}
-
 func (c *Component) provider() string {
 	return c.Inputs.match(provision.PROVIDER)
 }
-
-
