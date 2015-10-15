@@ -18,23 +18,55 @@ package file
 
 import (
 	//	"errors"
-		"fmt"
+	//"fmt"
 	//	"io"
 	//	"net/http"
+	"os"
+	"encoding/json"
+	"path"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
+	"github.com/megamsys/gulp/meta"
 )
 
 func init() {
 	loggers.Register("file", fileManager{})
 }
 
-
 type fileManager struct{}
 
 func (m fileManager) Notify(boxName string, messages []interface{}) error {
- 
-    fmt.Println("--------")
-    fmt.Println(messages)
+
+	basePath := meta.MC.Dir + "/logs"
+	dir := path.Join(basePath, boxName)
+
+	filePath := path.Join(dir, boxName+"_log")
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Debugf("Creating directory: %s\n", dir)
+		if errm := os.MkdirAll(dir, 0777); errm != nil {
+			return errm
+		}
+	}
+
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
+	if err != nil {
+		log.Errorf("Error on logs notify: %s", err.Error())
+		return err
+	}
+
+	defer f.Close()
+	
+	for _, msg := range messages {
+		bytes, err := json.Marshal(msg)
+		if err != nil {
+			log.Errorf("Error on logs notify: %s", err.Error())
+			continue
+		}
+		if _, err = f.WriteString(string(bytes)); err != nil {
+			log.Errorf("Error on logs notify: %s", err.Error())
+			return err
+		}
+	}
 
 	return nil
 

@@ -104,7 +104,10 @@ func (b *Box) Available() bool {
 		b.Status == StatusRunning ||
 		b.Status == StatusBootstrapped ||
 		b.Status == StatusStateup ||
-		b.Status == StatusError
+		b.Status == StatusError ||
+		b.Status == StatusStarted ||
+		b.Status == StatusStopped ||
+		b.Status == StatusRestarted
 }
 
 // Log adds a log message to the app. Specifying a good source is good so the
@@ -136,6 +139,7 @@ func (box *Box) Log(message, source, unit string) error {
 			Logger = a
 
 			if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
+				log.Debugf("Notify to [%s] Logger ", logger)
 				err = initializableLogger.Notify(box.Name+"."+box.DomainName, logs)
 				if err != nil {
 					log.Errorf("fatal error, couldn't initialize the Logger %s", logger)

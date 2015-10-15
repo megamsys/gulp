@@ -60,8 +60,8 @@ var clone = action.Action{
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Clone [%s] ", args.url)
 
-		//args.command = "git clone " + args.url + " " + args.dir + "/" + args.filename
-		args.command = "ls -la"
+		args.command = "git clone " + args.url + " " + args.dir + "/" + args.filename
+		//args.command = "ls -la"
 		log.Debugf("Execute Command [%s] ", args.command)
 		return ExecuteCommandOnce(&args)
 
