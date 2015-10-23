@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package github
 
 import (
@@ -35,17 +35,18 @@ type githubManager struct{}
 /**
 * clone repository from github.com using url
 **/
-func (m githubManager) Initialize(url string) error {
-	
+func (m githubManager) Clone(url string) error {
+
 	actions := []*action.Action{
-		&remove_old_file,
-		&clone,
+	   &remove_old_file,
+		 &clone,
+
 	}
 	pipeline := action.NewPipeline(actions...)
-	
+
 	s := strings.Split(url, "/")[4]
 
-	args := runActionsArgs{		
+	args := runActionsArgs{
 	//	Writer:        w,
 		url:   			url,
 		dir:   			meta.MC.Dir,
@@ -60,4 +61,32 @@ func (m githubManager) Initialize(url string) error {
 	return nil
 
 }
+func (m githubManager) Initialize(url,tar_url string) error {
 
+	actions := []*action.Action{
+	   &clone_tar,
+     &un_tar,
+    // &remove_tar_file,
+
+	}
+	pipeline := action.NewPipeline(actions...)
+
+	s := strings.Split(url, "/")[4]
+  s1 := strings.Split(tar_url,"/")[6]
+	args := runActionsArgs{
+	//	Writer:        w,
+		url:   			url,
+    tar_url:    tar_url,
+		dir:   			meta.MC.Dir,
+		filename: 		strings.Split(s, ".")[0],
+    tarfilename: 	 s1,
+	}
+
+	err := pipeline.Execute(args)
+	if err != nil {
+		log.Errorf("error on execute status pipeline for github %s - %s", tar_url, err)
+		return err
+	}
+	return nil
+
+}

@@ -35,7 +35,9 @@ type runActionsArgs struct {
 	filename string
 	dir      string
 	url      string
+	tar_url  string
 	command  string
+	tarfilename string
 }
 
 var remove_old_file = action.Action{
@@ -53,7 +55,52 @@ var remove_old_file = action.Action{
 
 	},
 }
+var remove_tar_file = action.Action{
+	Name: "remove-tar-file",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runActionsArgs)
+		log.Debugf("Remove tar [%s] file ", args.filename)
 
+		args.command = "rm "+ args.dir +"/*.gz"
+		log.Debugf("Execute Command [%s]  ", args.command)
+		return ExecuteCommandOnce(&args)
+
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
+}
+var clone_tar = action.Action{
+	Name: "clone_tar",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runActionsArgs)
+		log.Debugf("Download [%s] file [%s]", args.tar_url, args.filename)
+
+		args.command = "wget -P "+ args.dir +" "+ args.tar_url
+		log.Debugf("Execute Command [%s]  ", args.command)
+		return ExecuteCommandOnce(&args)
+
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
+}
+var un_tar = action.Action{
+	Name: "un_tar",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runActionsArgs)
+		log.Debugf("extract the tar to [%s / %s]    ",args.dir, args.filename)
+		args.command = " tar xf "+ args.tarfilename + " -C "+args.dir + "/" + args.filename  + " --strip-components 1"
+    //"mkdir -p "+ args.dir + "/" + args.filename +" &&
+		log.Debugf("Execute Command [%s]  ", args.command)
+
+		return ExecuteCommandOnce(&args)
+
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
+}
 var clone = action.Action{
 	Name: "clone",
 	Forward: func(ctx action.FWContext) (action.Result, error) {

@@ -119,7 +119,7 @@ var prepareBoxRepository = action.Action{
 				provision.Repository = a
 				if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 					log.Debugf("Before repository initialization.")
-					err = initializableRepository.Initialize(args.box.Repo.Url)
+					err = initializableRepository.Clone(args.box.Repo.Url)
 					if err != nil {
 						log.Errorf("fatal error, couldn't initialize the Repository %s", args.box.Repo.Url)
 						return nil, err

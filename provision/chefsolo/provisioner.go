@@ -49,6 +49,7 @@ const (
 
 	Repository     = "repository"
 	RepositoryPath = "repository_path"
+	RepositoryTarPath = "repository_tar_path"
 	RECEIPE        = "receipe"
 
 	SOURCE = "source"
@@ -82,6 +83,7 @@ type chefsoloProvisioner struct {
 type runRepositoryActionArgs struct {
 	repository string
 	url        string
+	tar_url    string
 }
 
 //initialize the provisioner and setup the requirements for provisioner
@@ -90,6 +92,7 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 	args := &runRepositoryActionArgs{
 		repository: m[Repository],
 		url:        m[RepositoryPath],
+		tar_url:    m[RepositoryTarPath],
 	}
 	return p.setupRequirements(args)
 }
@@ -107,7 +110,7 @@ func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) e
 
 	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 		log.Debugf("Before repository initialization.")
-		err = initializableRepository.Initialize(args.url)
+		err = initializableRepository.Initialize(args.url,args.tar_url)
 		if err != nil {
 			log.Errorf("fatal error, couldn't initialize the Repository %s", args.url)
 			return err
