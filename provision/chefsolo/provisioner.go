@@ -29,6 +29,7 @@ import (
 	"io"
 	"path"
 	"strings"
+	"os"
 )
 
 const (
@@ -50,7 +51,8 @@ const (
 	Repository     = "repository"
 	RepositoryPath = "repository_path"
 	RepositoryTarPath = "repository_tar_path"
-	RECEIPE        = "receipe"
+  HomeDir           = "dir"
+	RECEIPE        		= "receipe"
 
 	SOURCE = "source"
 )
@@ -84,7 +86,8 @@ type runRepositoryActionArgs struct {
 	repository string
 	url        string
 	tar_url    string
-}
+	dir        string
+	}
 
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
@@ -93,6 +96,7 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 		repository: m[Repository],
 		url:        m[RepositoryPath],
 		tar_url:    m[RepositoryTarPath],
+		dir:        m[HomeDir],
 	}
 	return p.setupRequirements(args)
 }
@@ -110,15 +114,26 @@ func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) e
 
 	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 		log.Debugf("Before repository initialization.")
-		err = initializableRepository.Initialize(args.url,args.tar_url)
-		if err != nil {
-			log.Errorf("fatal error, couldn't initialize the Repository %s", args.url)
-			return err
-		} else {
-			log.Debugf("%s Initialized", args.repository)
+
+		s := strings.Split(args.url, "/")[4]
+		filename := strings.Split(s, ".")[0]
+		log.Debugf(args.dir + filename)
+
+		_, er := os.Stat(args.dir +"/"+ filename)
+	    if er != nil {
+				err = initializableRepository.Initialize(args.url,args.tar_url)
+				if err != nil {
+					log.Errorf("fatal error, couldn't initialize the Repository %s", args.tar_url)
+					return err
+				} else {
+					log.Debugf("%s Initialized", args.repository)
+					return nil
+				}
+	    } else {
+			log.Debugf("%s/%s Directory already exist",args.dir,filename)
 			return nil
+		 }
 		}
-	}
 	return nil
 }
 

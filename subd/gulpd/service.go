@@ -73,15 +73,15 @@ func (s *Service) Open() error {
 		if err = s.setProvisioner(); err != nil {
 			return err
 		}
-		
+
 		if err = s.updateStatusPipeline(); err != nil {
 			return err
 		}
-		
+
 		go s.processQueue(swt)
 	}
 
-	return nil	
+	return nil
 }
 
 // processQueue continually drains the given queue  and processes the queue request
@@ -147,22 +147,21 @@ func (s *Service) setProvisioner() error {
 }
 
 //1. &updateStatus in Riak - Bootstrapped..
-//2. &publishStatus in publish the bootstrapped message to cloudstandup queue 
+//2. &publishStatus in publish the bootstrapped message to cloudstandup queue
 func (s *Service) updateStatusPipeline() error {
-	actions := []*action.Action{	
+	actions := []*action.Action{
 		&updateIPInRiak,
-		&updateSshkey,	
-		&updateStatusInRiak,		
+		&updateSshkey,
+		&updateStatusInRiak,
 		&publishStatus,
 	}
-	pipeline := action.NewPipeline(actions...)	
+	pipeline := action.NewPipeline(actions...)
 
-	asm, _ := carton.NewAssembly(s.Gulpd.CatID)	
-	
+	asm, _ := carton.NewAssembly(s.Gulpd.CatID)
 	args := &runMachineActionsArgs{
 			CatID:       s.Gulpd.CatID,
-			CatsID:		 s.Gulpd.CatsID,
-			Assembly:    asm,			
+			CatsID:		   s.Gulpd.CatsID,
+			Assembly:    asm,
 		}
 
 	err := pipeline.Execute(args)
@@ -172,4 +171,3 @@ func (s *Service) updateStatusPipeline() error {
 	}
 	return nil
 }
-

@@ -6,6 +6,7 @@ import (
 	"github.com/megamsys/libgo/hc"
 
 	"github.com/megamsys/gulp/meta"
+
 )
 
 func init() {
@@ -25,11 +26,11 @@ func healthCheck() error {
 func newConn(bkt string) (*db.Storage, error) {
 	log.Debug("New bucket: " + bkt)
 	r, err := db.NewRiakDB(meta.MC.Riak, bkt)
+	log.Debug(r)
 	//r, err := db.NewRiakDB([]string{"localhost:8087"}, bkt)
 	if err != nil {
 		return nil, err
 	}
-
 	return r.Conn()
 }
 

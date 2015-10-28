@@ -65,8 +65,9 @@ func (m githubManager) Initialize(url,tar_url string) error {
 
 	actions := []*action.Action{
 	   &clone_tar,
+		 &make_dir,
      &un_tar,
-    // &remove_tar_file,
+		 &remove_tar_file,
 
 	}
 	pipeline := action.NewPipeline(actions...)

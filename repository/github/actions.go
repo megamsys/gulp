@@ -59,9 +59,24 @@ var remove_tar_file = action.Action{
 	Name: "remove-tar-file",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
-		log.Debugf("Remove tar [%s] file ", args.filename)
+		log.Debugf("Remove tar [%s] file  ", args.tarfilename)
 
-		args.command = "rm "+ args.dir +"/*.gz"
+		args.command = "rm  "+ args.dir + "/"+args.tarfilename
+		log.Debugf("Execute Command [%s]  ", args.command)
+		return ExecuteCommandOnce(&args)
+
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
+}
+var make_dir = action.Action{
+	Name: "make_dir",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runActionsArgs)
+		log.Debugf("Make direcory [%s]  ", args.filename)
+
+		args.command = "mkdir -p "+ args.dir + "/" +args.filename
 		log.Debugf("Execute Command [%s]  ", args.command)
 		return ExecuteCommandOnce(&args)
 
@@ -75,8 +90,7 @@ var clone_tar = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Download [%s] file [%s]", args.tar_url, args.filename)
-
-		args.command = "wget -P "+ args.dir +" "+ args.tar_url
+    args.command = "wget -P "+ args.dir +" "+ args.tar_url
 		log.Debugf("Execute Command [%s]  ", args.command)
 		return ExecuteCommandOnce(&args)
 
@@ -90,7 +104,7 @@ var un_tar = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("extract the tar to [%s / %s]    ",args.dir, args.filename)
-		args.command = " tar xf "+ args.tarfilename + " -C "+args.dir + "/" + args.filename  + " --strip-components 1"
+		args.command = "tar xf "+args.dir+"/"+ args.tarfilename + " -C "+ args.dir + "/" + args.filename  + " --strip-components 1"
     //"mkdir -p "+ args.dir + "/" + args.filename +" &&
 		log.Debugf("Execute Command [%s]  ", args.command)
 
