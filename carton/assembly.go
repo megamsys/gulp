@@ -24,7 +24,6 @@ import (
 	"gopkg.in/yaml.v2"
 	"strings"
 	//	"encoding/json"
-	//	"fmt"
 )
 
 const (
@@ -34,12 +33,12 @@ const (
 
 var Provisioner provision.Provisioner
 
-type JsonPairs []*JsonPair
-
 type JsonPair struct {
 	K string `json:"key"`
 	V string `json:"value"`
 }
+
+type JsonPairs []*JsonPair
 
 func NewJsonPair(k string, v string) *JsonPair {
 	return &JsonPair{
@@ -80,7 +79,6 @@ type Ambly struct {
 	CreatedAt    string    `json:"created_at"`
 	ComponentIds []string  `json:"components"`
 }
-
 type Assembly struct {
 	Ambly
 	Components map[string]*Component
@@ -222,13 +220,14 @@ func (a *Ambly) SetStatus(status provision.Status) error {
 //put virtual machine ip address in riak
 func (a *Ambly) SetIPAddress(status string) error {
 	if status != "" {
-		a.Outputs = append(a.Outputs, NewJsonPair("ip", status))
+
+		log.Debugf("put virtual machine ip address in riak [%s]", status);
+		a.Outputs = append(a.Outputs, NewJsonPair("publicip", status))
 		if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
 			return err
 		}
 	} else {
 		return errors.New(provision.StatusIPError.String())
 	}
-
-	return nil
+ 	return nil
 }

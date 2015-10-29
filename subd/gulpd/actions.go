@@ -20,7 +20,8 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/subd/gulpd/machine"
-//	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
+	"fmt"
 )
 
 type runMachineActionsArgs struct {
@@ -38,16 +39,16 @@ var publishStatus = action.Action{
 		mach := machine.Machine{
 			CatID:       args.CatID,
 			CatsID:		 args.CatsID,
-			Assembly:    args.Assembly,			
+			Assembly:    args.Assembly,
 		}
 
-		err := mach.PubStatus(provision.StatusBootstrapped)				
-		
+		err := mach.PubStatus(provision.StatusBootstrapped)
+
 		return mach, err
 	},
 	Backward: func(ctx action.BWContext) {
-		args := ctx.Params[0].(*runMachineActionsArgs)		
-		
+		args := ctx.Params[0].(*runMachineActionsArgs)
+
 		args.Assembly.SetStatus(provision.StatusError)
 	},
 }
@@ -56,14 +57,14 @@ var updateStatusInRiak = action.Action{
 	Name: "update-status-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(*runMachineActionsArgs)
-				
+
 		args.Assembly.SetStatus(provision.StatusBootstrapped)
-		
+
 		return args, nil
 	},
 	Backward: func(ctx action.BWContext) {
-		args := ctx.Params[0].(*runMachineActionsArgs)		
-		
+		args := ctx.Params[0].(*runMachineActionsArgs)
+
 		args.Assembly.SetStatus(provision.StatusError)
 	},
 }
@@ -72,21 +73,20 @@ var updateIPInRiak = action.Action{
 	Name: "update-ip-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(*runMachineActionsArgs)
-						
+    fmt.Println(args)
 		mach := machine.Machine{
 			CatID:       args.CatID,
 			CatsID:		 args.CatsID,
-			Assembly:    args.Assembly,			
+			Assembly:    args.Assembly,
 		}
-		
-		ip := mach.GetLocalIP()	
+
+		ip := mach.GetLocalIP()
 		args.Assembly.SetIPAddress(ip)
-		
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
-		args := ctx.Params[0].(*runMachineActionsArgs)		
-		
+		args := ctx.Params[0].(*runMachineActionsArgs)
+
 		args.Assembly.SetIPAddress(provision.StatusIPError.String())
 	},
 }
@@ -95,21 +95,20 @@ var updateSshkey = action.Action{
 	Name: "update-sshkey",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(*runMachineActionsArgs)
-				
+
 		mach := machine.Machine{
 			CatID:       args.CatID,
 			CatsID:		 args.CatsID,
-			Assembly:    args.Assembly,			
+			Assembly:    args.Assembly,
 		}
 
 		err := mach.UpdateSshkey()
-		
+
 		return mach, err
 	},
 	Backward: func(ctx action.BWContext) {
-		args := ctx.Params[0].(*runMachineActionsArgs)		
-		
+		args := ctx.Params[0].(*runMachineActionsArgs)
+
 		args.Assembly.SetStatus(provision.StatusSshKeyError)
 	},
 }
-

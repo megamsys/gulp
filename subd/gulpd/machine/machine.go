@@ -15,9 +15,9 @@ import (
 
 )
 
-const ( 
+const (
 	QUEUE = "cloudstandup"
-	
+
 	SSHFILESBUCKET = "sshfiles"
 	)
 
@@ -37,11 +37,11 @@ func (m *Machine) PubStatus(status provision.Status) error {
 	if err != nil {
 		return err
 	}
-	
+
     //before publish the queue, we need to verify assembly status
     jsonMsg, err := json.Marshal(
 		carton.Requests{
-			CatId: 		m.CatsID, 
+			CatId: 		m.CatsID,
 			Action:     status.String(),
 			Category:   carton.STATE,
 			CreatedAt:  time.Now().String(),
@@ -49,7 +49,7 @@ func (m *Machine) PubStatus(status provision.Status) error {
 
 	if err != nil {
 		return err
-	}	
+	}
 
 	if err := p.Pub(jsonMsg); err != nil {
 		return err
@@ -64,16 +64,17 @@ func (m *Machine) GetLocalIP() string {
     if err != nil {
         return ""
     }
-    for _, address := range addrs {
+		for _, address := range addrs {
         // check the address type and if it is not a loopback the display it
-        if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			   if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
             if ipnet.IP.To4() != nil {
                 //return ipnet.IP.String()
                 ip = ipnet.IP.String()
+								log.Debugf("return ipnet.IP.String [%s]", ip);
             }
         }
     }
-    return ip
+		return ip
 }
 
 // append user sshkey into authorized_keys file
@@ -82,9 +83,9 @@ func (m *Machine) UpdateSshkey() error {
 	 if err != nil {
 		return err
 	}
-	
+
 	f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
-	//f, err := os.OpenFile("/home/rajthilak/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	//f, err := os.OpenFile("/home/megam/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
     	return err
 	}
@@ -96,4 +97,3 @@ func (m *Machine) UpdateSshkey() error {
 	}
 	return nil
 }
-
