@@ -78,8 +78,9 @@ type Repository interface {
 // RepositoryManager represents a manager of application repositories.
 type InitializableRepository interface {
 	Clone(url string) error
-	Initialize(url,tar_url string) error
-	}
+	Initialize(url, tar_url string) error
+}
+
 //type InitializableRepository interface { Initialize(url,tar_url string) error  }
 // Get gets the named provisioner from the registry.
 func Get(name string) (Repository, error) {
