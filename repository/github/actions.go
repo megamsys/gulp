@@ -31,12 +31,12 @@ import (
 )
 
 type runActionsArgs struct {
-	writer   io.Writer
-	filename string
-	dir      string
-	url      string
-	tar_url  string
-	command  string
+	writer      io.Writer
+	filename    string
+	dir         string
+	url         string
+	tar_url     string
+	command     string
 	tarfilename string
 }
 
@@ -61,7 +61,7 @@ var remove_tar_file = action.Action{
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Remove tar [%s] file  ", args.tarfilename)
 
-		args.command = "rm  "+ args.dir + "/"+args.tarfilename
+		args.command = "rm  " + args.dir + "/" + args.tarfilename
 		log.Debugf("Execute Command [%s]  ", args.command)
 		return ExecuteCommandOnce(&args)
 
@@ -76,7 +76,7 @@ var make_dir = action.Action{
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Make direcory [%s]  ", args.filename)
 
-		args.command = "mkdir -p "+ args.dir + "/" +args.filename
+		args.command = "mkdir -p " + args.dir + "/" + args.filename
 		log.Debugf("Execute Command [%s]  ", args.command)
 		return ExecuteCommandOnce(&args)
 
@@ -90,7 +90,7 @@ var clone_tar = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Download [%s] file [%s]", args.tar_url, args.filename)
-    args.command = "wget -P "+ args.dir +" "+ args.tar_url
+		args.command = "wget -P " + args.dir + " " + args.tar_url
 		log.Debugf("Execute Command [%s]  ", args.command)
 		return ExecuteCommandOnce(&args)
 
@@ -103,9 +103,9 @@ var un_tar = action.Action{
 	Name: "un_tar",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
-		log.Debugf("extract the tar to [%s / %s]    ",args.dir, args.filename)
-		args.command = "tar xf "+args.dir+"/"+ args.tarfilename + " -C "+ args.dir + "/" + args.filename  + " --strip-components 1"
-    //"mkdir -p "+ args.dir + "/" + args.filename +" &&
+		log.Debugf("extract the tar to [%s / %s]    ", args.dir, args.filename)
+		args.command = "tar xf " + args.dir + "/" + args.tarfilename + " -C " + args.dir + "/" + args.filename + " --strip-components 1"
+		//"mkdir -p "+ args.dir + "/" + args.filename +" &&
 		log.Debugf("Execute Command [%s]  ", args.command)
 
 		return ExecuteCommandOnce(&args)
