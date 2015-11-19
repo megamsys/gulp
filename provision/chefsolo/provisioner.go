@@ -106,7 +106,7 @@ func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) e
 	a, err := repository.Get(args.repository)
 
 	if err != nil {
-		log.Errorf("fatal error, couldn't located the Repository %s", args.repository)
+		log.Errorf("fatal error, couldn't locate the Repository %s", args.repository)
 		return err
 	}
 

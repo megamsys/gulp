@@ -20,20 +20,22 @@ import (
 	//	"bytes"
 	//	"compress/gzip"
 	//	"errors"
-	//	"fmt"
-	//	"io"
-	//	"io/ioutil"
+//	"fmt"
+	"io/ioutil"
 
 	"net/http"
 	"net/http/pprof"
+	"encoding/json"
 	//	"os"
 	//	"strconv"
 	"strings"
 	//	"time"
 	"github.com/bmizerany/pat"
-	//	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/meta"
 
-//	"github.com/megamsys/gulp/activities/docker/handler"
+	"github.com/megamsys/gulp/provision/docker"
+
+	//	"github.com/megamsys/gulp/activities/docker/handler"
 )
 
 type route struct {
@@ -46,14 +48,18 @@ type route struct {
 // Handler represents an HTTP handler for the Megamd server.
 type Handler struct {
 	Version string
+	config  *meta.Config
+	Gulpd   *Config
 	mux     *pat.PatternServeMux
 }
 
 // NewHandler returns a new instance of handler with routes.
-func NewHandler() *Handler {
+func NewHandler(c *meta.Config, g *Config) *Handler {
 
 	h := &Handler{
-		mux: pat.New(),
+		mux:    pat.New(),
+		config: c,
+		Gulpd: g,
 		//	loggingEnabled: loggingEnabled,
 	}
 
@@ -97,10 +103,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		switch r.URL.Path {
 		case "/docker/logs":
-	//		handler.Logs(w, r)
-			//Does it require another handler? why cant activities be called frm here?
+			h.logs(w, r)
 		case "/docker/networks":
-	//		handler.Networks(w, r)
+			h.networks(w, r)
 		}
 	}
 	return
@@ -124,4 +129,25 @@ func versionHeader(inner http.Handler, h *Handler) http.Handler {
 		w.Header().Add("X-GULP-Version", h.Version)
 		inner.ServeHTTP(w, r)
 	})
+}
+
+func (h *Handler) logs(w http.ResponseWriter, r *http.Request) {
+
+	body, _ := ioutil.ReadAll(r.Body)
+	dockr := &docker.DockerProvisioner{}
+	json.Unmarshal(body, dockr)
+	dockr.HomeDir = h.config.Dir
+	dockr.LogExec()
+}
+
+func (h *Handler) networks(w http.ResponseWriter, r *http.Request) {
+
+	body, _ := ioutil.ReadAll(r.Body)
+
+	dockr := &docker.DockerProvisioner{}
+	json.Unmarshal(body, dockr)
+	dockr.HomeDir = h.config.Dir
+	dockr.NetworkExec()
+
+
 }
