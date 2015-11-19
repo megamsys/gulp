@@ -54,6 +54,8 @@ func (w *LogWriter) Wait(timeout time.Duration) error {
 	return nil
 }
 
+
+
 // Write writes and logs the data.
 func (w *LogWriter) Write(data []byte) (int, error) {
 	if w.msgCh == nil {
@@ -64,6 +66,8 @@ func (w *LogWriter) Write(data []byte) (int, error) {
 	w.msgCh <- copied
 	return len(data), nil
 }
+
+
 
 func (w *LogWriter) write(data []byte) error {
 	return w.Box.Log(string(data), "gulpd", "box")

@@ -28,6 +28,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"fmt"
 )
 
 const (
@@ -113,6 +114,7 @@ func (b *Box) Available() bool {
 // Log adds a log message to the app. Specifying a good source is good so the
 // user can filter where the message come from.
 func (box *Box) Log(message, source, unit string) error {
+
 	messages := strings.Split(message, "\n")
 	logs := make([]interface{}, 0, len(messages))
 	for _, msg := range messages {
@@ -124,6 +126,7 @@ func (box *Box) Log(message, source, unit string) error {
 				Name:    box.Name,
 				Unit:    box.Id,
 			}
+			fmt.Println(bl.Message)
 			logs = append(logs, bl)
 		}
 	}

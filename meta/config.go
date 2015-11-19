@@ -17,16 +17,16 @@
 package meta
 
 import (
+	"bytes"
+	"fmt"
+	"github.com/megamsys/gulp/toml"
+	"github.com/megamsys/libgo/cmd"
 	"os"
 	"os/user"
-	"time"
-	"fmt"
 	"path/filepath"
-	"text/tabwriter"
 	"strings"
-	"bytes"
-	"github.com/megamsys/gulp/toml"
-	"github.com/megamsys/libgo/cmd"	
+	"text/tabwriter"
+	"time"
 )
 
 const (
@@ -41,10 +41,10 @@ const (
 
 	// DefaultApi is the default megam gateway if one is not provided.
 	DefaultApi = "https://api.megam.io/v2"
-	
+
 	// DefaultAMQP is the default rabbitmq if one is not provided.
 	DefaultAMQP = "amqp://guest:guest@localhost:5672/"
-	
+
 	// DefaultGanglia is the default ganglia if one is not provided.
 	DefaultGanglia = "ganglia.megam.io"
 
@@ -59,10 +59,9 @@ const (
 
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
-	
-	DefaultFileLogger = "file"
+
+	DefaultFileLogger  = "file"
 	DefaultQueueLogger = "queue"
-	
 )
 
 var MC *Config
@@ -76,13 +75,13 @@ type Config struct {
 	Riak               []string      `toml:"riak"`
 	Api                string        `toml:"api"`
 	AMQP               string        `toml:"amqp"`
-	Ganglia			   string		 `toml:"ganglia"`
-	Peers              []string      `toml:"-"`	
+	Ganglia            string        `toml:"ganglia"`
+	Peers              []string      `toml:"-"`
 	ElectionTimeout    toml.Duration `toml:"election-timeout"`
 	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
 	LeaderLeaseTimeout toml.Duration `toml:"leader-lease-timeout"`
-	DockerPath         string        `toml:"docker_path"`	
-	Loggers			   []string      `toml:"loggers"`
+	DockerPath         string        `toml:"docker_path"`
+	Loggers            []string      `toml:"loggers"`
 }
 
 func (c Config) String() string {
@@ -103,7 +102,6 @@ func (c Config) String() string {
 	w.Flush()
 	return b.String()
 }
-
 
 func NewConfig() *Config {
 	var homeDir string
@@ -127,13 +125,13 @@ func NewConfig() *Config {
 		BindAddress:        DefaultBindAddress,
 		Riak:               []string{DefaultRiak},
 		Api:                DefaultApi,
-		AMQP:               DefaultAMQP,	
-		Ganglia:			DefaultGanglia,	
+		AMQP:               DefaultAMQP,
+		Ganglia:            DefaultGanglia,
 		DockerPath:         DefaultDockerPath,
 		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
 		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),
-		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),	
-		Loggers:            []string{DefaultFileLogger, DefaultQueueLogger},	
+		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),
+		Loggers:            []string{DefaultFileLogger, DefaultQueueLogger},
 	}
 }
 

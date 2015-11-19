@@ -45,7 +45,7 @@ func NewService(c *meta.Config, h *Config) (*Service, error) {
 	s := &Service{
 		addr:    h.BindAddress,
 		err:     make(chan error),
-		Handler: NewHandler(),
+		Handler: NewHandler(c, h),
 	}
 	fmt.Println(s.Handler)
 	return s, nil

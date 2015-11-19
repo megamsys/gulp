@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package httpd
 
 import (
@@ -45,6 +45,6 @@ func (c Config) String() string {
 func NewConfig() *Config {
 	return &Config{
 		Enabled:     true,
-		BindAddress: "localhost:7777",
+		BindAddress: "localhost:6666",
 	}
 }
