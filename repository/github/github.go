@@ -18,17 +18,16 @@ package github
 
 import (
 	//"fmt"
-	"strings"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/libgo/action"
+	"strings"
 )
 
 func init() {
 	repository.Register("github", githubManager{})
 }
-
 
 type githubManager struct{}
 
@@ -38,19 +37,18 @@ type githubManager struct{}
 func (m githubManager) Clone(url string) error {
 
 	actions := []*action.Action{
-	   &remove_old_file,
-		 &clone,
-
+		&remove_old_file,
+		&clone,
 	}
 	pipeline := action.NewPipeline(actions...)
 
 	s := strings.Split(url, "/")[4]
 
 	args := runActionsArgs{
-	//	Writer:        w,
-		url:   			url,
-		dir:   			meta.MC.Dir,
-		filename: 		strings.Split(s, ".")[0],
+		//	Writer:        w,
+		url:      url,
+		dir:      meta.MC.Dir,
+		filename: strings.Split(s, ".")[0],
 	}
 
 	err := pipeline.Execute(args)
@@ -61,26 +59,25 @@ func (m githubManager) Clone(url string) error {
 	return nil
 
 }
-func (m githubManager) Initialize(url,tar_url string) error {
+func (m githubManager) Initialize(url, tar_url string) error {
 
 	actions := []*action.Action{
-	   &clone_tar,
-		 &make_dir,
-     &un_tar,
-		 &remove_tar_file,
-
+		&clone_tar,
+		&make_dir,
+		&un_tar,
+		&remove_tar_file,
 	}
 	pipeline := action.NewPipeline(actions...)
 
 	s := strings.Split(url, "/")[4]
-  s1 := strings.Split(tar_url,"/")[6]
+	s1 := strings.Split(tar_url, "/")[6]
 	args := runActionsArgs{
-	//	Writer:        w,
-		url:   			url,
-    tar_url:    tar_url,
-		dir:   			meta.MC.Dir,
-		filename: 		strings.Split(s, ".")[0],
-    tarfilename: 	 s1,
+		//	Writer:        w,
+		url:         url,
+		tar_url:     tar_url,
+		dir:         meta.MC.Dir,
+		filename:    strings.Split(s, ".")[0],
+		tarfilename: s1,
 	}
 
 	err := pipeline.Execute(args)

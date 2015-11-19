@@ -19,16 +19,16 @@ package gulpd
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/libgo/amqp"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
+	_ "github.com/megamsys/gulp/provision/chefsolo"
 	"github.com/megamsys/libgo/action"
-	_"github.com/megamsys/gulp/provision/chefsolo"
+	"github.com/megamsys/libgo/amqp"
 	"sync"
 	"time"
-//	"net"
-//	"encoding/json"
+	//	"net"
+	//	"encoding/json"
 )
 
 const leaderWaitTimeout = 30 * time.Second
@@ -41,16 +41,16 @@ type Service struct {
 	err     chan error
 	Handler *Handler
 
-	Meta    *meta.Config
-	Gulpd 	*Config
+	Meta  *meta.Config
+	Gulpd *Config
 }
 
 // NewService returns a new instance of Service.
 func NewService(c *meta.Config, d *Config) *Service {
 	s := &Service{
-		err:     make(chan error),
-		Meta:    c,
-		Gulpd:   d,
+		err:   make(chan error),
+		Meta:  c,
+		Gulpd: d,
 	}
 	s.Handler = NewHandler(s.Gulpd)
 	c.MC() //an accessor.
@@ -118,7 +118,6 @@ func (s *Service) Close() error {
 // Err returns a channel for fatal errors that occur on the listener.
 func (s *Service) Err() <-chan error { return s.err }
 
-
 //this is an array, a property provider helps to load the provider specific stuff
 func (s *Service) setProvisioner() error {
 	var err error
@@ -159,10 +158,10 @@ func (s *Service) updateStatusPipeline() error {
 
 	asm, _ := carton.NewAssembly(s.Gulpd.CatID)
 	args := &runMachineActionsArgs{
-			CatID:       s.Gulpd.CatID,
-			CatsID:		   s.Gulpd.CatsID,
-			Assembly:    asm,
-		}
+		CatID:    s.Gulpd.CatID,
+		CatsID:   s.Gulpd.CatsID,
+		Assembly: asm,
+	}
 
 	err := pipeline.Execute(args)
 	if err != nil {
