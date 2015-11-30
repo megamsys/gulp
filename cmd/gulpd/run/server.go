@@ -66,7 +66,11 @@ func NewServer(c *Config, version string) (*Server, error) {
 
 func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
 	srv := gulpd.NewService(c, d)
-	
+	e := *d
+	if !e.Enabled {
+		log.Warn("skip gulpd service.")
+		return
+	}
 	s.Services = append(s.Services, srv)
 }
 
@@ -76,7 +80,7 @@ func (s *Server) appendHTTPDService(c *meta.Config, h *httpd.Config) {
 		log.Warn("skip httpd service.")
 		return
 	}
-	
+
 	srv, err := httpd.NewService(c, h)
 	if err != nil {
 		return
