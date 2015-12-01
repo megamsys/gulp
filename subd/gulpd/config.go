@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/megamsys/gulp/provision/chefsolo"
 	"github.com/megamsys/libgo/cmd"
+	"strconv"
 	"text/tabwriter"
 )
 

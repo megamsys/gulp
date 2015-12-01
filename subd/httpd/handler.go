@@ -108,7 +108,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.networks(w, r)
 		}
 	}
-	return h.mux.ServeHTTP(w, r)
+	return
+	//h.mux.ServeHTTP(w, r)
 }
 
 // servePing returns a simple response to let the client know the server is running.

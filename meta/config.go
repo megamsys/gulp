@@ -19,14 +19,12 @@ package meta
 import (
 	"bytes"
 	"fmt"
-	"github.com/megamsys/gulp/toml"
 	"github.com/megamsys/libgo/cmd"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
-	"time"
 )
 
 const (
