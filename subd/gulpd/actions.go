@@ -16,20 +16,19 @@
 package gulpd
 
 import (
-	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/subd/gulpd/machine"
+	"github.com/megamsys/libgo/action"
 	//log "github.com/Sirupsen/logrus"
 	"fmt"
 )
 
 type runMachineActionsArgs struct {
-	CatID     string
-	CatsID	  string
-	Assembly  *carton.Ambly
+	CatID    string
+	CatsID   string
+	Assembly *carton.Ambly
 }
-
 
 var publishStatus = action.Action{
 	Name: "publish-status",
@@ -37,9 +36,9 @@ var publishStatus = action.Action{
 		args := ctx.Params[0].(*runMachineActionsArgs)
 
 		mach := machine.Machine{
-			CatID:       args.CatID,
-			CatsID:		 args.CatsID,
-			Assembly:    args.Assembly,
+			CatID:    args.CatID,
+			CatsID:   args.CatsID,
+			Assembly: args.Assembly,
 		}
 
 		err := mach.PubStatus(provision.StatusBootstrapped)
@@ -73,11 +72,11 @@ var updateIPInRiak = action.Action{
 	Name: "update-ip-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(*runMachineActionsArgs)
-    fmt.Println(args)
+		fmt.Println(args)
 		mach := machine.Machine{
-			CatID:       args.CatID,
-			CatsID:		 args.CatsID,
-			Assembly:    args.Assembly,
+			CatID:    args.CatID,
+			CatsID:   args.CatsID,
+			Assembly: args.Assembly,
 		}
 
 		ip := mach.GetLocalIP()
@@ -97,9 +96,9 @@ var updateSshkey = action.Action{
 		args := ctx.Params[0].(*runMachineActionsArgs)
 
 		mach := machine.Machine{
-			CatID:       args.CatID,
-			CatsID:		 args.CatsID,
-			Assembly:    args.Assembly,
+			CatID:    args.CatID,
+			CatsID:   args.CatsID,
+			Assembly: args.Assembly,
 		}
 
 		err := mach.UpdateSshkey()

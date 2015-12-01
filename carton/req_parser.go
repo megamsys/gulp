@@ -28,7 +28,7 @@ var (
 	DELETE    = "delete"
 	STATEUP   = "stateup"
 	STATEDOWN = "statedown"
-	CISTATE	  = "cistate"
+	CISTATE   = "cistate"
 
 	//the control actions available are.
 	CONTROL = "control"
@@ -58,7 +58,6 @@ func ParseRequest(n, s, a string) (MegdProcessor, error) {
 	return NewReqParser(n).ParseRequest(s, a)
 }
 
-
 func (p *ReqParser) ParseRequest(category string, action string) (MegdProcessor, error) {
 	switch category {
 	case STATE:
@@ -73,7 +72,7 @@ func (p *ReqParser) ParseRequest(category string, action string) (MegdProcessor,
 }
 
 func (p *ReqParser) parseState(action string) (MegdProcessor, error) {
-	switch action {	
+	switch action {
 	case STATEUP:
 		return StateupProcess{
 			Name: p.name,
@@ -141,9 +140,9 @@ func (e *ParseError) Error() string {
 
 type Requests struct {
 	Id        string `json:"id"`
-	CatId     string `json:"cat_id"`                    // assemblies_id
-	Action    string `json:"action"`					// start, stop ...
-	Category  string `json:"category"`					// state, control, policy
+	CatId     string `json:"cat_id"`   // assemblies_id
+	Action    string `json:"action"`   // start, stop ...
+	Category  string `json:"category"` // state, control, policy
 	CreatedAt string `json:"created_at"`
 }
 
@@ -154,4 +153,3 @@ func (r *Requests) String() string {
 		return string(d)
 	}
 }
-

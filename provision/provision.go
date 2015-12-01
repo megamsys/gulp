@@ -19,15 +19,15 @@ package provision
 import (
 	"errors"
 	"fmt"
-	"io"
-	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/carton/bind"
+	"github.com/megamsys/gulp/loggers"
+	"github.com/megamsys/gulp/repository"
+	"io"
 )
 
 const (
-	PROVIDER        = "provider"
-	PROVIDER_CHEF    = "chefsolo"
+	PROVIDER      = "provider"
+	PROVIDER_CHEF = "chefsolo"
 )
 
 var (
@@ -60,9 +60,9 @@ func (s Status) String() string {
 }*/
 
 const (
-	// StatusRunning 
+	// StatusRunning
 	StatusRunning = Status("running")
-	
+
 	// StatusBootstrapping is the status for box being bootstrapping by the
 	// provisioner, like in the bootstrap.
 	StatusBootstrapping = Status("bootstrapping")
@@ -78,22 +78,21 @@ const (
 	// StatusError is the status for units that failed to start, because of
 	// a box error.
 	StatusError = Status("error")
-	
+
 	// StatusIPError is the status for failed retrieve ip address
 	StatusIPError = Status("ip fetching error")
-	
-	// StatusSshKeyError is the status for failed append the sshkey 
+
+	// StatusSshKeyError is the status for failed append the sshkey
 	StatusSshKeyError = Status("sshkey uploading error")
-	
-	// StatusStarted 
+
+	// StatusStarted
 	StatusStarted = Status("started")
-	
-	// StatusStopped 
+
+	// StatusStopped
 	StatusStopped = Status("stopped")
-	
-	// StatusRestarted 
-	StatusRestarted = Status("restarted")	
-	
+
+	// StatusRestarted
+	StatusRestarted = Status("restarted")
 )
 
 // Named is something that has a name, providing the GetName method.
@@ -132,7 +131,6 @@ type Deployer interface {
 	Deploy(b *Box, w io.Writer) error
 }
 
-
 // Provisioner is the basic interface of this package.
 //
 // Any gulpd provisioner must implement this interface in order to provision
@@ -143,7 +141,7 @@ type Provisioner interface {
 	Command() []string
 }
 
-// Provisioner message 
+// Provisioner message
 type MessageProvisioner interface {
 	StartupMessage() (string, error)
 }

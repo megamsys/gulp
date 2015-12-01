@@ -25,7 +25,7 @@ import (
 	//	"os"
 	"strings"
 
-//	"github.com/megamsys/gulp/activities/docker"
+	//	"github.com/megamsys/gulp/activities/docker"
 
 	"github.com/megamsys/gulp/meta"
 )
@@ -55,7 +55,7 @@ func NewService(c *meta.Config, h *Config) (*Service, error) {
 func (s *Service) Open() error {
 	log.Info("Starting HTTP service")
 
-//	docker.Init()
+	//	docker.Init()
 
 	listener, err := net.Listen("tcp", s.addr)
 	if err != nil {

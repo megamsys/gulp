@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package operations
 
 import (
@@ -46,10 +46,9 @@ func (p *JsonPairs) match(k string) string {
 
 var managers map[string]InitializableOperation
 
-
 /* Operation represents a various operations of the application. */
 type Operate struct {
-    OperationType         string    `json:"operation_type"`
+	OperationType         string    `json:"operation_type"`
 	Description           string    `json:"description"`
 	OperationRequirements JsonPairs `json:"operation_requirements"`
 }
@@ -63,7 +62,6 @@ func (o Operate) GetDescription() string {
 }
 
 type Operation interface {
-	
 }
 
 type InitializableOperation interface {

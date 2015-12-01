@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package httpd
 
 import (
@@ -21,7 +21,7 @@ import (
 	"gopkg.in/check.v1"
 )
 
-type S struct {}
+type S struct{}
 
 var _ = check.Suite(&S{})
 

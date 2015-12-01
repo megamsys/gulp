@@ -167,7 +167,7 @@ func startProfile(cpuprofile, memprofile string) {
 	if cpuprofile != "" {
 		f, err := os.Create(cpuprofile)
 		if err != nil {
-			log.Error("cpuprofile: %v", err)
+			log.Errorf("cpuprofile: %s", err)
 		}
 		log.Info("writing CPU profile to: %s\n", cpuprofile)
 		prof.cpu = f
@@ -177,7 +177,7 @@ func startProfile(cpuprofile, memprofile string) {
 	if memprofile != "" {
 		f, err := os.Create(memprofile)
 		if err != nil {
-			log.Error("memprofile: %v", err)
+			log.Errorf("memprofile: %s", err)
 		}
 		log.Info("writing mem profile to: %s\n", memprofile)
 		prof.mem = f

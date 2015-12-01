@@ -42,7 +42,6 @@ func (p *DockerProvisioner) LogExec() {
 	}(closeChan, logWriter)
 }
 
-
 func (p *DockerProvisioner) NetworkExec() {
 	p.createNetworkPipeline()
 }

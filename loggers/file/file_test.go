@@ -17,10 +17,10 @@
 package file
 
 import (
-//	"bytes"
-//	"net/http"
-	"testing"
+	//	"bytes"
+	//	"net/http"
 	"gopkg.in/check.v1"
+	"testing"
 )
 
 func Test(t *testing.T) {
@@ -41,4 +41,3 @@ func (s *GitlabSuite) TestClone(c *check.C) {
 	var err = error.New("testing")
 	c.Assert(err, check.IsNil)
 }*/
-

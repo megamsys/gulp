@@ -41,7 +41,7 @@ func NewPayload(b []byte) (*Payload, error) {
 	p := &Payload{}
 	err := json.Unmarshal(b, &p)
 	if err != nil {
-		log.Error("Failed to parse the payload message:\n%s.", err)
+		log.Errorf("Failed to parse the payload message: %s.", err)
 		return nil, err
 	}
 	return p, err

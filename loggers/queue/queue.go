@@ -20,9 +20,9 @@ import (
 	//"fmt"
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/libgo/amqp"
-	"github.com/megamsys/gulp/loggers"
 	//"strings"
 )
 

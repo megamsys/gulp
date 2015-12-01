@@ -106,7 +106,6 @@ var prepareBoxRepository = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 
 		log.Debugf("Generate the box requirements ")
-
 		if args.box.Repo != nil {
 			if args.box.Repo.Type == SOURCE {
 				a, err := repository.Get(args.box.Repo.Source)
@@ -115,7 +114,6 @@ var prepareBoxRepository = action.Action{
 					log.Errorf("fatal error, couldn't located the Repository %s", args.box.Repo.Source)
 					return nil, err
 				}
-
 				provision.Repository = a
 				if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 					log.Debugf("Before repository initialization.")

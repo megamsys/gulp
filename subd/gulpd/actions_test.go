@@ -16,10 +16,7 @@
 
 package gulpd
 
-import (
-
-)
-
+import ()
 
 /*func (s *S) TestInsertEmptyContainerInDBForward(c *check.C) {
 	app := provisiontest.NewFakeApp("myapp", "python", 1)
@@ -50,5 +47,3 @@ import (
 	c.Assert(err, check.IsNil)
 	c.Assert(retrieved.Name, check.Equals, cont.Name)
 }*/
-
-

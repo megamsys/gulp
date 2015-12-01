@@ -27,9 +27,9 @@ import (
 	_ "github.com/megamsys/gulp/repository/github"
 	"github.com/megamsys/libgo/action"
 	"io"
+	"os"
 	"path"
 	"strings"
-	"os"
 )
 
 const (
@@ -48,11 +48,11 @@ const (
 	//Do not run commands with sudo (enabled by default)
 	DefaultSudo = true
 
-	Repository     = "repository"
-	RepositoryPath = "repository_path"
+	Repository        = "repository"
+	RepositoryPath    = "repository_path"
 	RepositoryTarPath = "repository_tar_path"
-  HomeDir           = "dir"
-	RECEIPE        		= "receipe"
+	HomeDir           = "dir"
+	RECEIPE           = "receipe"
 
 	SOURCE = "source"
 )
@@ -87,7 +87,7 @@ type runRepositoryActionArgs struct {
 	url        string
 	tar_url    string
 	dir        string
-	}
+}
 
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
@@ -119,21 +119,21 @@ func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) e
 		filename := strings.Split(s, ".")[0]
 		log.Debugf(args.dir + filename)
 
-		_, er := os.Stat(args.dir +"/"+ filename)
-	    if er != nil {
-				err = initializableRepository.Initialize(args.url,args.tar_url)
-				if err != nil {
-					log.Errorf("fatal error, couldn't initialize the Repository %s", args.tar_url)
-					return err
-				} else {
-					log.Debugf("%s Initialized", args.repository)
-					return nil
-				}
-	    } else {
-			log.Debugf("%s/%s Directory already exist",args.dir,filename)
+		_, er := os.Stat(args.dir + "/" + filename)
+		if er != nil {
+			err = initializableRepository.Initialize(args.url, args.tar_url)
+			if err != nil {
+				log.Errorf("fatal error, couldn't initialize the Repository %s", args.tar_url)
+				return err
+			} else {
+				log.Debugf("%s Initialized", args.repository)
+				return nil
+			}
+		} else {
+			log.Debugf("%s/%s Directory already exist", args.dir, filename)
 			return nil
-		 }
 		}
+	}
 	return nil
 }
 

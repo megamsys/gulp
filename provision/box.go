@@ -16,19 +16,19 @@
 package provision
 
 import (
-	"github.com/megamsys/gulp/operations"
-	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/loggers"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/loggers"
 	_ "github.com/megamsys/gulp/loggers/file"
 	_ "github.com/megamsys/gulp/loggers/queue"
+	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/operations"
+	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
-	"fmt"
 )
 
 const (

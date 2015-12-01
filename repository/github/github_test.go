@@ -17,8 +17,8 @@
 package github
 
 import (
-//	"bytes"
-//	"net/http"
+	//	"bytes"
+	//	"net/http"
 	"testing"
 
 	"gopkg.in/check.v1"
@@ -32,6 +32,7 @@ var _ = check.Suite(&GithubSuite{})
 
 type GithubSuite struct {
 }
+
 /*
 func (s *GithubSuite) SetUpSuite(c *check.C) {
 	var err = error.New("testing")

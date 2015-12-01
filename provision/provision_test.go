@@ -17,9 +17,9 @@ package provision
 
 import (
 	"errors"
+	"gopkg.in/check.v1"
 	"reflect"
 	"testing"
-	"gopkg.in/check.v1"
 )
 
 type ProvisionSuite struct{}
@@ -69,7 +69,6 @@ func (ProvisionSuite) TestErrorImplementsError(c *check.C) {
 	var _ error = &Error{}
 }
 
-
 func (ProvisionSuite) TestStatusString(c *check.C) {
 	var s Status = "pending"
 	c.Assert(s.String(), check.Equals, "pending")
@@ -82,7 +81,6 @@ func (ProvisionSuite) TestStatuses(c *check.C) {
 	c.Check(StatusStopped.String(), check.Equals, "stopped")
 	c.Check(StatusRestarted.String(), check.Equals, "restarted")
 }
-
 
 func (ProvisionSuite) TestBoxAvailable(c *check.C) {
 	var tests = []struct {
@@ -100,4 +98,3 @@ func (ProvisionSuite) TestBoxAvailable(c *check.C) {
 		c.Check(b.Available(), check.Equals, test.expected)
 	}
 }
-

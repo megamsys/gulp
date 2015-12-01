@@ -41,15 +41,15 @@ var managers map[string]InitializableRepository
 
 /* Repository represents a repository managed by the manager. */
 type Repo struct {
-	Enabled  bool
-	Type     string
-	Token    string
-	Source   string
-	Url      string
-	UserName string
-	CartonId string
-	BoxId    string
-	OneClick string
+	Enabled  bool   `json:"enabled"`
+	Type     string `json:"rtype"`
+	Token    string `json:"token"`
+	Source   string `json:"source"`
+	Url      string `json:"url"`
+	UserName string `json:"username"`
+	CartonId string `json:"cartonid"`
+	BoxId    string `json:"boxid"`
+	OneClick string `json:"oneclick"`
 }
 
 func (r Repo) IsEnabled() bool {

@@ -16,10 +16,10 @@
 package main
 
 import (
-	"os"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/cmd/gulpd/run"
 	"github.com/megamsys/libgo/cmd"
+	"os"
 )
 
 // These variables are populated via the Go linker.
@@ -32,9 +32,9 @@ var (
 
 func init() {
 	// Only log the debug or above
-  log.SetLevel(log.DebugLevel)  // level is configurable via cli option.
+	log.SetLevel(log.DebugLevel) // level is configurable via cli option.
 	// Output to stderr instead of stdout, could also be a file.
-  log.SetOutput(os.Stdout)
+	log.SetOutput(os.Stdout)
 }
 
 // Only log debug level when the -v flag is passed.
@@ -47,7 +47,6 @@ func cmdRegistry(name string) *cmd.Manager {
 	m.Register(&run.Start{})
 	return m
 }
-
 
 //Run the commands from cli.
 func main() {

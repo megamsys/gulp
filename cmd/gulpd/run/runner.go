@@ -17,11 +17,11 @@ package run
 
 import (
 	"fmt"
-//	"runtime"
-	"time"
-
+	//	"runtime"
 	log "github.com/Sirupsen/logrus"
+	pp "github.com/megamsys/libgo/cmd"
 	"github.com/tj/go-spin"
+	"time"
 )
 
 const logo = `
@@ -59,14 +59,7 @@ func NewCommand() *Command {
 
 //Short form for "Gulp daemon - Gpd" .We start the gulpd daemon.
 func (cmd *Command) Gpd(c *Config, version string) error {
-
-	fmt.Println(logo)
-
-	// Mark start-up in log.
-	fmt.Println("Gulpd starting, version %s, branch %s, commit %s", cmd.Version, cmd.Branch, cmd.Commit)
-
-	//Show a spinner until our services start.
-	funSpin()
+	cmd.funSpin(pp.Colorfy(logo, "green", "", "bold"), cmd.Version)
 
 	// Create server from config and start it.
 	s, err := NewServer(c, cmd.Version)
@@ -89,8 +82,8 @@ func (cmd *Command) Gpd(c *Config, version string) error {
 func funSpin() {
 	s := spin.New()
 	for i := 0; i < 30; i++ {
-  		fmt.Printf("\r  \033[36mcomputing\033[m %s ", s.Next())
-  		time.Sleep(100 * time.Millisecond)
+		fmt.Printf("\r  \033[36mcomputing\033[m %s ", s.Next())
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -115,10 +108,13 @@ func (cmd *Command) monitorServerErrors() {
 	}
 }
 
-func (cmd *Command) showSpinner() {
+func (cmd *Command) funSpin(vers string, logo string) {
+	fmt.Printf("%s %s", vers, logo)
+
 	s := spin.New()
-	for i := 0; i < 30; i++ {
-		fmt.Printf("\r  \033[36mstarting\033[m %s ", s.Next())
-		time.Sleep(100 * time.Millisecond)
+	for i := 0; i < 10; i++ {
+		fmt.Printf("\r%s", fmt.Sprintf("%s %s", pp.Colorfy("starting", "green", "", "bold"), s.Next()))
+		time.Sleep(3 * time.Millisecond)
 	}
+	fmt.Printf("\n")
 }

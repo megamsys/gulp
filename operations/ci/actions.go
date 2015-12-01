@@ -42,20 +42,20 @@ var clone = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runActionsArgs)
 		log.Debugf("Clone chef cookbooks")
-		
+
 		//args.Command = "git clone " + args.Url
 		args.Command = "ls -la"
-		
+
 		return ExecuteCommandOnce(&args)
 
 	},
 	Backward: func(ctx action.BWContext) {
-	
+
 	},
 }
 
 func ExecuteCommandOnce(args *runActionsArgs) (action.Result, error) {
-	
+
 	var e exec.OsExecutor
 	var commandWords []string
 	commandWords = strings.Fields(args.Command)
@@ -67,5 +67,5 @@ func ExecuteCommandOnce(args *runActionsArgs) (action.Result, error) {
 	}
 
 	return &args, nil
-		
+
 }*/

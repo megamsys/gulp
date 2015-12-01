@@ -19,14 +19,12 @@ package meta
 import (
 	"bytes"
 	"fmt"
-	"github.com/megamsys/gulp/toml"
 	"github.com/megamsys/libgo/cmd"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
-	"time"
 )
 
 const (
@@ -48,15 +46,6 @@ const (
 	// DefaultGanglia is the default ganglia if one is not provided.
 	DefaultGanglia = "ganglia.megam.io"
 
-	// DefaultHeartbeatTimeout is the default heartbeat timeout for the store.
-	DefaultHeartbeatTimeout = 1000 * time.Millisecond
-
-	// DefaultElectionTimeout is the default election timeout for the store.
-	DefaultElectionTimeout = 1000 * time.Millisecond
-
-	// DefaultLeaderLeaseTimeout is the default leader lease for the store.
-	DefaultLeaderLeaseTimeout = 500 * time.Millisecond
-
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
 
@@ -68,20 +57,16 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home               string        `toml:"home"`
-	Dir                string        `toml:"dir"`
-	Hostname           string        `toml:"hostname"`
-	BindAddress        string        `toml:"bind_address"`
-	Riak               []string      `toml:"riak"`
-	Api                string        `toml:"api"`
-	AMQP               string        `toml:"amqp"`
-	Ganglia            string        `toml:"ganglia"`
-	Peers              []string      `toml:"-"`
-	ElectionTimeout    toml.Duration `toml:"election-timeout"`
-	HeartbeatTimeout   toml.Duration `toml:"heartbeat-timeout"`
-	LeaderLeaseTimeout toml.Duration `toml:"leader-lease-timeout"`
-	DockerPath         string        `toml:"docker_path"`
-	Loggers            []string      `toml:"loggers"`
+	Home        string   `toml:"home"`
+	Dir         string   `toml:"dir"`
+	Hostname    string   `toml:"hostname"`
+	BindAddress string   `toml:"bind_address"`
+	Riak        []string `toml:"riak"`
+	Api         string   `toml:"api"`
+	AMQP        string   `toml:"amqp"`
+	Ganglia     string   `toml:"ganglia"`
+	DockerPath  string   `toml:"docker_path"`
+	Loggers     []string `toml:"loggers"`
 }
 
 func (c Config) String() string {
@@ -119,19 +104,16 @@ func NewConfig() *Config {
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
-		Home:               homeDir, //Need to remove
-		Dir:                defaultDir,
-		Hostname:           DefaultHostname,
-		BindAddress:        DefaultBindAddress,
-		Riak:               []string{DefaultRiak},
-		Api:                DefaultApi,
-		AMQP:               DefaultAMQP,
-		Ganglia:            DefaultGanglia,
-		DockerPath:         DefaultDockerPath,
-		ElectionTimeout:    toml.Duration(DefaultElectionTimeout),
-		HeartbeatTimeout:   toml.Duration(DefaultHeartbeatTimeout),
-		LeaderLeaseTimeout: toml.Duration(DefaultLeaderLeaseTimeout),
-		Loggers:            []string{DefaultFileLogger, DefaultQueueLogger},
+		Home:        homeDir, //Need to remove
+		Dir:         defaultDir,
+		Hostname:    DefaultHostname,
+		BindAddress: DefaultBindAddress,
+		Riak:        []string{DefaultRiak},
+		Api:         DefaultApi,
+		AMQP:        DefaultAMQP,
+		Ganglia:     DefaultGanglia,
+		DockerPath:  DefaultDockerPath,
+		Loggers:     []string{DefaultFileLogger, DefaultQueueLogger},
 	}
 }
 

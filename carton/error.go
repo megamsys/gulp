@@ -1,6 +1,5 @@
 package carton
 
-
 import (
 	"fmt"
 )

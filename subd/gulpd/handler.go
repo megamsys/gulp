@@ -41,5 +41,3 @@ func (h *Handler) serveAMQP(r *carton.Requests, cookbook string) error {
 	}
 	return nil
 }
-
-

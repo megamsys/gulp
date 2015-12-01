@@ -24,6 +24,6 @@ type nopManager struct{}
 func (nopManager) Clone(url string) error {
 	return nil
 }
-func (nopManager) Initialize(url,tar_url string) error {
+func (nopManager) Initialize(url, tar_url string) error {
 	return nil
 }
