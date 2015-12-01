@@ -47,6 +47,7 @@ const (
 )
 
 type Config struct {
+	Enabled           bool   `toml:"enabled"`
 	Name              string `toml:"name"`
 	CatsID            string `toml:"cats_id"`
 	CatID             string `toml:"cat_id"`
@@ -64,6 +65,7 @@ func (c Config) String() string {
 	w.Init(&b, 0, 8, 0, '\t', 0)
 	b.Write([]byte(cmd.Colorfy("Config:", "white", "", "bold") + "\t" +
 		cmd.Colorfy("Gulpd", "green", "", "") + "\n"))
+	b.Write([]byte("Enabled" + "\t" + strconv.FormatBool(c.Enabled) + "\n"))
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
 	b.Write([]byte("CatID" + "\t" + c.CatID + "\n"))
 	b.Write([]byte("Provider" + "\t" + c.Provider + "\n"))
@@ -79,6 +81,7 @@ func (c Config) String() string {
 
 func NewConfig() *Config {
 	return &Config{
+		Enabled:           true,
 		Name:              "",
 		Provider:          DefaultProvider,
 		CatID:             DefaultAssemblyID,

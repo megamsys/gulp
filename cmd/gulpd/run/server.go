@@ -66,7 +66,11 @@ func NewServer(c *Config, version string) (*Server, error) {
 
 func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
 	srv := gulpd.NewService(c, d)
-
+	e := *d
+	if !e.Enabled {
+		log.Warn("skip gulpd service.")
+		return
+	}
 	s.Services = append(s.Services, srv)
 }
 
