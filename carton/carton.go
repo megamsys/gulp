@@ -100,7 +100,8 @@ func (c *Carton) Stateup() error {
 	for _, box := range *c.Boxes {
 		err := Deploy(&DeployOpts{B: &box})
 		if err != nil {
-			log.Errorf("Unable to deploy box", err)
+			log.Errorf("Unable to deploy box : %s", err)
+			return err
 		}
 	}
 	return nil

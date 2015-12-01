@@ -21,12 +21,12 @@ import (
 	//"fmt"
 	//	"io"
 	//	"net/http"
-	"os"
 	"encoding/json"
-	"path"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/meta"
+	"os"
+	"path"
 )
 
 func init() {
@@ -55,7 +55,7 @@ func (m fileManager) Notify(boxName string, messages []interface{}) error {
 	}
 
 	defer f.Close()
-	
+
 	for _, msg := range messages {
 		bytes, err := json.Marshal(msg)
 		if err != nil {

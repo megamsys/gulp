@@ -19,9 +19,9 @@ package httpd
 import (
 	"bytes"
 	"fmt"
-	"text/tabwriter"
-	"strconv"
 	"github.com/megamsys/libgo/cmd"
+	"strconv"
+	"text/tabwriter"
 )
 
 type Config struct {

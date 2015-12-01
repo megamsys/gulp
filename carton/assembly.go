@@ -221,7 +221,7 @@ func (a *Ambly) SetStatus(status provision.Status) error {
 func (a *Ambly) SetIPAddress(status string) error {
 	if status != "" {
 
-		log.Debugf("Set Virtual Machine IP address in riak [%s]", status);
+		log.Debugf("Set Virtual Machine IP address in riak [%s]", status)
 		a.Outputs = append(a.Outputs, NewJsonPair("publicip", status))
 		if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
 			return err
@@ -229,5 +229,5 @@ func (a *Ambly) SetIPAddress(status string) error {
 	} else {
 		return errors.New(provision.StatusIPError.String())
 	}
- 	return nil
+	return nil
 }

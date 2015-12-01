@@ -16,9 +16,9 @@
 package carton
 
 import (
-	"github.com/megamsys/libgo/cmd"
 	log "github.com/Sirupsen/logrus"
-//	"fmt"
+	"github.com/megamsys/libgo/cmd"
+	//	"fmt"
 )
 
 type ReqOperator struct {
@@ -39,7 +39,7 @@ func (p *ReqOperator) Accept(r *MegdProcessor, cookbook string) error {
 
 	md := *r
 
-	log.Debugf(cmd.Colorfy(md.String(),"cyan","","bold"))
+	log.Debugf(cmd.Colorfy(md.String(), "cyan", "", "bold"))
 
 	return md.Process(c)
 }
@@ -49,14 +49,14 @@ func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
 	if err != nil {
 		return nil, err
 	}
-	
-	ca, err := a.MkCarton(cookbook) 
+
+	ca, err := a.MkCarton(cookbook)
 	if err != nil {
-			return nil, err
+		return nil, err
 	} else {
-			ca.toBox(cookbook) //on success, make a carton2box if BoxLevel is BoxZero
+		ca.toBox(cookbook) //on success, make a carton2box if BoxLevel is BoxZero
 	}
-    
+
 	//c, err := a.MkCarton(cookbook)
 	if err != nil {
 		return nil, err
@@ -64,10 +64,8 @@ func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
 	return ca, nil
 }
 
-
 // MegdProcessor represents a single operation in Gulpd.
 type MegdProcessor interface {
-
 	Process(c *Carton) error
 	String() string
 	//Required() ExecutionRequirements

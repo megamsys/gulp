@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package run
 
 import (
@@ -25,9 +25,9 @@ import (
 
 // Ensure the configuration can be parsed.
 func (s *S) TestConfig_Parse(c *check.C) {
-  var cm Config
+	var cm Config
 	u, _ := os.Getwd()
-	if _, err := toml.DecodeFile(u +"/gulpd.conf", &cm); err != nil {
+	if _, err := toml.DecodeFile(u+"/gulpd.conf", &cm); err != nil {
 		fmt.Println(err.Error())
 	}
 

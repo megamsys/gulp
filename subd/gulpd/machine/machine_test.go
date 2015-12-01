@@ -2,8 +2,9 @@ package machine
 
 import (
 
-	//"gopkg.in/check.v1"
+//"gopkg.in/check.v1"
 )
+
 /*
 func (s *S) TestContainerShortID(c *check.C) {
 	container := Container{ID: "abc123"}

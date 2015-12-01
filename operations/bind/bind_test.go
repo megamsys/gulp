@@ -17,8 +17,8 @@
 package bind
 
 import (
-//	"bytes"
-//	"net/http"
+	//	"bytes"
+	//	"net/http"
 	"testing"
 
 	"gopkg.in/check.v1"
@@ -32,6 +32,7 @@ var _ = check.Suite(&BindSuite{})
 
 type BindSuite struct {
 }
+
 /*
 func (s *GithubSuite) SetUpSuite(c *check.C) {
 	var err = error.New("testing")

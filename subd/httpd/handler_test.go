@@ -13,19 +13,18 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package httpd
 
 import (
-//	"encoding/json"
-//	"io"
-//	"net/http/httptest"
-//	"reflect"
-//	"regexp"
-//	"time"
+	//	"encoding/json"
+	//	"io"
+	//	"net/http/httptest"
+	//	"reflect"
+	//	"regexp"
+	//	"time"
 	"gopkg.in/check.v1"
 )
-
 
 // NewHandler represents a test wrapper for httpd.Handler.
 //type Handler struct {

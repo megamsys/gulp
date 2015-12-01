@@ -66,7 +66,7 @@ func NewServer(c *Config, version string) (*Server, error) {
 
 func (s *Server) appendGulpdService(c *meta.Config, d *gulpd.Config) {
 	srv := gulpd.NewService(c, d)
-	
+
 	s.Services = append(s.Services, srv)
 }
 
@@ -76,7 +76,7 @@ func (s *Server) appendHTTPDService(c *meta.Config, h *httpd.Config) {
 		log.Warn("skip httpd service.")
 		return
 	}
-	
+
 	srv, err := httpd.NewService(c, h)
 	if err != nil {
 		return
@@ -163,7 +163,7 @@ func startProfile(cpuprofile, memprofile string) {
 	if cpuprofile != "" {
 		f, err := os.Create(cpuprofile)
 		if err != nil {
-			log.Error("cpuprofile: %v", err)
+			log.Errorf("cpuprofile: %s", err)
 		}
 		log.Info("writing CPU profile to: %s\n", cpuprofile)
 		prof.cpu = f
@@ -173,7 +173,7 @@ func startProfile(cpuprofile, memprofile string) {
 	if memprofile != "" {
 		f, err := os.Create(memprofile)
 		if err != nil {
-			log.Error("memprofile: %v", err)
+			log.Errorf("memprofile: %s", err)
 		}
 		log.Info("writing mem profile to: %s\n", memprofile)
 		prof.mem = f

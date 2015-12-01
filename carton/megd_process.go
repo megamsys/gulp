@@ -13,11 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package carton
 
 import (
-  "bytes"
+	"bytes"
 )
 
 // CreateProcs represents a command for creating new cartons.
@@ -54,11 +54,11 @@ func (s DeleteProcess) String() string {
 }
 
 func (s DeleteProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.Delete(); err != nil {
-			return err
-		}
-//	}
+	//	for _, c := range ca {
+	if err := ca.Delete(); err != nil {
+		return err
+	}
+	//	}
 	return nil
 }
 
@@ -75,11 +75,11 @@ func (s StartProcess) String() string {
 }
 
 func (s StartProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.LCoperation(START); err != nil {
-			return err
-		}
-//	}
+	//	for _, c := range ca {
+	if err := ca.LCoperation(START); err != nil {
+		return err
+	}
+	//	}
 	return nil
 }
 
@@ -96,11 +96,11 @@ func (s StopProcess) String() string {
 }
 
 func (s StopProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.LCoperation(STOP); err != nil {
-			return err
-		}
-//	}
+	//	for _, c := range ca {
+	if err := ca.LCoperation(STOP); err != nil {
+		return err
+	}
+	//	}
 	return nil
 }
 
@@ -117,11 +117,11 @@ func (s RestartProcess) String() string {
 }
 
 func (s RestartProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.LCoperation(RESTART); err != nil {
-			return err
-		}
-//	}
+	//	for _, c := range ca {
+	if err := ca.LCoperation(RESTART); err != nil {
+		return err
+	}
+	//	}
 	return nil
 }
 
@@ -138,11 +138,11 @@ func (s StateupProcess) String() string {
 }
 
 func (s StateupProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.Stateup(); err != nil {
-			return err
-		}
-//	}
+	//	for _, c := range ca {
+	if err := ca.Stateup(); err != nil {
+		return err
+	}
+	//	}
 	return nil
 }
 
@@ -159,11 +159,11 @@ func (s StatedownProcess) String() string {
 }
 
 func (s StatedownProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.Statedown(); err != nil {
-			return err
-		}
-//	}
+	//	for _, c := range ca {
+	if err := ca.Statedown(); err != nil {
+		return err
+	}
+	//	}
 	return nil
 }
 
@@ -180,9 +180,8 @@ func (s CIStateProcess) String() string {
 }
 
 func (s CIStateProcess) Process(ca *Carton) error {
-		if err := ca.CIState(); err != nil {
-			return err
-		}
+	if err := ca.CIState(); err != nil {
+		return err
+	}
 	return nil
 }
-

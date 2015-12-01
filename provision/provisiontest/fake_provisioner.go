@@ -39,16 +39,16 @@ func NewFakeCarton(name, tosca string, lvl provision.BoxLevel, units int) *FakeC
 	for i := 0; i < units; i++ {
 		val := atomic.AddInt32(&uniqueIpCounter, 1)
 		b[i] = provision.Box{
-			Id:           "CMP010101010101",
-			CartonsId:    "ASM010101010101",
-			CartonId:     "AMS010101010101",
-			Level:        lvl,
-			Name:         fmt.Sprintf(name, val),
-			DomainName:   "megambox.com",
-			Tosca:        tosca,
-			Repo:     &repository.Repo{},
-			Status:   provision.StatusBootstrapping,
-			Provider: "chefsolo",
+			Id:         "CMP010101010101",
+			CartonsId:  "ASM010101010101",
+			CartonId:   "AMS010101010101",
+			Level:      lvl,
+			Name:       fmt.Sprintf(name, val),
+			DomainName: "megambox.com",
+			Tosca:      tosca,
+			Repo:       &repository.Repo{},
+			Status:     provision.StatusBootstrapping,
+			Provider:   "chefsolo",
 		}
 	}
 

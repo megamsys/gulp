@@ -17,8 +17,8 @@ package loggers
 
 import (
 	//	"errors"
-		"fmt"
-	)
+	"fmt"
+)
 
 var managers map[string]InitializableLogger
 

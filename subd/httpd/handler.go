@@ -20,12 +20,12 @@ import (
 	//	"bytes"
 	//	"compress/gzip"
 	//	"errors"
-//	"fmt"
+	//	"fmt"
 	"io/ioutil"
 
+	"encoding/json"
 	"net/http"
 	"net/http/pprof"
-	"encoding/json"
 	//	"os"
 	//	"strconv"
 	"strings"
@@ -59,7 +59,7 @@ func NewHandler(c *meta.Config, g *Config) *Handler {
 	h := &Handler{
 		mux:    pat.New(),
 		config: c,
-		Gulpd: g,
+		Gulpd:  g,
 		//	loggingEnabled: loggingEnabled,
 	}
 
@@ -108,9 +108,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.networks(w, r)
 		}
 	}
-	return
-
-	h.mux.ServeHTTP(w, r)
+	return h.mux.ServeHTTP(w, r)
 }
 
 // servePing returns a simple response to let the client know the server is running.
@@ -148,6 +146,5 @@ func (h *Handler) networks(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, dockr)
 	dockr.HomeDir = h.config.Dir
 	dockr.NetworkExec()
-
 
 }

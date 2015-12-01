@@ -13,7 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
- 
+
 package bind
 
 import (
@@ -27,7 +27,6 @@ func init() {
 	operations.Register("bind", bindManager{})
 }
 
-
 type bindManager struct{}
 
 func (m bindManager) Initialize(url string) error {
@@ -38,13 +37,13 @@ func (m bindManager) Initialize(url string) error {
 * clone repository from github.com using url
 **/
 /*func (m ciManager) Initialize(url string) error {
-	
+
 	actions := []*action.Action{
 		&clone,
 	}
 	pipeline := action.NewPipeline(actions...)
 
-	args := runActionsArgs{		
+	args := runActionsArgs{
 	//	Writer:        w,
 		Url:   url,
 	}
@@ -57,4 +56,3 @@ func (m bindManager) Initialize(url string) error {
 	return nil
 
 }*/
-

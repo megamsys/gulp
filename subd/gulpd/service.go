@@ -27,8 +27,6 @@ import (
 	"github.com/megamsys/libgo/amqp"
 	"sync"
 	"time"
-	//	"net"
-	//	"encoding/json"
 )
 
 const leaderWaitTimeout = 30 * time.Second
