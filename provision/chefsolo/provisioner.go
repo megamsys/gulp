@@ -68,7 +68,7 @@ type Attributes struct {
 	RunList     []string `json:"run_list"`
 	ToscaType   string   `json:"tosca_type"`
 	RabbitmqURL string   `json:"rabbitmq_url"`
-	Monitor     string   `json:"monitor"`
+	Scm					string   `json:"scm"`
 }
 
 // Provisioner is a provisioner based on Chef Solo.
@@ -150,7 +150,7 @@ func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
 		RunList:     []string{"recipe[" + box.Cookbook + "]"},
 		ToscaType:   strings.Split(box.Tosca, ".")[2],
 		RabbitmqURL: meta.MC.AMQP,
-		Monitor:     meta.MC.Ganglia,
+		Scm:				 box.Repo.Url,
 	}
 
 	DefaultAttributes, _ := json.Marshal(res1D)
