@@ -150,10 +150,6 @@ func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
   if box.Repo != nil {
 		repo = box.Repo.Url
 	}
-	fmt.Println("===============================================")
-	fmt.Println(box.Repo)
-	fmt.Println(repo)
-	fmt.Println("===============================================")
 
 	res1D := &Attributes{
 		RunList:     []string{"recipe[" + box.Cookbook + "]"},
