@@ -62,7 +62,7 @@ func (s *Service) Open() error {
 		return err
 	}
 
-	log.Info("Listening on HTTP:", listener.Addr().String())
+	log.Info("Listening on HTTP:", s.addr)
 	s.ln = listener
 
 	// Begin listening for requests in a separate goroutine.
@@ -81,13 +81,7 @@ func (s *Service) Close() error {
 // Err returns a channel for fatal errors that occur on the listener.
 func (s *Service) Err() <-chan error { return s.err }
 
-// Addr returns the listener's address. Returns nil if listener is closed.
-func (s *Service) Addr() net.Addr {
-	if s.ln != nil {
-		return s.ln.Addr()
-	}
-	return nil
-}
+
 
 // serve serves the handler from the listener.
 func (s *Service) serve() {
@@ -95,6 +89,6 @@ func (s *Service) serve() {
 	// See https://github.com/golang/go/issues/4373
 	err := http.Serve(s.ln, s.Handler)
 	if err != nil && !strings.Contains(err.Error(), "closed") {
-		s.err <- fmt.Errorf("listener failed: addr=%s, err=%s", s.Addr(), err)
+		s.err <- fmt.Errorf("listener failed: addr=%s, err=%s", s.addr, err)
 	}
 }
