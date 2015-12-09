@@ -20,7 +20,7 @@ import (
 	//	"bytes"
 	//	"compress/gzip"
 	//	"errors"
-	//	"fmt"
+		//"fmt"
 	"io/ioutil"
 
 	"encoding/json"
@@ -142,7 +142,6 @@ func (h *Handler) logs(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) networks(w http.ResponseWriter, r *http.Request) {
 
 	body, _ := ioutil.ReadAll(r.Body)
-
 	dockr := &docker.DockerProvisioner{}
 	json.Unmarshal(body, dockr)
 	dockr.HomeDir = h.config.Dir
