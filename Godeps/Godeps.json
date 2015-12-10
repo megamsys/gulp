@@ -29,22 +29,7 @@
 			"Rev": "68415e7123da32b07eab49c96d2c4d6158360e9b"
 		},
 		{
-			"ImportPath": "github.com/hpcloud/tail/ratelimiter",
-			"Comment": "v0-34-g157f8ef",
-			"Rev": "157f8ef18fab1ee5be7ce010f1796e75cde8b24d"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/util",
-			"Comment": "v0-34-g157f8ef",
-			"Rev": "157f8ef18fab1ee5be7ce010f1796e75cde8b24d"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/watch",
-			"Comment": "v0-34-g157f8ef",
-			"Rev": "157f8ef18fab1ee5be7ce010f1796e75cde8b24d"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/winfile",
+			"ImportPath": "github.com/hpcloud/tail",
 			"Comment": "v0-34-g157f8ef",
 			"Rev": "157f8ef18fab1ee5be7ce010f1796e75cde8b24d"
 		},
