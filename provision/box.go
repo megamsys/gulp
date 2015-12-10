@@ -21,7 +21,6 @@ import (
 	"github.com/megamsys/gulp/loggers"
 	_ "github.com/megamsys/gulp/loggers/file"
 	_ "github.com/megamsys/gulp/loggers/queue"
-	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
@@ -44,14 +43,6 @@ const (
 type BoxLevel int
 
 var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
-
-// Boxlog represents a log entry.
-type Boxlog struct {
-	Date    time.Time
-	Message string
-	Name    string
-	Unit    string
-}
 
 // Box represents a provision unit. Can be a machine, container or anything
 // IP-addressable.
@@ -115,10 +106,10 @@ func (b *Box) Available() bool {
 func (box *Box) Log(message, source, unit string) error {
 
 	messages := strings.Split(message, "\n")
-	logs := make([]interface{}, 0, len(messages))
+	logs := make([]loggers.Boxlog, 0, len(messages))
 	for _, msg := range messages {
 		if msg != "" {
-			bl := Boxlog{
+			bl := loggers.Boxlog{
 				Date:    time.Now().In(time.UTC),
 				Message: msg,
 				Name:    box.Name,
@@ -132,7 +123,7 @@ func (box *Box) Log(message, source, unit string) error {
 		a, err := loggers.Get(source)
 
 		if err != nil {
-			log.Errorf("fatal error, couldn't located the Logger %s", logger)
+			log.Errorf("fatal error, couldn't located the Logger %s", source)
 			return err
 		}
 
@@ -141,7 +132,7 @@ func (box *Box) Log(message, source, unit string) error {
 		if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
 			err = initializableLogger.Notify(box.Name+"."+box.DomainName, logs)
 			if err != nil {
-				log.Errorf("fatal error, couldn't initialize the Logger %s", logger)
+				log.Errorf("fatal error, couldn't initialize the Logger %s", source)
 				return err
 			}
 		}

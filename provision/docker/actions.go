@@ -3,8 +3,7 @@ package docker
 import (
 	"fmt"
 	"github.com/ActiveState/tail"
-	"github.com/megamsys/gulp/carton"
-
+	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 	"io"
@@ -36,7 +35,7 @@ type runLogsActionsArgs struct {
 	HomeDir   string
 	Writer    io.Writer
 	CloseChan chan bool
-	LogWriter *carton.LogWriter
+	LogWriter *queue.LogWriter
 }
 
 var setNetwork = action.Action{

@@ -18,16 +18,25 @@ package loggers
 import (
 	//	"errors"
 	"fmt"
+	"time"
 )
 
 var managers map[string]InitializableLogger
 
 // LoggerManager represents a manager of application Loggers.
 type InitializableLogger interface {
-	Notify(name string, logs []interface{}) error
+	Notify(name string, logs []Boxlog) error
 }
 
 type Logger interface {
+}
+
+// Boxlog represents a log entry.
+type Boxlog struct {
+	Date    time.Time
+	Message string
+	Name    string
+	Unit    string
 }
 
 // Get gets the named Logger from the registry.
