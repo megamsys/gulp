@@ -49,7 +49,6 @@ var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
 type Boxlog struct {
 	Date    time.Time
 	Message string
-	Source  string
 	Name    string
 	Unit    string
 }
@@ -122,7 +121,6 @@ func (box *Box) Log(message, source, unit string) error {
 			bl := Boxlog{
 				Date:    time.Now().In(time.UTC),
 				Message: msg,
-				Source:  source,
 				Name:    box.Name,
 				Unit:    box.Id,
 			}
@@ -131,28 +129,23 @@ func (box *Box) Log(message, source, unit string) error {
 		}
 	}
 	if len(logs) > 0 {
-		for _, logger := range meta.MC.Loggers {
-			a, err := loggers.Get(logger)
+		a, err := loggers.Get(source)
 
+		if err != nil {
+			log.Errorf("fatal error, couldn't located the Logger %s", logger)
+			return err
+		}
+
+		Logger = a
+
+		if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
+			err = initializableLogger.Notify(box.Name+"."+box.DomainName, logs)
 			if err != nil {
-				log.Errorf("fatal error, couldn't located the Logger %s", logger)
+				log.Errorf("fatal error, couldn't initialize the Logger %s", logger)
 				return err
 			}
-
-			Logger = a
-
-			if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
-				log.Debugf("Notify to [%s] Logger ", logger)
-				err = initializableLogger.Notify(box.Name+"."+box.DomainName, logs)
-				if err != nil {
-					log.Errorf("fatal error, couldn't initialize the Logger %s", logger)
-					return err
-				} else {
-					log.Debugf("push logs to Logger %s", logger)
-				}
-			}
-			//_ = notify(box.Name+"."+box.DomainName, logs)
 		}
+		//_ = notify(box.Name+"."+box.DomainName, logs)
 	}
 	return nil
 }

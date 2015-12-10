@@ -145,12 +145,17 @@ func (p *chefsoloProvisioner) StartupMessage() (string, error) {
 
 /* new state */
 func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
+	var repo string
+
+	if box.Repo != nil {
+		repo = box.Repo.Url
+	}
 
 	res1D := &Attributes{
 		RunList:     []string{"recipe[" + box.Cookbook + "]"},
 		ToscaType:   strings.Split(box.Tosca, ".")[2],
 		RabbitmqURL: meta.MC.AMQP,
-		Monitor:     meta.MC.Ganglia,
+		Scm:         repo,
 	}
 
 	DefaultAttributes, _ := json.Marshal(res1D)
