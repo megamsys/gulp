@@ -3,10 +3,10 @@ package db
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/libgo/cmd"
 	"github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/hc"
-	"github.com/megamsys/libgo/cmd"
-	"github.com/megamsys/gulp/meta"
 )
 
 func init() {

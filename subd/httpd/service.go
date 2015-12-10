@@ -81,8 +81,6 @@ func (s *Service) Close() error {
 // Err returns a channel for fatal errors that occur on the listener.
 func (s *Service) Err() <-chan error { return s.err }
 
-
-
 // serve serves the handler from the listener.
 func (s *Service) serve() {
 	// The listener was closed so exit

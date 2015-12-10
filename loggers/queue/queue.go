@@ -38,7 +38,7 @@ func logQueue(boxName string) string {
 	return boxName + LogPubSubQueueSuffix
 }
 
-func (m queueManager) Notify(boxName string, messages []interface{}) error {
+func (m queueManager) Notify(boxName string, messages []loggers.Boxlog) error {
 	pubSubQ, err := amqp.NewRabbitMQ(meta.MC.AMQP, logQueue(boxName))
 	if err != nil {
 		return err

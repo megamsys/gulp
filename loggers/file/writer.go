@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package carton
+package file
 
 import (
 	"errors"
@@ -66,5 +66,5 @@ func (w *LogWriter) Write(data []byte) (int, error) {
 }
 
 func (w *LogWriter) write(data []byte) error {
-	return w.Box.Log(string(data), "gulpd", "box")
+	return w.Box.Log(string(data), "file", "box")
 }
