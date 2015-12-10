@@ -83,7 +83,7 @@ _go_test:
 
 _gulpd:
 	rm -f gulpd
-	go build $(GO_EXTRAFLAGS) -o gulpd ./cmd/gulpd
+	go build $(GO_EXTRAFLAGS) -ldflags="-X main.date=$(shell date -u --iso-8601=seconds)" -o gulpd ./cmd/gulpd 
 
 _gulpdr:
 	sudo ./gulpd start --config conf/gulpd.conf
