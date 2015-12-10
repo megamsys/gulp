@@ -68,7 +68,7 @@ type Attributes struct {
 	RunList     []string `json:"run_list"`
 	ToscaType   string   `json:"tosca_type"`
 	RabbitmqURL string   `json:"rabbitmq_url"`
-	Monitor     string   `json:"monitor"`
+	Scm         string   `json:"scm"`
 }
 
 // Provisioner is a provisioner based on Chef Solo.
