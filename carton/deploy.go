@@ -22,6 +22,8 @@ import (
 	//	"time"
 	//	"fmt"
 	//	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/loggers/file"
+	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
 )
 
@@ -34,10 +36,16 @@ type DeployOpts struct {
 func Deploy(opts *DeployOpts) error {
 	var outBuffer bytes.Buffer
 	//	start := time.Now()
-	logWriter := LogWriter{Box: opts.B}
-	logWriter.Async()
-	defer logWriter.Close()
-	writer := io.MultiWriter(&outBuffer, &logWriter)
+
+	queueWriter := queue.LogWriter{Box: opts.B}
+	queueWriter.Async()
+	defer queueWriter.Close()
+
+	fileWriter := file.LogWriter{Box: opts.B}
+	fileWriter.Async()
+	defer fileWriter.Close()
+
+	writer := io.MultiWriter(&outBuffer, &queueWriter, &fileWriter)
 	err := deployToProvisioner(opts, writer)
 
 	if err != nil {

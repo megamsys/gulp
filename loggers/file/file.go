@@ -17,11 +17,6 @@
 package file
 
 import (
-	//	"errors"
-	//"fmt"
-	//	"io"
-	//	"net/http"
-	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/meta"
@@ -35,7 +30,7 @@ func init() {
 
 type fileManager struct{}
 
-func (m fileManager) Notify(boxName string, messages []interface{}) error {
+func (m fileManager) Notify(boxName string, messages []loggers.Boxlog) error {
 
 	basePath := meta.MC.Dir + "/logs"
 	dir := path.Join(basePath, boxName)
@@ -57,17 +52,10 @@ func (m fileManager) Notify(boxName string, messages []interface{}) error {
 	defer f.Close()
 
 	for _, msg := range messages {
-		bytes, err := json.Marshal(msg)
-		if err != nil {
-			log.Errorf("Error on logs notify: %s", err.Error())
-			continue
-		}
-		if _, err = f.WriteString(string(bytes)); err != nil {
+		if _, err = f.WriteString(msg.Message + "\n"); err != nil {
 			log.Errorf("Error on logs notify: %s", err.Error())
 			return err
 		}
 	}
-
 	return nil
-
 }

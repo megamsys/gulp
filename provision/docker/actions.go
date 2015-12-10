@@ -3,8 +3,7 @@ package docker
 import (
 	"fmt"
 	"github.com/ActiveState/tail"
-	"github.com/megamsys/gulp/carton"
-
+	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 	"io"
@@ -36,15 +35,16 @@ type runLogsActionsArgs struct {
 	HomeDir   string
 	Writer    io.Writer
 	CloseChan chan bool
-	LogWriter *carton.LogWriter
+	LogWriter *queue.LogWriter
 }
 
 var setNetwork = action.Action{
 	Name: "Set Network for docker",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runNetworkActionsArgs)
-		network_command := args.HomeDir + " " + PIPEWORK + " " + args.Bridge + " " + parseID(args.Id) + " " + args.IpAddr + "/24@" + args.Gateway
+		network_command := args.HomeDir + "/" + PIPEWORK + " " + args.Bridge + " " + parseID(args.Id) + " " + args.IpAddr + "/24@" + args.Gateway
 		args.Command = network_command
+
 		return networkExecutor(&args)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -67,7 +67,6 @@ func networkExecutor(networks *runNetworkActionsArgs) (action.Result, error) {
 	var e exec.OsExecutor
 	var commandWords []string
 	commandWords = strings.Fields(networks.Command)
-
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
 			return nil, err

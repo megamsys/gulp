@@ -3,19 +3,20 @@ package docker
 import (
 	"bytes"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
 	"io"
 )
 
 type DockerProvisioner struct {
-	Id      string
-	Name    string
-	IP      string
-	Gateway string
-	Bridge  string
-	HomeDir string
+	Id          string
+	ContainerId string
+	Name        string
+	IpAddr      string
+	Gateway     string
+	Bridge      string
+	HomeDir     string
 }
 
 func (p *DockerProvisioner) Initialize(m string) error {
@@ -26,14 +27,14 @@ func (p *DockerProvisioner) LogExec() {
 	var outBuffer bytes.Buffer
 	var closeChan chan bool
 
-	box := &provision.Box{Id: p.Id, Name: p.Name}
-	logWriter := carton.LogWriter{Box: box}
+	box := &provision.Box{Id: p.ContainerId, Name: p.Name}
+	logWriter := queue.LogWriter{Box: box}
 	logWriter.Async()
 
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	p.createLogPipeline(writer, closeChan, &logWriter)
 
-	go func(closeChan chan bool, logWriter carton.LogWriter) {
+	go func(closeChan chan bool, logWriter queue.LogWriter) {
 		select {
 		case <-closeChan:
 			logWriter.Close()
@@ -52,8 +53,8 @@ func (p *DockerProvisioner) createNetworkPipeline() error {
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runNetworkActionsArgs{
-		Id:      p.Id,
-		IpAddr:  p.IP,
+		Id:      p.ContainerId,
+		IpAddr:  p.IpAddr,
 		Bridge:  p.Bridge,
 		Gateway: p.Gateway,
 		HomeDir: p.HomeDir,
@@ -67,13 +68,13 @@ func (p *DockerProvisioner) createNetworkPipeline() error {
 	return nil
 }
 
-func (p *DockerProvisioner) createLogPipeline(writer io.Writer, closeChan chan bool, logWriter *carton.LogWriter) error {
+func (p *DockerProvisioner) createLogPipeline(writer io.Writer, closeChan chan bool, logWriter *queue.LogWriter) error {
 	actions := []*action.Action{
 		&setLogs,
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runLogsActionsArgs{
-		Id:        p.Id,
+		Id:        p.ContainerId,
 		Name:      p.Name,
 		HomeDir:   p.HomeDir,
 		Writer:    writer,

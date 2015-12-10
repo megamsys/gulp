@@ -1,4 +1,4 @@
-#Copyright (c) 2012 Megam Systems.
+#Copyright (c) 2013-15 Megam Systems.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -69,7 +69,8 @@ bzr:
 
 
 get-code:
-	go get $(GO_EXTRAFLAGS) -u -d -t -v ./...
+	rm -rf ~/.go
+	go get $(GO_EXTRAFLAGS) -u -d -t -insecure ./...
 
 godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep

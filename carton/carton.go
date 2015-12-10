@@ -21,6 +21,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/controls"
+	"github.com/megamsys/gulp/loggers/file"
+	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
 	"io"
@@ -125,10 +127,16 @@ func (c *Carton) LCoperation(lcoperation string) error {
 	for _, box := range *c.Boxes {
 
 		var outBuffer bytes.Buffer
-		logWriter := LogWriter{Box: &box}
-		logWriter.Async()
-		defer logWriter.Close()
-		writer := io.MultiWriter(&outBuffer, &logWriter)
+
+		queueWriter := queue.LogWriter{Box: &box}
+		queueWriter.Async()
+		defer queueWriter.Close()
+
+		fileWriter := file.LogWriter{Box: &box}
+		fileWriter.Async()
+		defer fileWriter.Close()
+
+		writer := io.MultiWriter(&outBuffer, &queueWriter, &fileWriter)
 
 		status, err := controls.ParseControl(&box, lcoperation, writer)
 		if err != nil {
