@@ -123,7 +123,7 @@ func (c *Carton) Delete() error {
 }
 
 func (c *Carton) Upgrade() error {
-	for _, box := range *c.Boxes {
+	/*for _, box := range *c.Boxes {
 
 		var outBuffer bytes.Buffer
 
@@ -137,7 +137,7 @@ func (c *Carton) Upgrade() error {
 
 		writer := io.MultiWriter(&outBuffer, &queueWriter, &fileWriter)
 
-	}
+	}*/
 	return nil
 }
 

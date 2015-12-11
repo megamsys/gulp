@@ -36,6 +36,11 @@ func (m *Machine) PubStatus(status provision.Status) error {
 		return err
 	}
 
+	err = p.Connect()
+	if err != nil {
+		return err
+	}
+
 	//before publish the queue, we need to verify assembly status
 	jsonMsg, err := json.Marshal(
 		carton.Requests{
@@ -82,8 +87,8 @@ func (m *Machine) UpdateSshkey() error {
 		return err
 	}
 
-	//f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
-	f, err := os.OpenFile("/home/rajthilak/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	//f, err := os.OpenFile("/home/rajthilak/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}

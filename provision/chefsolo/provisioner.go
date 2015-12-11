@@ -226,9 +226,10 @@ func (p chefsoloProvisioner) Command() []string {
 	//}
 	log.Debugf("provisioner command is  %s", cmd)
 
-	if !p.Sudo {
+	/*if !p.Sudo {
 		return cmd
 	} else {
 		return append([]string{"sudo"}, cmd...)
-	}
+	}*/
+	return cmd
 }
