@@ -16,10 +16,11 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/cmd/gulpd/run"
 	"github.com/megamsys/libgo/cmd"
-	"os"
 )
 
 // These variables are populated via the Go linker.

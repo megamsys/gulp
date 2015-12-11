@@ -17,9 +17,11 @@ package provision
 
 import (
 	"errors"
-	"gopkg.in/check.v1"
 	"reflect"
 	"testing"
+
+	"gopkg.in/check.v1"
+
 )
 
 type ProvisionSuite struct{}

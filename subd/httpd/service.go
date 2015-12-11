@@ -20,13 +20,9 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-
-	log "github.com/Sirupsen/logrus"
-	//	"os"
 	"strings"
 
-	//	"github.com/megamsys/gulp/activities/docker"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 )
 
@@ -55,8 +51,6 @@ func NewService(c *meta.Config, h *Config) (*Service, error) {
 func (s *Service) Open() error {
 	log.Info("Starting HTTP service")
 
-	//	docker.Init()
-
 	listener, err := net.Listen("tcp", s.addr)
 	if err != nil {
 		return err
@@ -64,8 +58,6 @@ func (s *Service) Open() error {
 
 	log.Info("Listening on HTTP:", s.addr)
 	s.ln = listener
-
-	// Begin listening for requests in a separate goroutine.
 	go s.serve()
 	return nil
 }
@@ -83,8 +75,6 @@ func (s *Service) Err() <-chan error { return s.err }
 
 // serve serves the handler from the listener.
 func (s *Service) serve() {
-	// The listener was closed so exit
-	// See https://github.com/golang/go/issues/4373
 	err := http.Serve(s.ln, s.Handler)
 	if err != nil && !strings.Contains(err.Error(), "closed") {
 		s.err <- fmt.Errorf("listener failed: addr=%s, err=%s", s.addr, err)

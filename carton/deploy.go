@@ -19,9 +19,7 @@ package carton
 import (
 	"bytes"
 	"io"
-	//	"time"
-	//	"fmt"
-	//	log "github.com/Sirupsen/logrus"
+	
 	"github.com/megamsys/gulp/loggers/file"
 	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"

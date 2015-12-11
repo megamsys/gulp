@@ -17,6 +17,11 @@ package provision
 
 import (
 	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
+	"time"
+	
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
 	_ "github.com/megamsys/gulp/loggers/file"
@@ -24,10 +29,6 @@ import (
 	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
-	"net/url"
-	"regexp"
-	"strings"
-	"time"
 )
 
 const (

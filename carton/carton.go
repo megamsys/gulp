@@ -16,8 +16,9 @@
 package carton
 
 import (
-	//	"fmt"
 	"bytes"
+	"io"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/controls"
@@ -25,7 +26,6 @@ import (
 	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
-	"io"
 )
 
 type BoxLevel int

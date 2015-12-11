@@ -17,12 +17,6 @@
 package httpd
 
 import (
-	//	"encoding/json"
-	//	"io"
-	//	"net/http/httptest"
-	//	"reflect"
-	//	"regexp"
-	//	"time"
 	"gopkg.in/check.v1"
 )
 

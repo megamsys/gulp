@@ -17,13 +17,11 @@ package carton
 
 import (
 	"encoding/json"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/db"
 )
 
-//type Payload struct {
-//	Id string `json:"id"`
-//}
 
 type Payload struct {
 	Id        string `json:"id"`
@@ -47,9 +45,8 @@ func NewPayload(b []byte) (*Payload, error) {
 	return p, err
 }
 
-/**
-**fetch the request json from riak and parse the json to struct
-**/
+
+//fetch the request json from riak and parse the json to struct
 func (p *Payload) Convert() (*Requests, error) {
 	log.Infof("get requests %s", p.Id)
 	if p.CatId != "" {

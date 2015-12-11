@@ -17,10 +17,6 @@
 package gitlab
 
 import (
-	//	"errors"
-	//	"fmt"
-	//	"io"
-	//	"net/http"
 	"github.com/megamsys/gulp/repository"
 )
 
