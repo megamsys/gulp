@@ -17,6 +17,11 @@ package provision
 
 import (
 	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
 	_ "github.com/megamsys/gulp/loggers/file"
@@ -24,10 +29,6 @@ import (
 	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
-	"net/url"
-	"regexp"
-	"strings"
-	"time"
 )
 
 const (
@@ -120,7 +121,7 @@ func (box *Box) Log(message, source, unit string) error {
 		}
 	}
 	if len(logs) > 0 {
-		a, err := loggers.Get(source)
+		/*a, err := loggers.Get(source)
 
 		if err != nil {
 			log.Errorf("fatal error, couldn't located the Logger %s", source)
@@ -135,8 +136,8 @@ func (box *Box) Log(message, source, unit string) error {
 				log.Errorf("fatal error, couldn't initialize the Logger %s", source)
 				return err
 			}
-		}
-		//_ = notify(box.Name+"."+box.DomainName, logs)
+		}*/
+		_ = Notify(box.Name+"."+box.DomainName, logs)
 	}
 	return nil
 }

@@ -17,12 +17,12 @@
 package github
 
 import (
-	//"fmt"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/libgo/action"
-	"strings"
 )
 
 func init() {

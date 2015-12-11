@@ -17,7 +17,6 @@ package carton
 
 import (
 	"bytes"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/controls"

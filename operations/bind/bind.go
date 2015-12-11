@@ -17,9 +17,6 @@
 package bind
 
 import (
-	//"fmt"
-	//log "github.com/Sirupsen/logrus"
-	//"github.com/megamsys/libgo/action"
 	"github.com/megamsys/gulp/operations"
 )
 

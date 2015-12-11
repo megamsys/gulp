@@ -17,8 +17,6 @@
 package ci
 
 import (
-	//	"bytes"
-	//	"net/http"
 	"testing"
 
 	"gopkg.in/check.v1"

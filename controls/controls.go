@@ -18,11 +18,12 @@ package controls
 
 import (
 	"fmt"
+	"io"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
-	"io"
-	"strings"
 )
 
 const (

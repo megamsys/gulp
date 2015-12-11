@@ -16,18 +16,13 @@
 package github
 
 import (
-	//	"errors"
 	"fmt"
 	"io"
-	//	"io/ioutil"
-	//	"os"
-	//	"path"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
-	"strings"
-	//	"github.com/megamsys/gulp/provision"
-	//	"github.com/megamsys/gulp/carton"
 )
 
 type runActionsArgs struct {

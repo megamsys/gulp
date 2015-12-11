@@ -20,16 +20,17 @@ package chefsolo
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"path"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
 	_ "github.com/megamsys/gulp/repository/github"
 	"github.com/megamsys/libgo/action"
-	"io"
-	"os"
-	"path"
-	"strings"
 )
 
 const (

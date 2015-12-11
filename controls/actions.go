@@ -16,15 +16,12 @@
 package controls
 
 import (
-	//	"fmt"
 	"io"
-	//	"io/ioutil"
-	//	"path"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
-	"strings"
-	//	"github.com/megamsys/gulp/controls/machine"
 	"github.com/megamsys/libgo/exec"
 )
 

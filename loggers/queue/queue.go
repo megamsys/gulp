@@ -30,7 +30,8 @@ func init() {
 	loggers.Register("queue", queueManager{})
 }
 
-type queueManager struct{}
+type queueManager struct {
+}
 
 var LogPubSubQueueSuffix = "_log"
 
@@ -38,12 +39,15 @@ func logQueue(boxName string) string {
 	return boxName + LogPubSubQueueSuffix
 }
 
-func (m queueManager) Notify(boxName string, messages []loggers.Boxlog) error {
+func (m queueManager) Notify(boxName string, messages []interface{}) error {
 	pubSubQ, err := amqp.NewRabbitMQ(meta.MC.AMQP, logQueue(boxName))
 	if err != nil {
 		return err
 	}
-
+	err = pubSubQ.Connect()
+	if err != nil {
+		return err
+	}
 	for _, msg := range messages {
 		bytes, err := json.Marshal(msg)
 		if err != nil {
@@ -55,5 +59,6 @@ func (m queueManager) Notify(boxName string, messages []loggers.Boxlog) error {
 			log.Errorf("Error on logs notify: %s", err.Error())
 		}
 	}
+	pubSubQ.Close()
 	return nil
 }
