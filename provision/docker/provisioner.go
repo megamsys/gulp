@@ -2,12 +2,13 @@ package docker
 
 import (
 	"bytes"
+	"io"
+	
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
-	"io"
-)
+	)
 
 type DockerProvisioner struct {
 	Id          string

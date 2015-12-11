@@ -20,27 +20,6 @@ import (
 	"bytes"
 )
 
-// CreateProcs represents a command for creating new cartons.
-/*type CreateProcess struct {
-	Name string
-}
-
-func (s CreateProcess) String() string {
-	var buf bytes.Buffer
-	_, _ = buf.WriteString("CREATE CARTON ")
-	_, _ = buf.WriteString(s.Name)
-	return buf.String()
-}
-
-func (s CreateProcess) Process(ca *Carton) error {
-//	for _, c := range ca {
-		if err := ca.Create(); err != nil {
-			return err
-		}
-//	}
-	return nil
-}*/
-
 // DeleteProcs represents a command for delete cartons.
 type DeleteProcess struct {
 	Name string
@@ -54,11 +33,9 @@ func (s DeleteProcess) String() string {
 }
 
 func (s DeleteProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.Delete(); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 
@@ -75,11 +52,9 @@ func (s StartProcess) String() string {
 }
 
 func (s StartProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.LCoperation(START); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 
@@ -96,11 +71,9 @@ func (s StopProcess) String() string {
 }
 
 func (s StopProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.LCoperation(STOP); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 
@@ -117,11 +90,9 @@ func (s RestartProcess) String() string {
 }
 
 func (s RestartProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.LCoperation(RESTART); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 
@@ -138,11 +109,9 @@ func (s StateupProcess) String() string {
 }
 
 func (s StateupProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.Stateup(); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 
@@ -159,11 +128,9 @@ func (s StatedownProcess) String() string {
 }
 
 func (s StatedownProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.Statedown(); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 

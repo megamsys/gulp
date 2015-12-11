@@ -17,25 +17,15 @@
 package httpd
 
 import (
-	//	"bytes"
-	//	"compress/gzip"
-	//	"errors"
-	//"fmt"
-	"io/ioutil"
-
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
-	//	"os"
-	//	"strconv"
 	"strings"
-	//	"time"
+
 	"github.com/bmizerany/pat"
 	"github.com/megamsys/gulp/meta"
-
 	"github.com/megamsys/gulp/provision/docker"
-
-	//	"github.com/megamsys/gulp/activities/docker/handler"
 )
 
 type route struct {

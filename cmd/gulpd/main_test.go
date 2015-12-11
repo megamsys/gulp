@@ -16,10 +16,11 @@
 package main
 
 import (
+	"os"
+
 	"github.com/megamsys/gulp/cmd/gulpd/run"
 	"github.com/megamsys/libgo/cmd"
 	"gopkg.in/check.v1"
-	"os"
 )
 
 type S struct{}

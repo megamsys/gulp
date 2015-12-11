@@ -17,10 +17,9 @@
 package gitlab
 
 import (
-	//	"bytes"
-	//	"net/http"
-	"gopkg.in/check.v1"
 	"testing"
+
+	"gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) {

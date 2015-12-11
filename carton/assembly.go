@@ -17,13 +17,13 @@ package carton
 
 import (
 	"errors"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
-	"strings"
-	//	"encoding/json"
 )
 
 const (

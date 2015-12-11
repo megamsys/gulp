@@ -2,8 +2,9 @@ package carton
 
 import (
 	"errors"
-	"gopkg.in/check.v1"
 	"testing"
+
+	"gopkg.in/check.v1"
 )
 
 func Test(t *testing.T) {

@@ -32,8 +32,6 @@ func (s *S) TestConfig_Parse(c *check.C) {
 	if _, err := toml.Decode(`
 		[meta]
 			debug = true
-			hostname = "localhost"
-			bind_address = ":9999"
 			dir = "/var/lib/megam/gulp/meta"
 			riak = "192.168.1.100:8087"
 			api  = "https://api.megam.io/v2"
@@ -43,7 +41,6 @@ func (s *S) TestConfig_Parse(c *check.C) {
 		//t.Fatal(err)
 	}
 
-	c.Assert(conf.Hostname, check.Equals, "localhost")
 	c.Assert(conf.Riak, check.Equals, "192.168.1.100:8087")
 	c.Assert(conf.Api, check.Equals, "https://api.megam.io/v2")
 

@@ -2,14 +2,13 @@ package docker
 
 import (
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/ActiveState/tail"
 	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
-	"io"
-	"strings"
-
-	//log "github.com/Sirupsen/logrus"
 )
 
 const (

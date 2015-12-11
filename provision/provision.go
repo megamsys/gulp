@@ -19,10 +19,11 @@ package provision
 import (
 	"errors"
 	"fmt"
+	"io"
+
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/loggers"
 	"github.com/megamsys/gulp/repository"
-	"io"
 )
 
 const (
