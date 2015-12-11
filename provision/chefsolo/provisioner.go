@@ -227,6 +227,7 @@ func (p chefsoloProvisioner) Command() []string {
 
 	if !p.Sudo {
 		return cmd
+	} else {
+		return append([]string{"sudo"}, cmd...)
 	}
-	return append([]string{"sudo"}, cmd...)
 }

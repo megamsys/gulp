@@ -16,8 +16,8 @@
 package carton
 
 import (
-	//	"fmt"
 	"bytes"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/controls"
@@ -120,6 +120,25 @@ func (c *Carton) CIState() error {
 }
 
 func (c *Carton) Delete() error {
+	return nil
+}
+
+func (c *Carton) Upgrade() error {
+	for _, box := range *c.Boxes {
+
+		var outBuffer bytes.Buffer
+
+		queueWriter := queue.LogWriter{Box: &box}
+		queueWriter.Async()
+		defer queueWriter.Close()
+
+		fileWriter := file.LogWriter{Box: &box}
+		fileWriter.Async()
+		defer fileWriter.Close()
+
+		writer := io.MultiWriter(&outBuffer, &queueWriter, &fileWriter)
+
+	}
 	return nil
 }
 

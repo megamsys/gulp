@@ -37,9 +37,10 @@ var (
 	RESTART = "restart"
 
 	//the policy actions available are
-	POLICY = "policy"
-	BIND   = "bind"
-	UNBIND = "unbind"
+	POLICY  = "policy"
+	BIND    = "bind"
+	UNBIND  = "unbind"
+	UPGRADE = "upgrade"
 )
 
 type ReqParser struct {
@@ -102,6 +103,10 @@ func (p *ReqParser) parseControl(action string) (MegdProcessor, error) {
 		}, nil
 	case RESTART:
 		return RestartProcess{
+			Name: p.name,
+		}, nil
+	case UPGRADE:
+		return UpgradeProcess{
 			Name: p.name,
 		}, nil
 	default:
