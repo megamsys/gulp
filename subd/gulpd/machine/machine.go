@@ -36,6 +36,11 @@ func (m *Machine) PubStatus(status provision.Status) error {
 		return err
 	}
 
+	err = p.Connect()
+	if err != nil {
+		return err
+	}
+
 	//before publish the queue, we need to verify assembly status
 	jsonMsg, err := json.Marshal(
 		carton.Requests{

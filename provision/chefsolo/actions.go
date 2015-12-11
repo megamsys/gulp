@@ -20,7 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
-	
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"

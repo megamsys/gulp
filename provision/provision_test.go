@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"gopkg.in/check.v1"
-
 )
 
 type ProvisionSuite struct{}

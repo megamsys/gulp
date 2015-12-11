@@ -45,12 +45,12 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home        string   `toml:"home"`
-	Dir         string   `toml:"dir"`
-	Riak        []string `toml:"riak"`
-	Api         string   `toml:"api"`
-	AMQP        string   `toml:"amqp"`
-	DockerPath  string   `toml:"docker_path"`
+	Home       string   `toml:"home"`
+	Dir        string   `toml:"dir"`
+	Riak       []string `toml:"riak"`
+	Api        string   `toml:"api"`
+	AMQP       string   `toml:"amqp"`
+	DockerPath string   `toml:"docker_path"`
 }
 
 func (c Config) String() string {
@@ -85,12 +85,12 @@ func NewConfig() *Config {
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
-		Home:        homeDir, 
-		Dir:         defaultDir,
-		Riak:        []string{DefaultRiak},
-		Api:         DefaultApi,
-		AMQP:        DefaultAMQP,
-		DockerPath:  DefaultDockerPath,
+		Home:       homeDir,
+		Dir:        defaultDir,
+		Riak:       []string{DefaultRiak},
+		Api:        DefaultApi,
+		AMQP:       DefaultAMQP,
+		DockerPath: DefaultDockerPath,
 	}
 }
 

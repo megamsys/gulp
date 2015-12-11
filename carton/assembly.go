@@ -164,6 +164,7 @@ func (a *Assembly) mkBoxes(aies string, cookbook string) ([]provision.Box, error
 			} else {
 				b.CartonId = a.Id
 				b.CartonsId = aies
+				b.CartonName = a.Name
 				b.Repo.CartonId = a.Id
 				b.DomainName = a.domain()
 				b.Repo.BoxId = comp.Id

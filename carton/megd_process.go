@@ -96,6 +96,27 @@ func (s RestartProcess) Process(ca *Carton) error {
 	return nil
 }
 
+// UpgradeProcs represents a command for starting  cartons.
+type UpgradeProcess struct {
+	Name string
+}
+
+func (s UpgradeProcess) String() string {
+	var buf bytes.Buffer
+	_, _ = buf.WriteString("UPGRADE CARTON ")
+	_, _ = buf.WriteString(s.Name)
+	return buf.String()
+}
+
+func (s UpgradeProcess) Process(ca *Carton) error {
+	//	for _, c := range ca {
+	if err := ca.Upgrade(); err != nil {
+		return err
+	}
+	//	}
+	return nil
+}
+
 // StateupProcess represents a command for restarting  cartons.
 type StateupProcess struct {
 	Name string

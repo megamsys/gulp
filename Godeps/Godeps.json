@@ -27,7 +27,7 @@
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
 			"Rev": "68415e7123da32b07eab49c96d2c4d6158360e9b"
-		},
+		},		
 		{
 			"ImportPath": "github.com/hpcloud/tail",
 			"Comment": "v0-34-g157f8ef",
@@ -35,31 +35,31 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/amqp",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/hc",
-			"Rev": "a66d15c63d1c4a0c3f0bd17d241207589f01b4a0"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/riakpbc",
@@ -84,7 +84,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "2bacc619e34d59719d9ed86f0e04e8261aed3409"
+			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",

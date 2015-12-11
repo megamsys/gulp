@@ -18,7 +18,7 @@ package github
 
 import (
 	"strings"
-	
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"

@@ -25,7 +25,7 @@ var managers map[string]InitializableLogger
 
 // LoggerManager represents a manager of application Loggers.
 type InitializableLogger interface {
-	Notify(name string, logs []Boxlog) error
+	Notify(name string, logs []Boxlog, obj interface{}) error
 }
 
 type Logger interface {

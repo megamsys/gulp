@@ -20,6 +20,7 @@ import (
 	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/megamd/carton/bind"
 	"gopkg.in/yaml.v2"
 )
 
@@ -40,6 +41,7 @@ type Component struct {
 	Tosca             string                `json:"tosca_type"`
 	Inputs            JsonPairs             `json:"inputs"`
 	Outputs           JsonPairs             `json:"outputs"`
+	Envs              JsonPairs             `json:"envs"`
 	Artifacts         *Artifacts            `json:"artifacts"`
 	Repo              *repository.Repo      `json:"repo"`
 	RelatedComponents []string              `json:"related_components"`
@@ -75,6 +77,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Level:      provision.BoxSome,
 		Name:       c.Name,
 		Tosca:      c.Tosca,
+		Envs:       c.envs(),
 		Commit:     "",
 		Repo:       c.Repo,
 		Operations: c.Operations,
@@ -95,4 +98,14 @@ func (c *Component) SetStatus(status provision.Status) error {
 
 func (c *Component) provider() string {
 	return c.Inputs.match(provision.PROVIDER)
+}
+
+//all the variables in the inputs shall be treated as ENV.
+//we can use a filtered approach as well.
+func (c *Component) envs() []bind.EnvVar {
+	envs := make([]bind.EnvVar, 0, len(c.Envs))
+	for _, i := range c.Envs {
+		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
+	}
+	return envs
 }
