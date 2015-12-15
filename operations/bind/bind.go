@@ -18,38 +18,142 @@ package bind
 
 import (
 	"github.com/megamsys/gulp/operations"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
+
+	//log "code.google.com/p/log4go"
+	//"github.com/megamsys/gulp/global"
+	"github.com/megamsys/libgo/db"
+	//"github.com/tsuru/config"
 )
 
 func init() {
 	operations.Register("bind", bindManager{})
 }
-
+const (
+	APP             = "app"
+	SERVICE         = "service"
+	ASSEMBLIESINDEX = "assemblies_bin"
+)
 type bindManager struct{}
 
 func (m bindManager) Initialize(url string) error {
 	return nil
 }
 
-/**
-* clone repository from github.com using url
-**/
-/*func (m ciManager) Initialize(url string) error {
+func (bind *bindManager) Apply(asm *global.AssemblyWithComponents) (string, error) {
+	log.Info("==========Bind policy entry=============")
+	fmt.Println(asm)
+	for k := range asm.Policies {
+		if asm.Policies[k].Name == "bind service" {
+			for c := range asm.Components {
+				com := &global.Component{}
+				mapB, _ := json.Marshal(asm.Components[c])
+				json.Unmarshal([]byte(string(mapB)), com)
 
-	actions := []*action.Action{
-		&clone,
+				if com.Name != "" && strings.Split(com.ToscaType, ".")[1] == APP {
+					err := uploadENVVariables(asm, com)
+					if err != nil {
+						return "", err
+					}
+				}
+			}
+		}
 	}
-	pipeline := action.NewPipeline(actions...)
+	return "", nil
+}
 
-	args := runActionsArgs{
-	//	Writer:        w,
-		Url:   url,
+func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Component) error {
+	megam_home, ckberr := config.GetString("megam_home")
+	if ckberr != nil {
+		return ckberr
 	}
 
-	err := pipeline.Execute(args)
+	conn, err := db.Conn("assemblies")
 	if err != nil {
-		log.Errorf("error on execute status pipeline for github %s - %s", url, err)
 		return err
 	}
-	return nil
 
-}*/
+	act_id, actberr := config.GetString("account_id")
+	if actberr != nil {
+		return actberr
+	}
+
+	arr, ferr := conn.FetchObjectByIndex("assemblies", ASSEMBLIESINDEX, act_id, "", "")
+	if ferr != nil {
+		return ferr
+	}
+
+	for i := range arr {
+		s := global.BytesToString(arr[i])
+		rassemblies := &global.Assemblies{}
+		rams, ramserr := rassemblies.Get(s)
+		if ramserr != nil {
+			return ramserr
+		}
+		for l := range rams.Assemblies {
+			if len(rams.Assemblies[l]) > 0 {
+				assembly := global.Assembly{Id: rams.Assemblies[l]}
+				rasm, rasmerr := assembly.GetAssemblyWithComponents(rams.Assemblies[l])
+				if rasmerr != nil {
+					log.Error("Error: Riak didn't cooperate:\n%s.", rasmerr)
+					return rasmerr
+				}
+
+				for j := range com.RelatedComponents {
+					if len(com.RelatedComponents[j]) > 0 {
+						rasmname := strings.Split(com.RelatedComponents[j], "/")
+						assemblyname := strings.Split(rasmname[0], ".")[0]
+						if rasm.Name == assemblyname {
+							for rc := range rasm.Components {
+								if rasm.Components[rc] != nil {
+									if rasmname[1] == rasm.Components[rc].Name {
+										basePath := megam_home
+										dir := path.Join(basePath, rasm.Components[rc].Name)
+										filePath := path.Join(dir, "env.sh")
+										if _, err := os.Stat(dir); os.IsNotExist(err) {
+											fmt.Printf("no such file or directory: %s", dir)
+
+											if errm := os.MkdirAll(dir, 0777); errm != nil {
+												return errm
+											}
+											// open output file
+											_, err := os.Create(filePath)
+											if err != nil {
+												return err
+											}
+										}
+
+										str := "BINDED_HOST_NAME=" + rasm.Components[rc].Name + "\n" + "HOST=" + rasm.Name + "." + GetParsedValue(rasm.Inputs, "domain") + "\n" + "\nDBNAME=" + rasm.Components[rc].Name + "\n" + "PORT=" + GetParsedValue(rasm.Components[rc].Inputs, "port") + "\nUSERNAME=" + GetParsedValue(rasm.Components[rc].Inputs, "username") + "\nPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "password") + "\nDBUSER=" + GetParsedValue(rasm.Components[rc].Inputs, "dbname") + "\nDBPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "dbpassword") + "\n"
+										errf := ioutil.WriteFile(filePath, []byte(str), 0644)
+										if errf != nil {
+											return errf
+										}
+										//return nil
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func GetParsedValue(keyvaluepair []*global.KeyValuePair, searchkey string) string {
+
+	pair, err := global.ParseKeyValuePair(keyvaluepair, searchkey)
+	if err != nil {
+		log.Error("Failed to get the value : %s", err)
+		return ""
+	} else {
+		return pair.Value
+	}
+}
