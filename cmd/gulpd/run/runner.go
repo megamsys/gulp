@@ -17,11 +17,11 @@ package run
 
 import (
 	"fmt"
-	//	"runtime"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	pp "github.com/megamsys/libgo/cmd"
 	"github.com/tj/go-spin"
-	"time"
 )
 
 const logo = `

@@ -19,9 +19,7 @@ package carton
 import (
 	"bytes"
 	"io"
-	//	"time"
-	//	"fmt"
-	//	log "github.com/Sirupsen/logrus"
+
 	"github.com/megamsys/gulp/loggers/file"
 	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
@@ -37,11 +35,11 @@ func Deploy(opts *DeployOpts) error {
 	var outBuffer bytes.Buffer
 	//	start := time.Now()
 
-	queueWriter := queue.LogWriter{Box: opts.B}
+	queueWriter := queue.LogWriter{Box: opts.B, Source: opts.B.GetFullName()}
 	queueWriter.Async()
 	defer queueWriter.Close()
 
-	fileWriter := file.LogWriter{Box: opts.B}
+	fileWriter := file.LogWriter{Box: opts.B, Source: opts.B.GetFullName()}
 	fileWriter.Async()
 	defer fileWriter.Close()
 

@@ -17,13 +17,13 @@ package carton
 
 import (
 	"errors"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
-	"strings"
-	//	"encoding/json"
 )
 
 const (
@@ -164,6 +164,7 @@ func (a *Assembly) mkBoxes(aies string, cookbook string) ([]provision.Box, error
 			} else {
 				b.CartonId = a.Id
 				b.CartonsId = aies
+				b.CartonName = a.Name
 				b.Repo.CartonId = a.Id
 				b.DomainName = a.domain()
 				b.Repo.BoxId = comp.Id

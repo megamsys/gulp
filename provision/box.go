@@ -17,17 +17,19 @@ package provision
 
 import (
 	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
 	_ "github.com/megamsys/gulp/loggers/file"
 	_ "github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/megamd/carton/bind"
 	"gopkg.in/yaml.v2"
-	"net/url"
-	"regexp"
-	"strings"
-	"time"
 )
 
 const (
@@ -50,6 +52,7 @@ type Box struct {
 	Id         string
 	CartonsId  string
 	CartonId   string
+	CartonName string
 	Level      BoxLevel
 	Name       string
 	DomainName string
@@ -62,6 +65,7 @@ type Box struct {
 	Address    *url.URL
 	Ip         string
 	Cookbook   string
+	Envs       []bind.EnvVar
 }
 
 func (b *Box) String() string {
@@ -72,9 +76,9 @@ func (b *Box) String() string {
 	}
 }
 
-// GetName returns the name of the box.
+// GetName returns the assemblyname.domain(assembly001YeahBoy.megambox.com) of the box.
 func (b *Box) GetFullName() string {
-	return b.Name + b.DomainName
+	return b.CartonName + "." + b.DomainName
 }
 
 // GetTosca returns the tosca type of the box.
@@ -103,7 +107,7 @@ func (b *Box) Available() bool {
 
 // Log adds a log message to the app. Specifying a good source is good so the
 // user can filter where the message come from.
-func (box *Box) Log(message, source, unit string) error {
+func (box *Box) Log(message, source, unit string, obj interface{}) error {
 
 	messages := strings.Split(message, "\n")
 	logs := make([]loggers.Boxlog, 0, len(messages))
@@ -128,9 +132,8 @@ func (box *Box) Log(message, source, unit string) error {
 		}
 
 		Logger = a
-
 		if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
-			err = initializableLogger.Notify(box.Name+"."+box.DomainName, logs)
+			err = initializableLogger.Notify(box.GetFullName(), logs, obj)
 			if err != nil {
 				log.Errorf("fatal error, couldn't initialize the Logger %s", source)
 				return err

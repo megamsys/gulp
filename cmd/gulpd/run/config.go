@@ -18,14 +18,6 @@ package run
 
 import (
 	"errors"
-	//	"fmt"
-	//	"os"
-	//	"os/user"
-	//	"path/filepath"
-	//	"reflect"
-	//	"strconv"
-	//	"strings"
-	//	"time"
 
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/subd/gulpd"

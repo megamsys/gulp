@@ -18,7 +18,6 @@ package carton
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/cmd"
-	//	"fmt"
 )
 
 type ReqOperator struct {
@@ -57,7 +56,6 @@ func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
 		ca.toBox(cookbook) //on success, make a carton2box if BoxLevel is BoxZero
 	}
 
-	//c, err := a.MkCarton(cookbook)
 	if err != nil {
 		return nil, err
 	}
@@ -68,5 +66,4 @@ func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
 type MegdProcessor interface {
 	Process(c *Carton) error
 	String() string
-	//Required() ExecutionRequirements
 }

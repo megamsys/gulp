@@ -19,9 +19,10 @@ package httpd
 import (
 	"bytes"
 	"fmt"
-	"github.com/megamsys/libgo/cmd"
 	"strconv"
 	"text/tabwriter"
+
+	"github.com/megamsys/libgo/cmd"
 )
 
 type Config struct {
@@ -45,6 +46,6 @@ func (c Config) String() string {
 func NewConfig() *Config {
 	return &Config{
 		Enabled:     true,
-		BindAddress: "localhost:6666",
+		BindAddress: "127.0.0.1:6666",
 	}
 }

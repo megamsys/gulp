@@ -17,15 +17,16 @@ package chefsolo
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
+	"path"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
-	"io"
-	"io/ioutil"
-	"path"
 )
 
 type runMachineActionsArgs struct {

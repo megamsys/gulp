@@ -28,12 +28,6 @@ import (
 )
 
 const (
-	// DefaultHostname is the default hostname if one is not provided.
-	DefaultHostname = "localhost"
-
-	// DefaultBindAddress is the default address to bind to.
-	DefaultBindAddress = ":9999"
-
 	// DefaultRiak is the default riak if one is not provided.
 	DefaultRiak = "localhost:8087"
 
@@ -43,9 +37,6 @@ const (
 	// DefaultAMQP is the default rabbitmq if one is not provided.
 	DefaultAMQP = "amqp://guest:guest@localhost:5672/"
 
-	// DefaultGanglia is the default ganglia if one is not provided.
-	DefaultGanglia = "ganglia.megam.io"
-
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
 )
@@ -54,15 +45,12 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home        string   `toml:"home"`
-	Dir         string   `toml:"dir"`
-	Hostname    string   `toml:"hostname"`
-	BindAddress string   `toml:"bind_address"`
-	Riak        []string `toml:"riak"`
-	Api         string   `toml:"api"`
-	AMQP        string   `toml:"amqp"`
-	Ganglia     string   `toml:"ganglia"`
-	DockerPath  string   `toml:"docker_path"`
+	Home       string   `toml:"home"`
+	Dir        string   `toml:"dir"`
+	Riak       []string `toml:"riak"`
+	Api        string   `toml:"api"`
+	AMQP       string   `toml:"amqp"`
+	DockerPath string   `toml:"docker_path"`
 }
 
 func (c Config) String() string {
@@ -76,8 +64,7 @@ func (c Config) String() string {
 	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
 	b.Write([]byte("API" + "\t" + c.Api + "\n"))
 	b.Write([]byte("AMQP" + "\t" + c.AMQP + "\n"))
-	b.Write([]byte("Ganglia" + "\t" + c.Ganglia + "\n"))
-	b.Write([]byte("Hostname" + "\t" + c.Hostname + "\n"))
+	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
 	return b.String()
@@ -85,29 +72,25 @@ func (c Config) String() string {
 
 func NewConfig() *Config {
 	var homeDir string
-	// By default, store logs, meta and load conf files in current users home directory
+	// By default, use the current users home directory
 	if os.Getenv("MEGAM_HOME") != "" {
 		homeDir = os.Getenv("MEGAM_HOME")
 	} else if u, err := user.Current(); err == nil {
 		homeDir = u.HomeDir
 	} else {
 		return nil
-		//fmt.Errorf("failed to determine home directory")
 	}
 
 	defaultDir := filepath.Join(homeDir, "gulp/meta")
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
-		Home:        homeDir, //Need to remove
-		Dir:         defaultDir,
-		Hostname:    DefaultHostname,
-		BindAddress: DefaultBindAddress,
-		Riak:        []string{DefaultRiak},
-		Api:         DefaultApi,
-		AMQP:        DefaultAMQP,
-		Ganglia:     DefaultGanglia,
-		DockerPath:  DefaultDockerPath,
+		Home:       homeDir,
+		Dir:        defaultDir,
+		Riak:       []string{DefaultRiak},
+		Api:        DefaultApi,
+		AMQP:       DefaultAMQP,
+		DockerPath: DefaultDockerPath,
 	}
 }
 

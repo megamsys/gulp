@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/megamsys/gulp",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.5.2",
 	"Packages": [
 		"./..."
 	],
@@ -27,7 +27,7 @@
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
 			"Rev": "68415e7123da32b07eab49c96d2c4d6158360e9b"
-		},
+		},		
 		{
 			"ImportPath": "github.com/hpcloud/tail",
 			"Comment": "v0-34-g157f8ef",
@@ -35,31 +35,31 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/amqp",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/hc",
-			"Rev": "cf19b4b9d928941827d2189f7869dcce885ec873"
+			"Rev": "ac7c59cbe98265beb9f9f2edb45c0a2170e6382a"
 		},
 		{
 			"ImportPath": "github.com/megamsys/riakpbc",
@@ -84,7 +84,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "2bacc619e34d59719d9ed86f0e04e8261aed3409"
+			"Rev": "833a04a10549a95dc34458c195cbad61bbb6cb4d"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",

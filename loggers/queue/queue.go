@@ -17,11 +17,10 @@
 package queue
 
 import (
-	//"fmt"
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
-	"github.com/megamsys/gulp/meta"
+	//"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/libgo/amqp"
 	//"strings"
 )
@@ -30,7 +29,8 @@ func init() {
 	loggers.Register("queue", queueManager{})
 }
 
-type queueManager struct{}
+type queueManager struct {
+}
 
 var LogPubSubQueueSuffix = "_log"
 
@@ -38,19 +38,15 @@ func logQueue(boxName string) string {
 	return boxName + LogPubSubQueueSuffix
 }
 
-func (m queueManager) Notify(boxName string, messages []loggers.Boxlog) error {
-	pubSubQ, err := amqp.NewRabbitMQ(meta.MC.AMQP, logQueue(boxName))
-	if err != nil {
-		return err
-	}
-
+func (m queueManager) Notify(boxName string, messages []loggers.Boxlog, pubSubQ interface{}) error {
+	pub := pubSubQ.(amqp.PubSubQ)
 	for _, msg := range messages {
 		bytes, err := json.Marshal(msg)
 		if err != nil {
 			log.Errorf("Error on logs notify: %s", err.Error())
 			continue
 		}
-		err = pubSubQ.Pub(bytes)
+		err = pub.Pub(bytes)
 		if err != nil {
 			log.Errorf("Error on logs notify: %s", err.Error())
 		}

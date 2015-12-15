@@ -19,9 +19,9 @@ package file
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/loggers"
-	"github.com/megamsys/gulp/meta"
+	//"github.com/megamsys/gulp/meta"
 	"os"
-	"path"
+	//"path"
 )
 
 func init() {
@@ -30,29 +30,10 @@ func init() {
 
 type fileManager struct{}
 
-func (m fileManager) Notify(boxName string, messages []loggers.Boxlog) error {
-
-	basePath := meta.MC.Dir + "/logs"
-	dir := path.Join(basePath, boxName)
-
-	filePath := path.Join(dir, boxName+"_log")
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		log.Debugf("Creating directory: %s\n", dir)
-		if errm := os.MkdirAll(dir, 0777); errm != nil {
-			return errm
-		}
-	}
-
-	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0600)
-	if err != nil {
-		log.Errorf("Error on logs notify: %s", err.Error())
-		return err
-	}
-
-	defer f.Close()
-
+func (m fileManager) Notify(boxName string, messages []loggers.Boxlog, f interface{}) error {
+	file := f.(*os.File)
 	for _, msg := range messages {
-		if _, err = f.WriteString(msg.Message + "\n"); err != nil {
+		if _, err := file.WriteString(msg.Message + "\n"); err != nil {
 			log.Errorf("Error on logs notify: %s", err.Error())
 			return err
 		}
