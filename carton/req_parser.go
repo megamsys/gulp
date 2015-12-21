@@ -42,6 +42,7 @@ var (
 	BIND    = "bind"
 	UNBIND  = "unbind"
 	UPGRADE = "upgrade"
+	OPERTATIONS = "operations"
 )
 
 type ReqParser struct {
@@ -68,8 +69,10 @@ func (p *ReqParser) ParseRequest(category string, action string) (MegdProcessor,
 		return p.parseControl(action)
 	case POLICY:
 		return p.parsePolicy(action)
+	case OPERTATIONS:
+		return p.parseOperations(action)
 	default:
-		return nil, newParseError([]string{category, action}, []string{STATE, CONTROL, POLICY})
+		return nil, newParseError([]string{category, action}, []string{STATE, CONTROL, POLICY, OPERTATIONS})
 	}
 }
 
@@ -118,16 +121,26 @@ func (p *ReqParser) parseControl(action string) (MegdProcessor, error) {
 func (p *ReqParser) parsePolicy(action string) (MegdProcessor, error) {
 	switch action {
 	case BIND:
-		//	return BindPolicy{}
 		return StartProcess{Name: p.name}, nil
 	case UNBIND:
 		return StopProcess{Name: p.name}, nil
-	//	return UnBindPolicy{}
 	default:
 		return nil, newParseError([]string{POLICY, action}, []string{BIND, UNBIND})
 	}
 }
 
+func (p *ReqParser) parseOperations(action string) (MegdProcessor, error) {
+	switch action {
+	case BIND:
+			return BindPolicy{Name: p.name}, nil
+		//return StartProcess{Name: p.name}, nil
+	case UNBIND:
+		return StopProcess{Name: p.name}, nil
+	//	return UnBindPolicy{}, nil
+	default:
+		return nil, newParseError([]string{OPERTATIONS, action}, []string{BIND, UNBIND})
+	}
+}
 // ParseError represents an error that occurred during parsing.
 type ParseError struct {
 	Found    string

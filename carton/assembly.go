@@ -23,6 +23,7 @@ import (
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/operations"
 	"gopkg.in/yaml.v2"
 )
 
@@ -32,6 +33,7 @@ const (
 )
 
 var Provisioner provision.Provisioner
+var Operations operations.Binder
 
 type JsonPair struct {
 	K string `json:"key"`
@@ -79,6 +81,10 @@ type Ambly struct {
 	CreatedAt    string    `json:"created_at"`
 	ComponentIds []string  `json:"components"`
 }
+type Assemblies struct {
+
+}
+
 type Assembly struct {
 	Ambly
 	Components map[string]*Component

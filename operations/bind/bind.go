@@ -18,44 +18,50 @@ package bind
 
 import (
 	"github.com/megamsys/gulp/operations"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
+/*	"encoding/json"
+	 "io/ioutil"
+	 "os"
 	"path"
 	"strings"
-
-	//log "code.google.com/p/log4go"
-	//"github.com/megamsys/gulp/global"
+	log "code.google.com/p/log4go"
+	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/db"
-	//"github.com/tsuru/config"
+	"github.com/tsuru/config"*/
 )
 
 func init() {
 	operations.Register("bind", bindManager{})
 }
+
 const (
 	APP             = "app"
 	SERVICE         = "service"
 	ASSEMBLIESINDEX = "assemblies_bin"
 )
+
 type bindManager struct{}
 
+
 func (m bindManager) Initialize(url string) error {
+	fmt.Println("==========Bind Initialize=============")
+//	fmt.Println(m)
 	return nil
 }
 
-func (bind *bindManager) Apply(asm *global.AssemblyWithComponents) (string, error) {
-	log.Info("==========Bind policy entry=============")
-	fmt.Println(asm)
-	for k := range asm.Policies {
+func (m bindManager) Apply() (string, error) {
+	fmt.Println("==========Bind Initialize=============")
+//	log.Info("==========Bind Apply=============")
+//	fmt.Println(asm)
+/*	for k := range asm.Policies {
 		if asm.Policies[k].Name == "bind service" {
 			for c := range asm.Components {
-				com := &global.Component{}
+				com := &carton.Component{}
 				mapB, _ := json.Marshal(asm.Components[c])
 				json.Unmarshal([]byte(string(mapB)), com)
 
-				if com.Name != "" && strings.Split(com.ToscaType, ".")[1] == APP {
+				if com.Name != "" && strings.Split(com.Tosca, ".")[1] == APP {
 					err := uploadENVVariables(asm, com)
 					if err != nil {
 						return "", err
@@ -63,13 +69,14 @@ func (bind *bindManager) Apply(asm *global.AssemblyWithComponents) (string, erro
 				}
 			}
 		}
-	}
+	}*/
 	return "", nil
 }
 
-func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Component) error {
-	megam_home, ckberr := config.GetString("megam_home")
-	if ckberr != nil {
+func uploadENVVariables() error {
+//	megam_home, ckberr := config.GetString("megam_home")
+	fmt.Println("*****************uploadENVVariables****************")
+/*	if ckberr != nil {
 		return ckberr
 	}
 
@@ -89,15 +96,15 @@ func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Componen
 	}
 
 	for i := range arr {
-		s := global.BytesToString(arr[i])
-		rassemblies := &global.Assemblies{}
+		s := carton.BytesToString(arr[i])
+		rassemblies := &carton.Assemblies{}
 		rams, ramserr := rassemblies.Get(s)
 		if ramserr != nil {
 			return ramserr
 		}
 		for l := range rams.Assemblies {
 			if len(rams.Assemblies[l]) > 0 {
-				assembly := global.Assembly{Id: rams.Assemblies[l]}
+				assembly := carton.Assembly{Id: rams.Assemblies[l]}
 				rasm, rasmerr := assembly.GetAssemblyWithComponents(rams.Assemblies[l])
 				if rasmerr != nil {
 					log.Error("Error: Riak didn't cooperate:\n%s.", rasmerr)
@@ -142,18 +149,20 @@ func uploadENVVariables(asm *global.AssemblyWithComponents, com *global.Componen
 				}
 			}
 		}
-	}
+	} */
 
 	return nil
 }
 
-func GetParsedValue(keyvaluepair []*global.KeyValuePair, searchkey string) string {
-
-	pair, err := global.ParseKeyValuePair(keyvaluepair, searchkey)
+func GetParsedValue() string {
+fmt.Println("*****************getparsedvalue****************" )
+/*
+	pair, err := carton.ParseKeyValuePair(keyvaluepair, searchkey)
 	if err != nil {
 		log.Error("Failed to get the value : %s", err)
 		return ""
 	} else {
 		return pair.Value
-	}
+	}*/
+	return ""
 }

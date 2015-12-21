@@ -183,6 +183,7 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 		&prepareBoxRepository,
 		&deploy,
 		&updateStatusInRiak,
+		&setEnvs,
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{

@@ -20,7 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
-
+  //"os"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
@@ -34,6 +34,42 @@ type runMachineActionsArgs struct {
 	writer        io.Writer
 	machineStatus provision.Status
 	provisioner   *chefsoloProvisioner
+	command				string
+}
+
+var setEnvs = action.Action{
+	Name:"setEnv variables",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runMachineActionsArgs)
+
+//	 # shell comment to write file
+			if len(args.box.Envs) > 0 {
+				args.command = "echo '" + fmt.Sprintf("%t",args.box.Envs) + "' >/root/test.sh"
+				log.Debugf("Execute Command [%s]  ", args.command)
+				fmt.Println(args.box.Envs)
+				return ExecuteCommandOnce(&args)
+
+	/*	 filename := "envs.sh"
+
+			file, err := os.Create(filename)
+     if err != nil {
+         fmt.Println(err)
+     }
+     fmt.Println(" Write to file : " + filename)
+     n, err := io.WriteString(file, args.box.Envs)
+     if err != nil {
+         fmt.Println(n, err)
+				 return err, nil
+     }
+     file.Close()
+		 return n, err */
+
+		}
+    return nil,nil
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
 }
 
 var updateStatusInRiak = action.Action{

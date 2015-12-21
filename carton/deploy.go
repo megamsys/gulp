@@ -23,6 +23,7 @@ import (
 	"github.com/megamsys/gulp/loggers/file"
 	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/gulp/provision"
+//	"github.com/megamsys/gulp/operations"
 )
 
 type DeployOpts struct {
@@ -57,4 +58,17 @@ func deployToProvisioner(opts *DeployOpts, writer io.Writer) error {
 		return deployer.Deploy(opts.B, writer)
 	}
 	return nil
+}
+
+func BindService(opts *DeployOpts) error {
+	/*a, err := operations.Get(args.operations)
+	if err != nil {
+	//	log.Errorf("fatal error, couldn't locate the Repository %s", args.operations)
+		return err
+	}
+	if binder, ok := operatins.Operation.(opertations.Binder); ok {
+	//if binder, ok := Operations.(opertations.Binder); ok {
+		return binder.Apply()
+	}*/
+return nil
 }

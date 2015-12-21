@@ -173,3 +173,22 @@ func (s CIStateProcess) Process(ca *Carton) error {
 	}
 	return nil
 }
+
+// BindPolicy represents a command for bind service cartons.
+type BindPolicy struct {
+	Name string
+}
+
+func (s BindPolicy) String() string {
+	var buf bytes.Buffer
+	_, _ = buf.WriteString("BIND CARTON ")
+	_, _ = buf.WriteString(s.Name)
+	return buf.String()
+}
+
+func (s BindPolicy) Process(ca *Carton) error {
+	if err := ca.Bind(); err != nil {
+		return err
+	}
+	return nil
+}

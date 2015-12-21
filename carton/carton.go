@@ -118,6 +118,17 @@ func (c *Carton) CIState() error {
 	return nil
 }
 
+func (c *Carton) Bind() error {
+	for _, box := range *c.Boxes {
+		err := BindService(&DeployOpts{B: &box})
+		if err != nil {
+			log.Errorf("Unable to bind service : %s", err)
+			return err
+		}
+  }
+ return nil
+}
+
 func (c *Carton) Delete() error {
 	return nil
 }

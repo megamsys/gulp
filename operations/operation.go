@@ -64,6 +64,10 @@ func (o Operate) GetDescription() string {
 type Operation interface {
 }
 
+type Binder interface {
+Apply() (string, error)
+}
+
 type InitializableOperation interface {
 	Initialize(operationtype string) error
 }
