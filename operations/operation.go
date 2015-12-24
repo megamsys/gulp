@@ -18,6 +18,7 @@ package operations
 
 import (
 	"fmt"
+	"github.com/megamsys/gulp/carton/bind"
 )
 
 type JsonPairs []*JsonPair
@@ -45,7 +46,6 @@ func (p *JsonPairs) match(k string) string {
 }
 
 var managers map[string]InitializableOperation
-
 /* Operation represents a various operations of the application. */
 type Operate struct {
 	OperationType         string    `json:"operation_type"`
@@ -64,12 +64,9 @@ func (o Operate) GetDescription() string {
 type Operation interface {
 }
 
-type Binder interface {
-Apply() (string, error)
-}
-
 type InitializableOperation interface {
 	Initialize(operationtype string) error
+	Apply(asm []*Operate, envs []bind.EnvVar) (string, error)
 }
 
 // Get gets the named provisioner from the registry.

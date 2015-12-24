@@ -96,6 +96,8 @@ func (p *ReqParser) parseState(action string) (MegdProcessor, error) {
 }
 
 func (p *ReqParser) parseControl(action string) (MegdProcessor, error) {
+	fmt.Println("*************parseControl*******************")
+	fmt.Println(action)
 	switch action {
 	case START:
 		return StartProcess{

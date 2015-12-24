@@ -16,56 +16,86 @@
 package bind
 
 import (
-//	"errors"
-//	"fmt"
-//	"io"
-//	"io/ioutil"
-//	"os"
-//	"path"
-//	"strings"
-//	log "github.com/Sirupsen/logrus"
-//	"github.com/megamsys/libgo/action"
-//	"github.com/megamsys/libgo/exec"
-//	"github.com/megamsys/gulp/provision"
-//	"github.com/megamsys/gulp/carton"
+  "fmt"
+	"io"
+	"os"
+	"strings"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/libgo/exec"
+  "github.com/megamsys/gulp/operations"
+	"github.com/megamsys/gulp/carton/bind"
+  "github.com/megamsys/libgo/action"
 )
 
-/*
-type runActionsArgs struct {
-	Writer        io.Writer
-	Url           string
-	Command       string
+type runBindActionsArgs struct {
+  writer      io.Writer
+  envs        []bind.EnvVar
+  operations  []*operations.Operate
+  command     string
 }
 
-var clone = action.Action{
-	Name: "clone",
+var setEnvs = action.Action{
+	Name:"setEnv variables",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		args := ctx.Params[0].(runActionsArgs)
-		log.Debugf("Clone chef cookbooks")
+		args := ctx.Params[0].(runBindActionsArgs)
+		if len(args.envs) > 0 {
+		 filename := "/var/lib/megam/env.sh"
+	  	 if _, err := os.Stat(filename); err == nil {
 
-		//args.Command = "git clone " + args.Url
-		args.Command = "ls -la"
-
-		return ExecuteCommandOnce(&args)
-
+				file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0755)
+				if err != nil {
+						fmt.Println(err)
+						return err, nil
+				}
+ 			 fmt.Println(" Write to file : " + filename)
+ 			 for _, value := range args.envs {
+ 				str :=  "initctl set-env " +value.Name + "=" + value.Value +"\n"
+ 	     n, err := io.WriteString(file,str)
+ 	     if err != nil {
+ 	         fmt.Println(n, err)
+ 					 return err, nil
+ 	       }
+ 		   }
+         file.Close()
+		 }
+		}
+    return nil, nil
 	},
 	Backward: func(ctx action.BWContext) {
 
 	},
 }
 
-func ExecuteCommandOnce(args *runActionsArgs) (action.Result, error) {
+var restartGulp = action.Action{
+	Name:"restart Gulpd",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runBindActionsArgs)
+    log.Debugf("Restart gulpd")
+    args.command = "restart megamgulpd"
+    fmt.Println(args.command)
+    //args.command = "ls -la"
+    //		log.Debugf("Execute Command [%s] ", args.command)
+    return ExecuteCommandOnce(&args)
+
+  },
+  Backward: func(ctx action.BWContext) {
+
+  },
+}
+
+func ExecuteCommandOnce(args *runBindActionsArgs) (action.Result, error) {
 
 	var e exec.OsExecutor
 	var commandWords []string
-	commandWords = strings.Fields(args.Command)
+	commandWords = strings.Fields(args.command)
 
 	if len(commandWords) > 0 {
-		if err := e.Execute(commandWords[0], commandWords[1:], nil, args.Writer, args.Writer); err != nil {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, args.writer, args.writer); err != nil {
 			return nil, err
 		}
 	}
 
 	return &args, nil
 
-}*/
+}

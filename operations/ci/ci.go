@@ -18,6 +18,7 @@ package ci
 
 import (
 	"github.com/megamsys/gulp/operations"
+		"github.com/megamsys/gulp/carton/bind"
 )
 
 func init() {
@@ -30,6 +31,9 @@ func (m ciManager) Initialize(url string) error {
 	return nil
 }
 
+func (m ciManager) Apply(asm []*operations.Operate,envs []bind.EnvVar)(string,error) {
+	return "", nil
+}
 /**
 * clone repository from github.com using url
 **/

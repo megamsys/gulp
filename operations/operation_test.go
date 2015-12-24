@@ -16,20 +16,29 @@
 
 package operations
 
-//import (
-//	"gopkg.in/check.v1"
-//)
+/*import (
+	"gopkg.in/check.v1"
+  "testing"
+ 	//"github.com/megamsys/gulp/operations/bind"
+)
+type S struct{}
 
-/*func (s *S) TestRegister(c *check.C) {
-	mngr := nopManager{}
-	Register("nope", mngr)
-	defer func() {
-		delete(managers, "nope")
-	}()
-	c.Assert(managers["nope"], check.Equals, mngr)
+func Test(t *testing.T) {
+	check.TestingT(t)
 }
 
-func (s *S) TestRegisterOnNilMap(c *check.C) {
+var _ = check.Suite(&S{})
+
+func (s *S) TestRegister(c *check.C) {
+	mngr := nopManager{}
+	Register("bind", mngr)
+	defer func() {
+		delete(managers, "bind")
+	}()
+	c.Assert(managers["bind"], check.Equals, mngr)
+}
+
+/*func (s *S) TestRegisterOnNilMap(c *check.C) {
 	oldManagers := managers
 	managers = nil
 	defer func() {

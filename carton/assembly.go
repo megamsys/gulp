@@ -33,7 +33,7 @@ const (
 )
 
 var Provisioner provision.Provisioner
-var Operations operations.Binder
+var Operation  operations.Operation
 
 type JsonPair struct {
 	K string `json:"key"`

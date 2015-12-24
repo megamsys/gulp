@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+//	"path"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -105,14 +105,12 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 //this setup the requirements for provisioner using megam default repository
 func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) error {
 	a, err := repository.Get(args.repository)
-
 	if err != nil {
 		log.Errorf("fatal error, couldn't locate the Repository %s", args.repository)
 		return err
 	}
 
 	provision.Repository = a
-
 	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 		log.Debugf("Before repository initialization.")
 
@@ -181,9 +179,9 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 		&prepareJSON,
 		&prepareConfig,
 		&prepareBoxRepository,
-		&deploy,
+	//	&deploy,
 		&updateStatusInRiak,
-		&setEnvs,
+//		&setEnvs,
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
@@ -215,11 +213,12 @@ func (p chefsoloProvisioner) Command() []string {
 	}
 
 	cmd := []string{
-		"chef-solo",
+		"ls -la",
+	/*	"/home/megam/.rvm/gems/ruby-2.2.2/bin/chef-solo",
 		"--config", path.Join(p.RootPath, "solo.rb"),
 		"--json-attributes", path.Join(p.RootPath, "solo.json"),
 		"--format", format,
-		"--log_level", logLevel,
+		"--log_level", logLevel,*/
 	}
 
 	//if len(p.RunList) > 0 {

@@ -23,6 +23,7 @@ import (
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	_ "github.com/megamsys/gulp/provision/chefsolo"
+	_ "github.com/megamsys/gulp/operations/bind"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/amqp"
 	"sync"
@@ -155,6 +156,7 @@ func (s *Service) updateStatusPipeline() error {
 	pipeline := action.NewPipeline(actions...)
 
 	asm, _ := carton.NewAssembly(s.Gulpd.CatID)
+	 fmt.Println(asm)
 	args := &runMachineActionsArgs{
 		CatID:    s.Gulpd.CatID,
 		CatsID:   s.Gulpd.CatsID,

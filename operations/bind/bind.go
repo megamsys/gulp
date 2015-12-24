@@ -18,17 +18,10 @@ package bind
 
 import (
 	"github.com/megamsys/gulp/operations"
-	"fmt"
-/*	"encoding/json"
-	 "io/ioutil"
-	 "os"
-	"path"
-	"strings"
-	log "code.google.com/p/log4go"
-	"github.com/megamsys/gulp/carton"
-	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/libgo/db"
-	"github.com/tsuru/config"*/
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/carton/bind"
+	"github.com/megamsys/libgo/action"
 )
 
 func init() {
@@ -45,124 +38,37 @@ type bindManager struct{}
 
 
 func (m bindManager) Initialize(url string) error {
-	fmt.Println("==========Bind Initialize=============")
-//	fmt.Println(m)
 	return nil
 }
 
-func (m bindManager) Apply() (string, error) {
-	fmt.Println("==========Bind Initialize=============")
-//	log.Info("==========Bind Apply=============")
-//	fmt.Println(asm)
-/*	for k := range asm.Policies {
-		if asm.Policies[k].Name == "bind service" {
-			for c := range asm.Components {
-				com := &carton.Component{}
-				mapB, _ := json.Marshal(asm.Components[c])
-				json.Unmarshal([]byte(string(mapB)), com)
-
-				if com.Name != "" && strings.Split(com.Tosca, ".")[1] == APP {
-					err := uploadENVVariables(asm, com)
-					if err != nil {
-						return "", err
-					}
-				}
-			}
+func (m bindManager) Apply(asm []*operations.Operate,envs []bind.EnvVar) (string, error) {
+	for k := range asm {
+		if asm[k].OperationType == "bind" {
+		err := uploadENVVariables(asm, envs)
+		 if err != nil {
+			 log.Errorf("error on execute create pipeline for Set envs")
+			 return "", err
+		 }
 		}
-	}*/
+	}
 	return "", nil
 }
 
-func uploadENVVariables() error {
-//	megam_home, ckberr := config.GetString("megam_home")
-	fmt.Println("*****************uploadENVVariables****************")
-/*	if ckberr != nil {
-		return ckberr
+func uploadENVVariables(oprts []*operations.Operate,envs []bind.EnvVar) error {
+	actions := []*action.Action{
+		&setEnvs,
+		&restartGulp,
+	}
+	pipeline := action.NewPipeline(actions...)
+	args := runBindActionsArgs{
+		envs:           envs,
+		operations:        oprts,
 	}
 
-	conn, err := db.Conn("assemblies")
+	err := pipeline.Execute(args)
 	if err != nil {
+		log.Errorf("error on execute create pipeline for Set envs - %s", err)
 		return err
 	}
-
-	act_id, actberr := config.GetString("account_id")
-	if actberr != nil {
-		return actberr
-	}
-
-	arr, ferr := conn.FetchObjectByIndex("assemblies", ASSEMBLIESINDEX, act_id, "", "")
-	if ferr != nil {
-		return ferr
-	}
-
-	for i := range arr {
-		s := carton.BytesToString(arr[i])
-		rassemblies := &carton.Assemblies{}
-		rams, ramserr := rassemblies.Get(s)
-		if ramserr != nil {
-			return ramserr
-		}
-		for l := range rams.Assemblies {
-			if len(rams.Assemblies[l]) > 0 {
-				assembly := carton.Assembly{Id: rams.Assemblies[l]}
-				rasm, rasmerr := assembly.GetAssemblyWithComponents(rams.Assemblies[l])
-				if rasmerr != nil {
-					log.Error("Error: Riak didn't cooperate:\n%s.", rasmerr)
-					return rasmerr
-				}
-
-				for j := range com.RelatedComponents {
-					if len(com.RelatedComponents[j]) > 0 {
-						rasmname := strings.Split(com.RelatedComponents[j], "/")
-						assemblyname := strings.Split(rasmname[0], ".")[0]
-						if rasm.Name == assemblyname {
-							for rc := range rasm.Components {
-								if rasm.Components[rc] != nil {
-									if rasmname[1] == rasm.Components[rc].Name {
-										basePath := megam_home
-										dir := path.Join(basePath, rasm.Components[rc].Name)
-										filePath := path.Join(dir, "env.sh")
-										if _, err := os.Stat(dir); os.IsNotExist(err) {
-											fmt.Printf("no such file or directory: %s", dir)
-
-											if errm := os.MkdirAll(dir, 0777); errm != nil {
-												return errm
-											}
-											// open output file
-											_, err := os.Create(filePath)
-											if err != nil {
-												return err
-											}
-										}
-
-										str := "BINDED_HOST_NAME=" + rasm.Components[rc].Name + "\n" + "HOST=" + rasm.Name + "." + GetParsedValue(rasm.Inputs, "domain") + "\n" + "\nDBNAME=" + rasm.Components[rc].Name + "\n" + "PORT=" + GetParsedValue(rasm.Components[rc].Inputs, "port") + "\nUSERNAME=" + GetParsedValue(rasm.Components[rc].Inputs, "username") + "\nPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "password") + "\nDBUSER=" + GetParsedValue(rasm.Components[rc].Inputs, "dbname") + "\nDBPASSWORD=" + GetParsedValue(rasm.Components[rc].Inputs, "dbpassword") + "\n"
-										errf := ioutil.WriteFile(filePath, []byte(str), 0644)
-										if errf != nil {
-											return errf
-										}
-										//return nil
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	} */
-
 	return nil
-}
-
-func GetParsedValue() string {
-fmt.Println("*****************getparsedvalue****************" )
-/*
-	pair, err := carton.ParseKeyValuePair(keyvaluepair, searchkey)
-	if err != nil {
-		log.Error("Failed to get the value : %s", err)
-		return ""
-	} else {
-		return pair.Value
-	}*/
-	return ""
 }

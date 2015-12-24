@@ -23,6 +23,7 @@ import (
 type EnvVar struct {
 	Name  string
 	Value string
+	Endpoint string
 }
 
 func (e *EnvVar) String() string {

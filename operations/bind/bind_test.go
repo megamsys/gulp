@@ -18,7 +18,6 @@ package bind
 
 import (
 	"testing"
-
 	"gopkg.in/check.v1"
 )
 
@@ -31,10 +30,10 @@ var _ = check.Suite(&BindSuite{})
 type BindSuite struct {
 }
 
-/*
-func (s *GithubSuite) SetUpSuite(c *check.C) {
-	var err = error.New("testing")
-	c.Assert(err, check.IsNil)
+
+/*func (s *BindSuite) SetUpSuite(c *check.C) {
+	 init()
+	c.Assert("err", check.IsNil)
 }
 
 func (s *GithubSuite) TearDownSuite(c *check.C) {
