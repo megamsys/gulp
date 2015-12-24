@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-//	"path"
+	"path"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -179,9 +179,8 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 		&prepareJSON,
 		&prepareConfig,
 		&prepareBoxRepository,
-	//	&deploy,
+		&deploy,
 		&updateStatusInRiak,
-//		&setEnvs,
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
@@ -213,12 +212,11 @@ func (p chefsoloProvisioner) Command() []string {
 	}
 
 	cmd := []string{
-		"ls -la",
-	/*	"/home/megam/.rvm/gems/ruby-2.2.2/bin/chef-solo",
+		"chef-solo",
 		"--config", path.Join(p.RootPath, "solo.rb"),
 		"--json-attributes", path.Join(p.RootPath, "solo.json"),
 		"--format", format,
-		"--log_level", logLevel,*/
+		"--log_level", logLevel,
 	}
 
 	//if len(p.RunList) > 0 {
