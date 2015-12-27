@@ -73,7 +73,7 @@ func (c Config) String() string {
 	b.Write([]byte("Cookbook" + "\t" + c.Cookbook + "\n"))
 	b.Write([]byte("Repository" + "\t" + c.Repository + "\n"))
 	b.Write([]byte("RepositoryPath" + "\t" + c.RepositoryPath + "\n"))
-	b.Write([]byte("RepositoryTarPath" + "\t" + c.RepositoryTarPath))
+	b.Write([]byte("RepositoryTarPath" + "\t" + c.RepositoryTarPath + "\n"))
 	b.Write([]byte("HomeDir" + "\t" + c.HomeDir))
 	fmt.Fprintln(w)
 	w.Flush()

@@ -25,6 +25,7 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
 	"io"
+	"fmt"
 )
 
 type BoxLevel int
@@ -118,26 +119,31 @@ func (c *Carton) CIState() error {
 	return nil
 }
 
+func (c *Carton) Bind() error {
+	for _, box := range *c.Boxes {
+		err := BindService(&DeployOpts{B: &box})
+		if err != nil {
+			log.Errorf("Unable to bind service : %s", err)
+			return err
+		}
+  }
+ return nil
+}
+
 func (c *Carton) Delete() error {
 	return nil
 }
 
 func (c *Carton) Upgrade() error {
-	/*for _, box := range *c.Boxes {
-
-		var outBuffer bytes.Buffer
-
-		queueWriter := queue.LogWriter{Box: &box}
-		queueWriter.Async()
-		defer queueWriter.Close()
-
-		fileWriter := file.LogWriter{Box: &box}
-		fileWriter.Async()
-		defer fileWriter.Close()
-
-		writer := io.MultiWriter(&outBuffer, &queueWriter, &fileWriter)
-
-	}*/
+	fmt.Println("************Upgrade*****************")
+	for _, box := range *c.Boxes {
+		for _, b := range box.Operations {
+			fmt.Println(b.OperationType)
+			fmt.Println(b.Description)
+			fmt.Println(b.OperationRequirements)
+		}
+			}
+  fmt.Println("*********************************")
 	return nil
 }
 

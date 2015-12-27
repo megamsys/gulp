@@ -105,14 +105,12 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 //this setup the requirements for provisioner using megam default repository
 func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) error {
 	a, err := repository.Get(args.repository)
-
 	if err != nil {
 		log.Errorf("fatal error, couldn't locate the Repository %s", args.repository)
 		return err
 	}
 
 	provision.Repository = a
-
 	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
 		log.Debugf("Before repository initialization.")
 

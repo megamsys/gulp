@@ -14,3 +14,40 @@
 ** limitations under the License.
  */
 package carton
+ /*import (
+	"testing"
+  "fmt"
+ "github.com/megamsys/gulp/carton/bind"
+ _ "github.com/megamsys/gulp/operations/bind"
+ "github.com/megamsys/gulp/provision"
+	"gopkg.in/check.v1"
+)
+
+func Test(t *testing.T) {
+	check.TestingT(t)
+}
+
+
+type S struct{}
+
+var _ = check.Suite(&S{})
+
+
+/*func (s *S) TestBindService(c *check.C) {
+ var z = make([]bind.EnvVar,1)
+ var envs = bind.EnvVar{
+    Name: "port",
+    Value: "8080",
+    Endpoint: "",
+  }
+  z[0] = envs
+ var box = provision.Box{
+   Envs: z,
+ }
+ var x = DeployOpts{
+   B: &box,
+ }
+  err :=BindService(&x)
+  expected := `gulpd failed to apply the lifecle to the app "myapp": failure in app`
+	c.Assert(err, check.Equals, expected)
+}   // */

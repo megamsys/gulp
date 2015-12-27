@@ -18,38 +18,57 @@ package bind
 
 import (
 	"github.com/megamsys/gulp/operations"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/gulp/carton/bind"
+	"github.com/megamsys/libgo/action"
 )
 
 func init() {
 	operations.Register("bind", bindManager{})
 }
 
+const (
+	APP             = "app"
+	SERVICE         = "service"
+	ASSEMBLIESINDEX = "assemblies_bin"
+)
+
 type bindManager struct{}
+
 
 func (m bindManager) Initialize(url string) error {
 	return nil
 }
 
-/**
-* clone repository from github.com using url
-**/
-/*func (m ciManager) Initialize(url string) error {
+func (m bindManager) Apply(asm []*operations.Operate,envs []bind.EnvVar) (string, error) {
+	for k := range asm {
+		if asm[k].OperationType == "bind" {
+		err := uploadENVVariables(asm, envs)
+		 if err != nil {
+			 log.Errorf("error on execute create pipeline for Set envs")
+			 return "", err
+		 }
+		}
+	}
+	return "", nil
+}
 
+func uploadENVVariables(oprts []*operations.Operate,envs []bind.EnvVar) error {
 	actions := []*action.Action{
-		&clone,
+		&setEnvs,
+		&restartGulp,
 	}
 	pipeline := action.NewPipeline(actions...)
-
-	args := runActionsArgs{
-	//	Writer:        w,
-		Url:   url,
+	args := runBindActionsArgs{
+		envs:           envs,
+		operations:        oprts,
 	}
 
 	err := pipeline.Execute(args)
 	if err != nil {
-		log.Errorf("error on execute status pipeline for github %s - %s", url, err)
+		log.Errorf("error on execute create pipeline for Set envs - %s", err)
 		return err
 	}
 	return nil
-
-}*/
+}

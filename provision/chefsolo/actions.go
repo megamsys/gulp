@@ -143,13 +143,46 @@ var deploy = action.Action{
 			log.Errorf("error on get logs - %s", err)
 			return nil, err
 		}
-
+    
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
 
 	},
 }
+
+
+/*var setEnvs = action.Action{
+	Name:"setEnv variables",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runMachineActionsArgs)
+		if len(args.box.Envs) > 0 {
+		 filename := "/var/lib/megam/env.sh"
+	  	 if _, err := os.Stat(filename); err == nil {
+
+				file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0755)
+				if err != nil {
+						fmt.Println(err)
+						return err, nil
+				}
+ 			 fmt.Println(" Write to file : " + filename)
+ 			 for _, value := range args.box.Envs {
+ 				str :=  "initctl set-env " +value.Name + "=" + value.Value +"\n"
+ 	     n, err := io.WriteString(file,str)
+ 	     if err != nil {
+ 	         fmt.Println(n, err)
+ 					 return err, nil
+ 	       }
+ 		   }
+         file.Close()
+		 }
+		}
+    return nil, nil
+	},
+	Backward: func(ctx action.BWContext) {
+
+	},
+}*/
 
 func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
 

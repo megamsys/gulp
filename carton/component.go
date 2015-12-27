@@ -20,7 +20,7 @@ import (
 	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/megamd/carton/bind"
+	"github.com/megamsys/gulp/carton/bind"
 	"gopkg.in/yaml.v2"
 )
 
