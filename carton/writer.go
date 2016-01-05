@@ -1,22 +1,16 @@
-// Copyright 2015 tsuru authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-package queue
+package carton
 
 import (
 	"errors"
-	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/libgo/amqp"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
-var pub amqp.PubSubQ
-
 type Logger interface {
-	Log(string, string, string, interface{}) error
+	Log(string, string, string) error
 }
+
 
 type LogWriter struct {
 	Box    Logger
@@ -25,30 +19,25 @@ type LogWriter struct {
 	doneCh chan bool
 }
 
+func NewLogWriter(l Logger) LogWriter {
+	logWriter := LogWriter{Box: l}
+	logWriter.Async()
+	return logWriter
+}
+
 func (w *LogWriter) Async() {
 	w.msgCh = make(chan []byte, 1000)
 	w.doneCh = make(chan bool)
-
-	pub, err := amqp.NewRabbitMQ(meta.MC.AMQP, logQueue(w.Source))
-	if err != nil {
-		return
-	}
-	err = pub.Connect()
-	if err != nil {
-		return
-	}
-
-	go func(pub amqp.PubSubQ) {
+	go func() {
 		defer close(w.doneCh)
-		defer pub.Close()
 		for msg := range w.msgCh {
-			err := w.write(msg, pub)
+			err := w.write(msg)
 			if err != nil {
 				log.Errorf("[LogWriter] failed to write async logs: %s", err)
 				return
 			}
 		}
-	}(pub)
+	}()
 }
 
 func (w *LogWriter) Close() {
@@ -72,7 +61,7 @@ func (w *LogWriter) Wait(timeout time.Duration) error {
 // Write writes and logs the data.
 func (w *LogWriter) Write(data []byte) (int, error) {
 	if w.msgCh == nil {
-		return len(data), w.write(data, pub)
+		return len(data), w.write(data)
 	}
 	copied := make([]byte, len(data))
 	copy(copied, data)
@@ -80,6 +69,6 @@ func (w *LogWriter) Write(data []byte) (int, error) {
 	return len(data), nil
 }
 
-func (w *LogWriter) write(data []byte, pub amqp.PubSubQ) error {
-	return w.Box.Log(string(data), "queue", "box", pub)
+func (w *LogWriter) write(data []byte) error {
+	return w.Box.Log(string(data), "megd", "box")
 }

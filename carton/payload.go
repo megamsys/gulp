@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,6 +42,19 @@ func NewPayload(b []byte) (*Payload, error) {
 		return nil, err
 	}
 	return p, err
+}
+
+func (p *Payload) AsBytes(id string,
+	catid string, action string,
+	category string,
+	createdat string) ([]byte, error) {
+	p.Id = id
+	p.CatId = catid
+	p.Action = action
+	p.Category = category
+	p.CreatedAt = createdat
+
+	return json.Marshal(p)
 }
 
 //fetch the request json from riak and parse the json to struct

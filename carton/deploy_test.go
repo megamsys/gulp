@@ -1,5 +1,5 @@
 /*
-** copyright [2013-2015] [Megam Systems]
+** copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package carton
 	"testing"
   "fmt"
  "github.com/megamsys/gulp/carton/bind"
- _ "github.com/megamsys/gulp/operations/bind"
  "github.com/megamsys/gulp/provision"
 	"gopkg.in/check.v1"
 )

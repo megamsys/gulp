@@ -33,7 +33,5 @@ func (s *S) TestConfig_Parse(c *check.C) {
 
 	c.Assert(cm, check.NotNil)
 	c.Assert(cm.Meta.Riak, check.DeepEquals, []string{"localhost:8087"})
-	c.Assert(cm.Meta.Api, check.Equals, "https://api.megam.io/v2")
 	c.Assert(cm.Gulpd.Provider, check.Equals, "chefsolo")
-	c.Assert(cm.Gulpd.Repository, check.Equals, "github")
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@ func init() {
 
 type nopManager struct{}
 
-func (nopManager) Clone(url string) error {
-	return nil
-}
-func (nopManager) Initialize(url, tar_url string) error {
+func (nopManager) Clone(r Repository) error {
 	return nil
 }

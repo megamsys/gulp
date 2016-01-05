@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import (
 	"path"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/provision/chefsolo/machine"
 	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
@@ -40,35 +40,108 @@ var updateStatusInRiak = action.Action{
 	Name: "update-status-riak",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
+		fmt.Fprintf(args.writer, "  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())
 
-		switch args.box.Level {
-		case provision.BoxSome:
-			if comp, err := carton.NewComponent(args.box.Id); err != nil {
-				return comp, err
-			} else if err = comp.SetStatus(provision.StatusRunning); err != nil {
-				return comp, err
+		var mach machine.Machine
+		if ctx.Previous != nil {
+			mach = ctx.Previous.(machine.Machine)
+		} else {
+			mach = machine.Machine{
+				Id:       args.box.Id,
+				CartonId: args.box.CartonId,
+				Level:    args.box.Level,
+				Name:     args.box.GetFullName(),
+				Status:   args.machineStatus,
 			}
-		case provision.BoxNone:
-			if asm, err := carton.NewAssembly(args.box.Id); err != nil {
-				return asm, err
-			} else if err = asm.SetStatus(provision.StatusRunning); err != nil {
-				return asm, err
-			}
-		default:
 		}
-		return args, nil
+
+		if err := mach.SetStatus(mach.Status); err != nil {
+			return err, nil
+		}
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
-
+		c := ctx.FWResult.(machine.Machine)
+		c.SetStatus(provision.StatusError)
 	},
 }
 
-var prepareJSON = action.Action{
-	Name: "prepareJSON",
+var createMachine = action.Action{
+	Name: "create-machine",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
+		fmt.Fprintf(args.writer, "  create machine for box (%s)", args.box.GetFullName())
+		mach := machine.Machine{
+			Id:       args.box.Id,
+			CartonId: args.box.CartonId,
+			Level:    args.box.Level,
+			Name:     args.box.GetFullName(),
+		}
+		mach.Status = provision.StatusBootstrapping
+		return mach, nil
+	},
+	Backward: func(ctx action.BWContext) {},
+}
 
-		log.Debugf("Generate the json file ")
+var updateIpsInRiak = action.Action{
+	Name: "update-ips-riak",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		args := ctx.Params[0].(runMachineActionsArgs)
+		fmt.Fprintf(args.writer, "  update ips for box (%s)", args.box.GetFullName())
+
+		err := mach.FindAndSetIps()
+		if err != nil {
+			return nil, err
+		}
+		return mach, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.Status = provision.StatusError
+	},
+}
+
+var appendAuthorizedKeys = action.Action{
+	Name: "append-authorized-keys",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		args := ctx.Params[0].(*runMachineActionsArgs)
+		fmt.Fprintf(args.writer, "  append authorized keys for box (%s)", args.box.GetFullName())
+
+		err := mach.AppendAuthorizedKeys()
+		if err != nil {
+			return nil, err
+		}
+		return mach, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.Status = provision.StatusError
+	},
+}
+
+var changeStateofMachine = action.Action{
+	Name: "change-state-machine",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		args := ctx.Params[0].(runMachineActionsArgs)
+		mach.Status = provision.StatusBootstrapped
+		fmt.Fprintf(args.writer, "  change state of machine (%s, %s)", args.box.GetFullName(), mach.Status.String())
+		mach.ChangeState(mach.Status)
+		return mach, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.SetStatus(provision.StatusError)
+	},
+}
+
+var generateSoloJson = action.Action{
+	Name: "generate-solo-json",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		args := ctx.Params[0].(runMachineActionsArgs)
+		fmt.Fprintf(args.writer, "  generate solo json for box (%s)", args.box.GetFullName())
 
 		data := "{}\n"
 		if args.provisioner.Attributes != "" {
@@ -77,16 +150,14 @@ var prepareJSON = action.Action{
 		return ioutil.WriteFile(path.Join(args.provisioner.SandboxPath, "solo.json"), []byte(data), 0644), nil
 	},
 	Backward: func(ctx action.BWContext) {
-
 	},
 }
 
-var prepareConfig = action.Action{
-	Name: "prepareConfig",
+var generateSoloConfig = action.Action{
+	Name: "generate-solo-config",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-
-		log.Debugf("Generate the config file ")
+		fmt.Fprintf(args.writer, "  generate solo config for box (%s)", args.box.GetFullName())
 
 		data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "/chef-repo/cookbooks"))
 		data += "ssl_verify_mode :verify_peer\n"
@@ -97,95 +168,37 @@ var prepareConfig = action.Action{
 	},
 }
 
-var prepareBoxRepository = action.Action{
-	Name: "prepare-box-repository",
+var cloneBox = action.Action{
+	Name: "clone-box",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-
-		log.Debugf("Generate the box requirements ")
-		if args.box.Repo != nil {
-			if args.box.Repo.Type == SOURCE {
-				a, err := repository.Get(args.box.Repo.Source)
-
-				if err != nil {
-					log.Errorf("fatal error, couldn't located the Repository %s", args.box.Repo.Source)
-					return nil, err
-				}
-				provision.Repository = a
-				if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
-					log.Debugf("Before repository initialization.")
-					err = initializableRepository.Clone(args.box.Repo.Url)
-					if err != nil {
-						log.Errorf("fatal error, couldn't initialize the Repository %s", args.box.Repo.Url)
-						return nil, err
-					} else {
-						log.Debugf("%s Initialized", args.box.Repo.Url)
-					}
-				}
-			}
+		fmt.Fprintf(args.writer, "  clone repository for box (%s)", args.box.GetFullName())
+		if err := args.box.Clone(); err!=nil {
+			return nil, err
 		}
 		return nil, nil
-
 	},
 	Backward: func(ctx action.BWContext) {
-
+		//delete the repository directory
 	},
 }
 
-var deploy = action.Action{
-	Name: "deploy",
+var chefSoloRun = action.Action{
+	Name: "chef-solo-run",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		log.Debugf("create machine for box %s", args.box.GetFullName())
-
 		err := Logs(args, args.writer)
 		if err != nil {
 			log.Errorf("error on get logs - %s", err)
 			return nil, err
 		}
-    
 		return ExecuteCommandOnce(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-
 	},
 }
 
-
-/*var setEnvs = action.Action{
-	Name:"setEnv variables",
-	Forward: func(ctx action.FWContext) (action.Result, error) {
-		args := ctx.Params[0].(runMachineActionsArgs)
-		if len(args.box.Envs) > 0 {
-		 filename := "/var/lib/megam/env.sh"
-	  	 if _, err := os.Stat(filename); err == nil {
-
-				file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0755)
-				if err != nil {
-						fmt.Println(err)
-						return err, nil
-				}
- 			 fmt.Println(" Write to file : " + filename)
- 			 for _, value := range args.box.Envs {
- 				str :=  "initctl set-env " +value.Name + "=" + value.Value +"\n"
- 	     n, err := io.WriteString(file,str)
- 	     if err != nil {
- 	         fmt.Println(n, err)
- 					 return err, nil
- 	       }
- 		   }
-         file.Close()
-		 }
-		}
-    return nil, nil
-	},
-	Backward: func(ctx action.BWContext) {
-
-	},
-}*/
-
 func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
-
 	var e exec.OsExecutor
 	var commandWords []string
 	commandWords = args.provisioner.Command()
@@ -202,6 +215,5 @@ func ExecuteCommandOnce(args *runMachineActionsArgs) (action.Result, error) {
 
 func Logs(args runMachineActionsArgs, w io.Writer) error {
 	log.Debugf("chefsolo execution logs")
-	//if there is a file or something to be created, do it here.
 	return nil
 }

@@ -46,18 +46,13 @@ func NewConfig() *Config {
 	return c
 }
 
-// NewDemoConfig returns the config that runs when no config is specified.
-func NewDemoConfig() (*Config, error) {
-	c := NewConfig()
-	return c, nil
-}
 
 // Validate returns an error if the config is invalid.
 func (c *Config) Validate() error {
 	if c.Meta.Dir == "" {
 		return errors.New("Meta.Dir must be specified")
-	} else if c.Gulpd.CatID == "" {
-		return errors.New("Gulpd.AssemblyID must be specified")
+	} else if c.Gulpd.CartonId == "" {
+		return errors.New("Gulpd.AssemblyId must be specified")
 	}
 	return nil
 }

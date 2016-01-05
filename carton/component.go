@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,38 +16,53 @@
 package carton
 
 import (
+	"strings"
+	"time"
+
+	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
-	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/gulp/carton/bind"
+	"github.com/megamsys/gulp/upgrade"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	DOMAIN          = "domain"
-	COMPONENTBUCKET = "components"
+	DOMAIN        = "domain"
+	PUBLICIP      = "publicip"
+	PRIVATEIP     = "privateip"
+	COMPBUCKET    = "components"
+	IMAGE_VERSION = "version"
+	ONECLICK      = "oneclick"
 )
-
-type Artifacts struct {
-	ArtifactType         string    `json:"artifact_type"`
-	Content              string    `json:"content"`
-	ArtifactRequirements JsonPairs `json:"artifact_requirements"`
-}
 
 type Component struct {
 	Id                string                `json:"id"`
 	Name              string                `json:"name"`
 	Tosca             string                `json:"tosca_type"`
-	Inputs            JsonPairs             `json:"inputs"`
-	Outputs           JsonPairs             `json:"outputs"`
-	Envs              JsonPairs             `json:"envs"`
+	Inputs            bind.JsonPairs        `json:"inputs"`
+	Outputs           bind.JsonPairs        `json:"outputs"`
+	Envs              bind.JsonPairs        `json:"envs"`
+	Repo              Repo                  `json:"repo"`
 	Artifacts         *Artifacts            `json:"artifacts"`
-	Repo              *repository.Repo      `json:"repo"`
 	RelatedComponents []string              `json:"related_components"`
-	Operations        []*operations.Operate `json:"operations"`
+	Operations        []*upgrade.Operate `json:"operations"`
 	Status            string                `json:"status"`
 	CreatedAt         string                `json:"created_at"`
+}
+
+type Artifacts struct {
+	Type         string         `json:"artifact_type"`
+	Content      string         `json:"content"`
+	Requirements bind.JsonPairs `json:"requirements"`
+}
+
+/* Repository represents a repository managed by the manager. */
+type Repo struct {
+	Rtype    string `json:"rtype"`
+	Source   string `json:"source"`
+	Oneclick string `json:"oneclick"`
+	Rurl     string `json:"url"`
 }
 
 func (a *Component) String() string {
@@ -63,7 +78,7 @@ func (a *Component) String() string {
 **/
 func NewComponent(id string) (*Component, error) {
 	c := &Component{Id: id}
-	if err := db.Fetch(COMPONENTBUCKET, id, c); err != nil {
+	if err := db.Fetch(COMPBUCKET, id, c); err != nil {
 		return nil, err
 	}
 	return c, nil
@@ -71,33 +86,73 @@ func NewComponent(id string) (*Component, error) {
 
 //make a box with the details for a provisioner.
 func (c *Component) mkBox() (provision.Box, error) {
-
-	return provision.Box{
+	bt := provision.Box{
 		Id:         c.Id,
 		Level:      provision.BoxSome,
 		Name:       c.Name,
-		Tosca:      c.Tosca,
+		DomainName: c.domain(),
 		Envs:       c.envs(),
+		Tosca:      c.Tosca,
 		Commit:     "",
-		Repo:       c.Repo,
-		Operations: c.Operations,
 		Provider:   c.provider(),
-		Ip:         "",
-	}, nil
+		PublicIp:   c.publicIp(),
+	}
+
+	if &c.Repo != nil {
+		bt.Repo = &repository.Repo{
+			Type:     c.Repo.Rtype,
+			Source:   c.Repo.Source,
+			OneClick: c.withOneClick(),
+			URL:      c.Repo.Rurl,
+		}
+		bt.Repo.Hook = upgrade.BuildHook(c.Operations, repository.CIHOOK) //MEGAMD
+	}
+	return bt, nil
 }
 
 func (c *Component) SetStatus(status provision.Status) error {
+	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
+	c.Inputs = append(c.Inputs, bind.NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate))
+	c.Inputs = append(c.Inputs, bind.NewJsonPair("status", status.String()))
 
 	c.Status = status.String()
-	if err := db.Store(COMPONENTBUCKET, c.Id, c); err != nil {
+
+	if err := db.Store(COMPBUCKET, c.Id, c); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Component) Delete(compid string) {
+	_ = db.Delete(COMPBUCKET, compid)
+}
+
+/*func (c *Component) setDeployData(dd DeployData) error {
+	c.Inputs = append(c.Inputs, NewJsonPair("lastsuccessstatusupdate", ""))
+	c.Inputs = append(c.Inputs, NewJsonPair("status", ""))
+
+	if err := db.Store(COMPBUCKET, c.Id, c); err != nil {
 		return err
 	}
 	return nil
 
 }
+*/
+
+func (c *Component) domain() string {
+	return c.Inputs.Match(DOMAIN)
+}
 
 func (c *Component) provider() string {
-	return c.Inputs.match(provision.PROVIDER)
+	return c.Inputs.Match(provision.PROVIDER)
+}
+
+func (c *Component) publicIp() string {
+	return c.Outputs.Match(PUBLICIP)
+}
+
+func (c *Component) withOneClick() bool {
+	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
 }
 
 //all the variables in the inputs shall be treated as ENV.

@@ -19,45 +19,42 @@ package gulpd
 import (
 	"bytes"
 	"fmt"
-	"github.com/megamsys/gulp/provision/chefsolo"
-	"github.com/megamsys/libgo/cmd"
 	"strconv"
 	"text/tabwriter"
+
+	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/provision/chefsolo"
+	"github.com/megamsys/libgo/cmd"
 )
 
 const (
 	// DefaultAssemblyID.
-	DefaultAssemblyID = "ASM00"
+	DefaultAssemblyID = "ASM00000001"
 
 	// DefaultProvider is the default provisioner used by our engine.
-	DefaultProvider = "chefsolo"
+	DefaultProvider = provision.CHEFSOLO
 
 	// DefaultCookbook is the default cookbook used by chefsolo.
 	DefaultCookbook = "megam_run"
 
-	//DefaultRepository is the default repository for megam
-	DefaultRepository = "github"
+	//DefaultChefRepoGit is the default git for the chef-repo
+	DefaultChefRepoGit = "https://github.com/megamsys/chef-repo.git"
 
-	//DefaultRepositoryPath is the default repository path by megam
-	DefaultRepositoryPath = "https://github.com/megamsys/chef-repo.git"
-
-	//default git release of chef-repo
-	DefaultRepositoryTarPath = "https://github.com/megamsys/chef-repo/archive/0.9.tar.gz"
-
-	DefaultHomeDir = "/var/lib/megam"
+	//DefaultChefTarball is the stable latest tar version
+	DefaultChefTarball = "https://github.com/megamsys/chef-repo/archive/0.94.tar.gz"
 )
 
+var MC *Config
+
 type Config struct {
-	Enabled           bool   `toml:"enabled"`
-	Name              string `toml:"name"`
-	CatsID            string `toml:"cats_id"`
-	CatID             string `toml:"cat_id"`
-	Provider          string `toml:"provider"`
-	Cookbook          string `toml:"cookbook"`
-	Repository        string `toml:"repository"`
-	RepositoryPath    string `toml:"repository_path"`
-	RepositoryTarPath string `toml:"repository_tar_path"`
-	HomeDir           string `toml:"dir"`
+	Enabled         bool   `toml:"enabled"`
+	Name            string `toml:"name"`
+	CartonsId       string `toml:"assemblies_id"`
+	CartonId        string `toml:"assembly_id"`
+	Provider        string `toml:"provider"`
+	Cookbook        string `toml:"cookbook"`
+	ChefRepoGit     string `toml:"chefrepo"`
+	ChefRepoTarball string `toml:"chefrepo_tarball"`
 }
 
 func (c Config) String() string {
@@ -68,13 +65,12 @@ func (c Config) String() string {
 		cmd.Colorfy("Gulpd", "green", "", "") + "\n"))
 	b.Write([]byte("Enabled" + "\t" + strconv.FormatBool(c.Enabled) + "\n"))
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
-	b.Write([]byte("CatID" + "\t" + c.CatID + "\n"))
+	b.Write([]byte("CartonId" + "\t" + c.CartonId + "\n"))
+	b.Write([]byte("CartonsId" + "\t" + c.CartonsId + "\n"))
 	b.Write([]byte("Provider" + "\t" + c.Provider + "\n"))
 	b.Write([]byte("Cookbook" + "\t" + c.Cookbook + "\n"))
-	b.Write([]byte("Repository" + "\t" + c.Repository + "\n"))
-	b.Write([]byte("RepositoryPath" + "\t" + c.RepositoryPath + "\n"))
-	b.Write([]byte("RepositoryTarPath" + "\t" + c.RepositoryTarPath + "\n"))
-	b.Write([]byte("HomeDir" + "\t" + c.HomeDir))
+	b.Write([]byte("ChefRepoGit" + "\t" + c.ChefRepoGit + "\n"))
+	b.Write([]byte("ChefRepoTarball" + "\t" + c.ChefRepoTarball + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
 	return b.String()
@@ -82,24 +78,26 @@ func (c Config) String() string {
 
 func NewConfig() *Config {
 	return &Config{
-		Enabled:           true,
-		Name:              "",
-		Provider:          DefaultProvider,
-		CatID:             DefaultAssemblyID,
-		Cookbook:          DefaultCookbook,
-		Repository:        DefaultRepository,
-		RepositoryPath:    DefaultRepositoryPath,
-		RepositoryTarPath: DefaultRepositoryTarPath,
-		HomeDir:           DefaultHomeDir,
+		Enabled:         true,
+		Name:            "",
+		Provider:        DefaultProvider,
+		CartonId:        DefaultAssemblyID,
+		Cookbook:        DefaultCookbook,
+		ChefRepoGit:     DefaultChefRepoGit,
+		ChefRepoTarball: DefaultChefTarball,
 	}
 }
 
 //convert the config to just a map.
 func (c Config) toMap() map[string]string {
 	m := make(map[string]string)
-	m[chefsolo.Repository] = c.Repository
-	m[chefsolo.RepositoryPath] = c.RepositoryPath
-	m[chefsolo.RepositoryTarPath] = c.RepositoryTarPath
-	m[chefsolo.HomeDir] = c.HomeDir
+	m[chefsolo.NAME] = c.Name
+	m[chefsolo.CHEFREPO_GIT] = c.ChefRepoGit
+	m[chefsolo.CHEFREPO_TARBALL] = c.ChefRepoTarball
+	m[chefsolo.CHEFREPO_COOKBOOK] = c.Cookbook
 	return m
+}
+
+func (c *Config) MkGlobal() {
+	MC = c
 }

@@ -18,30 +18,31 @@ package gulpd
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/carton"
-	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/provision"
-	_ "github.com/megamsys/gulp/provision/chefsolo"
-	_ "github.com/megamsys/gulp/operations/bind"
-	"github.com/megamsys/libgo/action"
-	"github.com/megamsys/libgo/amqp"
 	"sync"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	nsqc "github.com/crackcomm/nsqueue/consumer"
+	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/meta"
+	_ "github.com/megamsys/gulp/operations/bind"
+	"github.com/megamsys/gulp/provision"
+	_ "github.com/megamsys/gulp/provision/chefsolo"
+	nsq "github.com/nsqio/go-nsq"
 )
 
-const leaderWaitTimeout = 30 * time.Second
-
-const QUEUE = "cloudstandup"
+const (
+	maxInFlight = 150
+)
 
 // Service manages the listener and handler for an HTTP endpoint.
 type Service struct {
-	wg      sync.WaitGroup
-	err     chan error
-	Handler *Handler
-
-	Meta  *meta.Config
-	Gulpd *Config
+	wg       sync.WaitGroup
+	err      chan error
+	Handler  *Handler
+	Consumer *nsqc.Consumer
+	Meta     *meta.Config
+	Gulpd    *Config
 }
 
 // NewService returns a new instance of Service.
@@ -52,64 +53,67 @@ func NewService(c *meta.Config, d *Config) *Service {
 		Gulpd: d,
 	}
 	s.Handler = NewHandler(s.Gulpd)
-	c.MC() //an accessor.
+	c.MkGlobal()
+	d.MkGlobal()
 	return s
 }
 
 // Open starts the service
 func (s *Service) Open() error {
-
-	log.Debug("starting gulpd service")
-
-	p, err := amqp.NewRabbitMQ(s.Meta.AMQP, s.Gulpd.Name)
-	if err != nil {
-		return err
-	}
-
-	if swt, err := p.Sub(); err != nil {
-		return err
-	} else {
-		if err = s.setProvisioner(); err != nil {
+	go func() error {
+		log.Info("starting deployd service")
+		if err := nsqc.Register(s.Gulpd.Name, "agent", maxInFlight, s.processNSQ); err != nil {
+			return err
+		}
+		if err := nsqc.Connect(s.Meta.NSQd...); err != nil {
 			return err
 		}
 
-		if err = s.updateStatusPipeline(); err != nil {
+		s.Consumer = nsqc.DefaultConsumer
+
+		if err := s.setProvisioner(); err != nil {
 			return err
 		}
+		nsqc.Start(true)
+		return nil
+	}()
 
-		go s.processQueue(swt)
-	}
-
+	s.boot()
 	return nil
 }
 
-// processQueue continually drains the given queue  and processes the queue request
-// to the appropriate handlers..
-func (s *Service) processQueue(drain chan []byte) error {
-	//defer s.wg.Done()
-	for raw := range drain {
-		p, err := carton.NewPayload(raw)
-		if err != nil {
-			return err
-		}
-
-		pc, err := p.Convert()
-		if err != nil {
-			return err
-		}
-		go s.Handler.serveAMQP(pc, s.Gulpd.Cookbook)
+func (s *Service) processNSQ(msg *nsqc.Message) {
+	p, err := carton.NewPayload(msg.Body)
+	if err != nil {
+		return
 	}
-	return nil
+
+	re, err := p.Convert()
+	if err != nil {
+		return
+	}
+	go s.Handler.serveNSQ(re)
+
+	return
+}
+
+func (s *Service) boot() {
+	go func() {
+		b, err := (&carton.Payload{}).AsBytes("", s.Gulpd.CartonId,
+			carton.BOOT, carton.STATE, time.Now().Local().Format(time.RFC822))
+		if err != nil {
+			return
+		}
+		s.processNSQ(&nsqc.Message{&nsq.Message{Body: b}})
+	}()
 }
 
 // Close closes the underlying subscribe channel.
 func (s *Service) Close() error {
-	/*save the subscribe channel and close it.
-	  don't know if the amqp has Close method ?
-	  	if s.chn != nil {
-	  		return s.chn.Close()
-	  	}
-	*/
+	if s.Consumer != nil {
+		s.Consumer.Stop()
+	}
+
 	s.wg.Wait()
 	return nil
 }
@@ -140,33 +144,6 @@ func (s *Service) setProvisioner() error {
 		if err == nil && startupMessage != "" {
 			log.Infof(startupMessage)
 		}
-	}
-	return nil
-}
-
-//1. &updateStatus in Riak - Bootstrapped..
-//2. &publishStatus in publish the bootstrapped message to cloudstandup queue
-func (s *Service) updateStatusPipeline() error {
-	actions := []*action.Action{
-		&updateIPInRiak,
-		&updateSshkey,
-		&updateStatusInRiak,
-		&publishStatus,
-	}
-	pipeline := action.NewPipeline(actions...)
-
-	asm, _ := carton.NewAssembly(s.Gulpd.CatID)
-	 fmt.Println(asm)
-	args := &runMachineActionsArgs{
-		CatID:    s.Gulpd.CatID,
-		CatsID:   s.Gulpd.CatsID,
-		Assembly: asm,
-	}
-
-	err := pipeline.Execute(args)
-	if err != nil {
-		log.Errorf("error on execute update pipeline for service %s - %s", "Gulpd", err)
-		return err
 	}
 	return nil
 }

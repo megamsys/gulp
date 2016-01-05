@@ -23,19 +23,13 @@ import (
 	"github.com/megamsys/libgo/cmd"
 )
 
-// These variables are populated via the Go linker.
 var (
-	version string = "0.9"
-	commit  string = "01"
-	branch  string = "master"
-	header  string = "Supported-Gulp"
+	version string = "0.9.3"
 	date    string
+	commit  string
 )
 
 func init() {
-	// Only log the debug or above
-	log.SetLevel(log.DebugLevel) // level is configurable via cli option.
-	// Output to stderr instead of stdout, could also be a file.
 	log.SetOutput(os.Stdout)
 }
 
@@ -49,6 +43,7 @@ func cmdRegistry(name string) *cmd.Manager {
 	m.Register(&run.Start{})
 	return m
 }
+
 
 //Run the commands from cli.
 func main() {

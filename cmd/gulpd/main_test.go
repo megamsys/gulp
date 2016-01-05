@@ -28,7 +28,7 @@ type S struct{}
 var _ = check.Suite(&S{})
 
 func (s *S) TestCommandsFromBaseManagerAreRegistered(c *check.C) {
-	baseManager := cmd.NewManager("gulpd", "0.9.1", os.Stdout, os.Stderr, os.Stdin, nil, nil)
+	baseManager := cmd.NewManager("gulpd", "0.9.2", os.Stdout, os.Stderr, os.Stdin, nil, nil)
 	manager := cmdRegistry("gulpd")
 
 	for name, instance := range baseManager.Commands {

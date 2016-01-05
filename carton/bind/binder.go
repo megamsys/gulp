@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package bind
 
 import (
 	"fmt"
+	"github.com/megamsys/libgo/os"
 )
 
 // EnvVar represents a environment variable for a carton.
 type EnvVar struct {
-	Name  string
-	Value string
+	Name     string
+	Value    string
 	Endpoint string
 }
 
@@ -30,22 +31,62 @@ func (e *EnvVar) String() string {
 	return fmt.Sprintf("%s=%s", e.Name, e.Value)
 }
 
-type Binder interface {
-
-	// Bind makes the bind between two boxes.
-	//Bind(b *provision.Box) error
-
-	// Unbind makes the unbind between two boxes
-	//Unbind(b *provision.Box) error
-
-	// Provides the YetToBeBoud instances for a box.
-	//Group() (*[]YBoundBox, error)
+type JsonPair struct {
+	K string `json:"key"`
+	V string `json:"value"`
 }
 
-/*Yet to be bound instance for a box.
-Details needed like the Envs (in a map), name.domain
-*/
-type YBoundBox struct {
-	Name string
-	Envs map[string]string
+type JsonPairs []*JsonPair
+
+func NewJsonPair(k string, v string) *JsonPair {
+	return &JsonPair{
+		K: k,
+		V: v,
+	}
+}
+
+//match for a value in the JSONPair and send the value
+func (p *JsonPairs) Match(k string) string {
+	for _, j := range *p {
+		if j.K == k {
+			return j.V
+		}
+	}
+	return ""
+}
+
+//match for a value in the JSONPair and send the value
+func (p *JsonPairs) NukeAndSet(m map[string][]string) {
+	for mkey, mvals := range m { //r is key, s is value
+		for i, j := range *p { //i index, j is value
+			if j.K == mkey {
+				p1 := *p
+				p1 = append(p1[:i], p1[i+1:]...) //nuke the old ones that match r.
+			}
+		}
+		for _, mval := range mvals {
+			*p = append(*p, NewJsonPair(mkey, mval))
+		}
+	}
+}
+
+func (p *JsonPairs) ForInitService() string {
+	var envs = ""
+	for _, value := range *p {
+		envs += initServiceEnv(value.Name, value.Value)
+	}
+	return envs
+}
+
+func initServiceEnv(key string, value string) string {
+	osh := os.HostOS()
+	switch runtime.GOOS {
+	case "linux":
+		if osh != os.Ubuntu {
+			return key + "=" + value //systemd
+		}
+	default:
+		return "initctl set-env " + key + "=" + value + "\n"
+	}
+	return "initctl set-env " + key + "=" + value + "\n"
 }

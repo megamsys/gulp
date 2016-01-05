@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,11 +25,8 @@ import (
 var (
 	//the state actions available are.
 	STATE     = "state"
-	CREATE    = "create"
-	DELETE    = "delete"
+	BOOT      = "boot"
 	STATEUP   = "stateup"
-	STATEDOWN = "statedown"
-	CISTATE   = "cistate"
 
 	//the control actions available are.
 	CONTROL = "control"
@@ -37,12 +34,9 @@ var (
 	START   = "start"
 	RESTART = "restart"
 
-	//the policy actions available are
-	POLICY  = "policy"
-	BIND    = "bind"
-	UNBIND  = "unbind"
-	UPGRADE = "upgrade"
-	OPERTATIONS = "operations"
+	//the operation actions is just one called upgrade
+	OPERATIONS = "operations"
+	UPGRADE    = "upgrade"
 )
 
 type ReqParser struct {
@@ -67,37 +61,29 @@ func (p *ReqParser) ParseRequest(category string, action string) (MegdProcessor,
 		return p.parseState(action)
 	case CONTROL:
 		return p.parseControl(action)
-	case POLICY:
-		return p.parsePolicy(action)
-	case OPERTATIONS:
+	case OPERATIONS:
 		return p.parseOperations(action)
 	default:
-		return nil, newParseError([]string{category, action}, []string{STATE, CONTROL, POLICY, OPERTATIONS})
+		return nil, newParseError([]string{category, action}, []string{STATE, CONTROL, OPERATIONS})
 	}
 }
 
 func (p *ReqParser) parseState(action string) (MegdProcessor, error) {
 	switch action {
+	case BOOT:
+		return BootProcess{
+			Name: p.name,
+		}, nil
 	case STATEUP:
 		return StateupProcess{
 			Name: p.name,
 		}, nil
-	case STATEDOWN:
-		return StatedownProcess{
-			Name: p.name,
-		}, nil
-	case CISTATE:
-		return CIStateProcess{
-			Name: p.name,
-		}, nil
 	default:
-		return nil, newParseError([]string{STATE, action}, []string{STATEUP, STATEDOWN, CISTATE})
+		return nil, newParseError([]string{STATE, action}, []string{BOOT, STATEUP})
 	}
 }
 
 func (p *ReqParser) parseControl(action string) (MegdProcessor, error) {
-	fmt.Println("*************parseControl*******************")
-	fmt.Println(action)
 	switch action {
 	case START:
 		return StartProcess{
@@ -111,38 +97,22 @@ func (p *ReqParser) parseControl(action string) (MegdProcessor, error) {
 		return RestartProcess{
 			Name: p.name,
 		}, nil
-	case UPGRADE:
-		return UpgradeProcess{
-			Name: p.name,
-		}, nil
 	default:
 		return nil, newParseError([]string{CONTROL, action}, []string{START, STOP, RESTART})
 	}
 }
 
-func (p *ReqParser) parsePolicy(action string) (MegdProcessor, error) {
+func (p *ReqParser) parseOperations(action string) (MegdProcessor, error) {
 	switch action {
-	case BIND:
-		return StartProcess{Name: p.name}, nil
-	case UNBIND:
-		return StopProcess{Name: p.name}, nil
+	case UPGRADE:
+		return UpgradeProcess{
+			Name: p.name,
+		}, nil
 	default:
-		return nil, newParseError([]string{POLICY, action}, []string{BIND, UNBIND})
+		return nil, newParseError([]string{OPERATIONS, action}, []string{UPGRADE})
 	}
 }
 
-func (p *ReqParser) parseOperations(action string) (MegdProcessor, error) {
-	switch action {
-	case BIND:
-			return BindPolicy{Name: p.name}, nil
-		//return StartProcess{Name: p.name}, nil
-	case UNBIND:
-		return StopProcess{Name: p.name}, nil
-	//	return UnBindPolicy{}, nil
-	default:
-		return nil, newParseError([]string{OPERTATIONS, action}, []string{BIND, UNBIND})
-	}
-}
 // ParseError represents an error that occurred during parsing.
 type ParseError struct {
 	Found    string
