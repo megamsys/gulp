@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/ActiveState/tail"
-	"github.com/megamsys/gulp/loggers/queue"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
 )
@@ -34,16 +33,14 @@ type runLogsActionsArgs struct {
 	HomeDir   string
 	Writer    io.Writer
 	CloseChan chan bool
-	LogWriter *queue.LogWriter
 }
 
 var setNetwork = action.Action{
-	Name: "Set Network for docker",
+	Name: "attach-network-docker",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runNetworkActionsArgs)
 		network_command := args.HomeDir + "/" + PIPEWORK + " " + args.Bridge + " " + parseID(args.Id) + " " + args.IpAddr + "/24@" + args.Gateway
 		args.Command = network_command
-
 		return networkExecutor(&args)
 	},
 	Backward: func(ctx action.BWContext) {
@@ -52,7 +49,7 @@ var setNetwork = action.Action{
 }
 
 var setLogs = action.Action{
-	Name: "Set Logs for docker",
+	Name: "attachlogs-docker",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runLogsActionsArgs)
 		return logExecutor(&args)
@@ -82,7 +79,6 @@ func logExecutor(logs *runLogsActionsArgs) (action.Result, error) {
 }
 
 func tailLog(cs chan []byte, filePath string, w io.Writer, closechan chan bool) {
-
 	t, _ := tail.TailFile(filePath, tail.Config{Follow: true})
 	for line := range t.Lines {
 		fmt.Fprintln(w, line)

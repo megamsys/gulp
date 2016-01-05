@@ -19,7 +19,6 @@ package gulpd
 import (
 	"github.com/megamsys/gulp/meta"
 	"gopkg.in/check.v1"
-	"fmt"
 )
 
 type S struct {
@@ -29,9 +28,8 @@ type S struct {
 var _ = check.Suite(&S{})
 
 func (s *S) TestCreateService(c *check.C) {
-fmt.Println("***********service/test****************")
 	srv := NewService(&meta.Config{}, &Config{
-		CatID: "ASM000",
+		CartonId: "ASM000",
 	})
 	s.service = srv
 	c.Assert(srv, check.NotNil)

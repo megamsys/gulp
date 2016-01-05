@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 package carton
 
 import (
-	"errors"
+	"fmt"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/operations"
 	"gopkg.in/yaml.v2"
 )
 
@@ -32,62 +32,29 @@ const (
 	SSHKEY         = "sshkey"
 )
 
-var Provisioner provision.Provisioner
-var Operation  operations.Operation
-
-type JsonPair struct {
-	K string `json:"key"`
-	V string `json:"value"`
-}
-
-type JsonPairs []*JsonPair
-
-func NewJsonPair(k string, v string) *JsonPair {
-	return &JsonPair{
-		K: k,
-		V: v,
-	}
-}
-
-//match for a value in the JSONPair and send the value
-func (p *JsonPairs) match(k string) string {
-	for _, j := range *p {
-		if j.K == k {
-			return j.V
-		}
-	}
-	return ""
-}
-
-// Carton is the main type in megam. A carton represents a real world assembly.
-// An assembly comprises of various components.
-// This struct provides and easy way to manage information about an assembly, instead passing it around
-
-type Policy struct {
-	Name    string   `json:"name"`
-	Ptype   string   `json:"ptype"`
-	Members []string `json:"members"`
-}
-
+//An assembly comprises of various components.
 type Ambly struct {
-	Id           string    `json:"id"`
-	Name         string    `json:"name"`
-	JsonClaz     string    `json:"json_claz"`
-	Tosca        string    `json:"tosca_type"`
-	Policies     []*Policy `json:"policies"`
-	Inputs       JsonPairs `json:"inputs"`
-	Outputs      JsonPairs `json:"outputs"`
-	Status       string    `json:"status"`
-	CreatedAt    string    `json:"created_at"`
-	ComponentIds []string  `json:"components"`
-}
-type Assemblies struct {
-
+	Id           string         `json:"id"`
+	Name         string         `json:"name"`
+	JsonClaz     string         `json:"json_claz"`
+	Tosca        string         `json:"tosca_type"`
+	Inputs       bind.JsonPairs `json:"inputs"`
+	Outputs      bind.JsonPairs `json:"outputs"`
+	Policies     []*Policy      `json:"policies"`
+	Status       string         `json:"status"`
+	CreatedAt    string         `json:"created_at"`
+	ComponentIds []string       `json:"components"`
 }
 
 type Assembly struct {
 	Ambly
 	Components map[string]*Component
+}
+
+type Policy struct {
+	Name    string   `json:"name"`
+	Type    string   `json:"type"`
+	Members []string `json:"members"`
 }
 
 func (a *Assembly) String() string {
@@ -98,33 +65,67 @@ func (a *Assembly) String() string {
 	}
 }
 
-//mkAssemblies into a carton. Just use what you need inside this carton
-//a carton comprises of self contained boxes (actually a "colored component") externalized
-//with what we need.
-func (a *Assembly) MkCarton(cookbook string) (*Carton, error) {
-
-	//	b, err := a.mkBoxes(aies)
-	b, err := a.mkBoxes("", cookbook)
+//Assembly into a carton.
+//a carton comprises of self contained boxes
+func mkCarton(aies string, ay string) (*Carton, error) {
+	a, err := get(ay)
 	if err != nil {
 		return nil, err
 	}
 
-	//repo := NewRepo(a.Operations, repository.CI)
+	b, err := a.mkBoxes(aies)
+	if err != nil {
+		return nil, err
+	}
 
 	c := &Carton{
-		Id:         a.Id, //assembly id
-		CartonsId:  "",   //assemblies id
-		Name:       a.Name,
-		Tosca:      a.Tosca,
-		Envs:       a.envs(),
-		DomainName: a.domain(),
-		Provider:   a.provider(),
-		Boxes:      &b,
+		Id:           ay,   //assembly id
+		CartonsId:    aies, //assemblies id
+		Name:         a.Name,
+		Tosca:        a.Tosca,
+		ImageVersion: a.imageVersion(),
+		DomainName:   a.domain(),
+		Compute:      a.newCompute(),
+		Provider:     a.provider(),
+		PublicIp:     a.publicIp(),
+		Boxes:        &b,
 	}
 	return c, nil
 }
 
-func fetch(id string) (*Ambly, error) {
+//lets make boxes with components to be mutated later or, and the required
+//information for a launch.
+//A "colored component" externalized with what we need.
+func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
+	newBoxs := make([]provision.Box, 0, len(a.Components))
+
+	for _, comp := range a.Components {
+		if len(strings.TrimSpace(comp.Id)) > 1 {
+			if b, err := comp.mkBox(); err != nil {
+				return nil, err
+			} else {
+				b.CartonId = a.Id
+				b.CartonsId = aies
+				b.CartonName = a.Name
+				if len(strings.TrimSpace(b.Provider)) <= 0 {
+					b.Provider = a.provider()
+				}
+				if len(strings.TrimSpace(b.PublicIp)) <= 0 {
+					b.PublicIp = a.publicIp()
+				}
+				if b.Repo.IsEnabled() {
+					b.Repo.Hook.CartonId = a.Id //this is screwy, why do we need it.
+					b.Repo.Hook.BoxId = comp.Id
+				}
+				b.Compute = a.newCompute()
+				newBoxs = append(newBoxs, b)
+			}
+		}
+	}
+	return newBoxs, nil
+}
+
+func getBig(id string) (*Ambly, error) {
 	a := &Ambly{}
 	if err := db.Fetch(ASSEMBLYBUCKET, id, a); err != nil {
 		return nil, err
@@ -132,14 +133,60 @@ func fetch(id string) (*Ambly, error) {
 	return a, nil
 }
 
-//get the assebmly and its full detail of a component. we only store the
+//Temporary hack to create an assembly from its id.
+//This is used by SetStatus.
+//We need add a Notifier interface duck typed by Box and Carton ?
+func NewAssembly(id string) (*Assembly, error) {
+	return get(id)
+}
+
+func NewAmbly(id string) (*Ambly, error) {
+	return getBig(id)
+}
+
+func NewCarton(aies string, ay string) (*Carton, error) {
+	return mkCarton(aies, ay)
+}
+
+func (a *Ambly) SetStatus(status provision.Status) error {
+	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
+
+	a.Inputs = append(a.Inputs, bind.NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate))
+	a.Inputs = append(a.Inputs, bind.NewJsonPair("status", status.String()))
+	a.Status = status.String()
+
+	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
+
+//update outputs in riak, nuke the matching keys available
+func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
+	if len(m) > 0 {
+		log.Debugf("nuke and set outps in riak [%s]", m)
+		a.Outputs.NukeAndSet(m) //just nuke the matching output key:
+		if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
+			return err
+		}
+	} else {
+		return provision.ErrNoIpsFound
+	}
+	return nil
+}
+
+func (c *Assembly) Delete(asmid string) {
+	_ = db.Delete(ASSEMBLYBUCKET, asmid)
+}
+
+//get the assembly and its children (component). we only store the
 //componentid, hence you see that we have a components map to cater to that need.
-func Get(id string) (*Assembly, error) {
+func get(id string) (*Assembly, error) {
 	a := &Assembly{Components: make(map[string]*Component)}
 	if err := db.Fetch(ASSEMBLYBUCKET, id, a); err != nil {
 		return nil, err
 	}
-
 	a.dig()
 	return a, nil
 }
@@ -158,82 +205,52 @@ func (a *Assembly) dig() error {
 	return nil
 }
 
-//lets make boxes with components to be mutated later or, and the required
-//information for a launch.
-func (a *Assembly) mkBoxes(aies string, cookbook string) ([]provision.Box, error) {
-	newBoxs := make([]provision.Box, 0, len(a.Components))
-
-	for _, comp := range a.Components {
-		if len(strings.TrimSpace(comp.Id)) > 1 {
-			if b, err := comp.mkBox(); err != nil {
-				return nil, err
-			} else {
-				b.CartonId = a.Id
-				b.CartonsId = aies
-				b.CartonName = a.Name
-				b.Repo.CartonId = a.Id
-				b.DomainName = a.domain()
-				b.Repo.BoxId = comp.Id
-				b.Cookbook = cookbook
-				//			b.Compute = a.newCompute()
-				newBoxs = append(newBoxs, b)
-			}
-		}
-	}
-	return newBoxs, nil
-}
-
-//all the variables in the inputs shall be treated as ENV.
-//we can use a filtered approach as well.
-func (a *Assembly) envs() []bind.EnvVar {
-	envs := make([]bind.EnvVar, 0, len(a.Inputs))
-	for _, i := range a.Inputs {
-		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
-	}
-	return envs
-}
-
 func (a *Ambly) Sshkey() string {
-	return a.Inputs.match(SSHKEY)
+	return a.Inputs.Match(SSHKEY)
 }
 
 func (a *Assembly) domain() string {
-	return a.Inputs.match(DOMAIN)
+	return a.Inputs.Match(DOMAIN)
 }
 
 func (a *Assembly) provider() string {
-	return a.Inputs.match(provision.PROVIDER)
+	return a.Inputs.Match(provision.PROVIDER)
 }
 
-//for now, create a newcompute which is used during a SetStatus.
-//We can add a Notifier interface which can be passed in the Box ?
-func NewAssembly(id string) (*Ambly, error) {
-	a, err := fetch(id)
-	if err != nil {
-		return nil, err
-	}
-	return a, nil
+func (a *Assembly) publicIp() string {
+	return a.Outputs.Match(PUBLICIP)
 }
 
-//put status to assembly json in riak
-func (a *Ambly) SetStatus(status provision.Status) error {
-	a.Status = status.String()
-	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
-		return err
-	}
-	return nil
+func (a *Assembly) imageVersion() string {
+	return a.Inputs.Match(IMAGE_VERSION)
 }
 
-//put virtual machine ip address in riak
-func (a *Ambly) SetIPAddress(status string) error {
-	if status != "" {
-		log.Debugf("put virtual machine ip address in riak [%s]", status)
-		a.Outputs = append(a.Outputs, NewJsonPair("publicip", status))
-		if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
-			return err
-		}
-	} else {
-		return errors.New(provision.StatusIPError.String())
+func (a *Assembly) newCompute() provision.BoxCompute {
+	return provision.BoxCompute{
+		Cpushare: a.getCpushare(),
+		Memory:   a.getMemory(),
+		Swap:     a.getSwap(),
+		HDD:      a.getHDD(),
 	}
-	return nil
+}
+
+func (a *Assembly) getCpushare() string {
+	return a.Inputs.Match(provision.CPU)
+}
+
+func (a *Assembly) getMemory() string {
+	return a.Inputs.Match(provision.RAM)
+
+}
+
+func (a *Assembly) getSwap() string {
+	return ""
+}
+
+//The default HDD is 10. we should configure it in the megamd.conf
+func (a *Assembly) getHDD() string {
+	if len(strings.TrimSpace(a.Inputs.Match(provision.HDD))) <= 0 {
+		return "10"
+	}
+	return a.Inputs.Match(provision.HDD)
 }

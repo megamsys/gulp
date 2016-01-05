@@ -1,21 +1,19 @@
-package file
+package carton
 
 import (
-//	"time"
+	"time"
 
-//	"github.com/megamsys/gulp/provision"
-//	"gopkg.in/check.v1"
+	"github.com/megamsys/gulp/provision"
+	"gopkg.in/check.v1"
 )
 
-/*
 type WriterSuite struct {
-	//	conn *db.Storage
 }
 
 var _ = check.Suite(&WriterSuite{})
 
 func (s *WriterSuite) TestLogWriter(c *check.C) {
-	a := provision.Box{Name: "testing"}
+	a := provision.Box{}
 	writer := LogWriter{Box: &a}
 	data := []byte("ble")
 	_, err := writer.Write(data)
@@ -56,13 +54,4 @@ func (s *WriterSuite) TestLogWriterAsyncCopySlice(c *check.C) {
 	writer.Close()
 	err := writer.Wait(5 * time.Second)
 	c.Assert(err, check.IsNil)
-	//	instance := provision.Box{}
-	//	err = s.conn.Apps().Find(bson.M{"name": a.Name}).One(&instance)
-	//	logs, err := instance.LastLogs(100, provision.Boxlog{})
-	//	c.Assert(err, check.IsNil)
-	//	c.Assert(logs, check.HasLen, 100)
-	//	for i := 0; i < 100; i++ {
-	//		c.Assert(logs[i].Message, check.Equals, "ble")
-	//		c.Assert(logs[i].Source, check.Equals, "tsuru")
-	//	}
-}*/
+}

@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@
 package provision
 
 import (
-	"fmt"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/loggers"
-	_ "github.com/megamsys/gulp/loggers/file"
-	_ "github.com/megamsys/gulp/loggers/queue"
-	"github.com/megamsys/gulp/operations"
-	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/gulp/carton/bind"
+	"github.com/megamsys/gulp/upgrade"
+
+	"github.com/megamsys/gulp/repository"
 	"gopkg.in/yaml.v2"
 )
 
 const (
+	CPU = "cpu"
+	RAM = "ram"
+	HDD = "hdd"
 
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
@@ -41,31 +41,97 @@ const (
 	BoxNone
 )
 
+var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
+
 // Boxlevel represents the deployment level.
 type BoxLevel int
 
-var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
+// Boxlog represents a log entry.
+type Boxlog struct {
+	Timestamp string
+	Message   string
+	Source    string
+	Name      string
+	Unit      string
+}
+
+type BoxCompute struct {
+	Cpushare string
+	Memory   string
+	Swap     string
+	HDD      string
+}
+
+func (bc *BoxCompute) numCpushare() int64 {
+	if cs, err := strconv.ParseInt(bc.Cpushare, 10, 64); err != nil {
+		return 0
+	} else {
+		return cs
+	}
+}
+
+func (bc *BoxCompute) numMemory() int64 {
+	if cp, err := strconv.ParseInt(bc.Memory, 10, 64); err != nil {
+		return 0
+	} else {
+		return cp
+	}
+}
+
+func (bc *BoxCompute) numSwap() int64 {
+	if cs, err := strconv.ParseInt(bc.Swap, 10, 64); err != nil {
+		return 0
+	} else {
+		return cs
+	}
+}
+
+func (bc *BoxCompute) numHDD() int64 {
+	if cp, err := strconv.ParseInt(bc.HDD, 10, 64); err != nil {
+		return 10
+	} else {
+		return cp
+	}
+}
+
+func (bc *BoxCompute) String() string {
+	return "(" + strings.Join([]string{
+		CPU + ":" + bc.Cpushare,
+		RAM + ":" + bc.Memory,
+		HDD + ":" + bc.HDD},
+		",") + " )"
+}
+
+// BoxDeploy represents a log entry.
+type BoxDeploy struct {
+	Date    time.Time
+	HookId  string
+	ImageId string
+	Name    string
+	Unit    string
+}
 
 // Box represents a provision unit. Can be a machine, container or anything
 // IP-addressable.
 type Box struct {
-	Id         string
-	CartonsId  string
-	CartonId   string
-	CartonName string
-	Level      BoxLevel
-	Name       string
-	DomainName string
-	Tosca      string
-	Repo       *repository.Repo
-	Operations []*operations.Operate
-	Status     Status
-	Provider   string
-	Commit     string
-	Address    *url.URL
-	Ip         string
-	Cookbook   string
-	Envs       []bind.EnvVar
+	Id           string
+	CartonsId    string
+	CartonId     string
+	CartonName   string
+	Name         string
+	Level        BoxLevel
+	DomainName   string
+	Tosca        string
+	ImageVersion string
+	Compute      BoxCompute
+	Repo         *repository.Repo
+	Status       Status
+	Provider     string
+	PublicIp     string
+	Commit       string
+	Envs         []bind.EnvVar
+	Address      *url.URL
+	Operations   []*upgrade.Operate //MEGAMD
 }
 
 func (b *Box) String() string {
@@ -76,9 +142,24 @@ func (b *Box) String() string {
 	}
 }
 
+func (b *Box) GetMemory() int64 {
+	return b.Compute.numMemory()
+}
+
+func (b *Box) GetSwap() int64 {
+	return b.Compute.numSwap()
+}
+
+func (b *Box) GetCpushare() int64 {
+	return b.Compute.numCpushare()
+}
+
 // GetName returns the assemblyname.domain(assembly001YeahBoy.megambox.com) of the box.
 func (b *Box) GetFullName() string {
-	return b.CartonName + "." + b.DomainName
+	if len(strings.TrimSpace(b.DomainName)) > 0 {
+		return strings.Join([]string{b.CartonName, b.DomainName}, ".")
+	}
+	return b.CartonName
 }
 
 // GetTosca returns the tosca type of the box.
@@ -87,9 +168,54 @@ func (b *Box) GetTosca() string {
 }
 
 // GetIp returns the Unit.IP.
-func (b *Box) GetIp() string {
-	return b.Ip
+func (b *Box) GetPublicIp() string {
+	return b.PublicIp
 }
+
+func (box *Box) GetRouter() (string, error) {
+	return "route53", nil //dns.LoadConfig()
+}
+
+func(b *Box) Clone() error {
+	if b.Repo == nil || b.Repo.Type == repository.IMAGE || b.Repo.OneClick {
+		scm := repository.Manager(b.Repo.Source)
+		if scm != nil {
+			return fmt.Errorf("fatal error, couldn't locate the repository manager (%s)", b.Repo.Source)
+
+		}
+
+		fmt.Fprintf(args.writer, "  cloning  repository %s", args.box.Repo)
+		if err := scm.Clone(args.box.Repo); err != nil {
+			return nil, err
+		}
+		fmt.Fprintf(args.writer, "  clone repository %s successful", args.box.Repo.URL)
+	}
+}
+
+
+/* Log adds a log message to the app. Specifying a good source is good so the
+// user can filter where the message come from.
+func (box *Box) Log(message, source, unit string) error {
+	messages := strings.Split(message, "\n")
+	logs := make([]interface{}, 0, len(messages))
+	for _, msg := range messages {
+		if len(strings.TrimSpace(msg)) > 0 {
+			bl := Boxlog{
+				Timestamp: time.Now().Local().Format(time.RFC822),
+				Message:   msg,
+				Source:    source,
+				Name:      box.Name,
+				Unit:      box.Id,
+			}
+			logs = append(logs, bl)
+		}
+	}
+	if len(logs) > 0 {
+		_ = notify(box.GetFullName(), logs)
+	}
+	return nil
+}
+*/
 
 // Available returns true if the unit is available. It will return true
 // whenever the unit itself is available, even when the application process is
@@ -107,39 +233,23 @@ func (b *Box) Available() bool {
 
 // Log adds a log message to the app. Specifying a good source is good so the
 // user can filter where the message come from.
-func (box *Box) Log(message, source, unit string, obj interface{}) error {
-
+func (box *Box) Log(message, source, unit string) error {
 	messages := strings.Split(message, "\n")
-	logs := make([]loggers.Boxlog, 0, len(messages))
+	logs := make([]interface{}, 0, len(messages))
 	for _, msg := range messages {
-		if msg != "" {
-			bl := loggers.Boxlog{
-				Date:    time.Now().In(time.UTC),
-				Message: msg,
-				Name:    box.Name,
-				Unit:    box.Id,
+		if len(strings.TrimSpace(msg)) > 0 {
+			bl := Boxlog{
+				Timestamp: time.Now().Local().Format(time.RFC822),
+				Message:   msg,
+				Source:    source,
+				Name:      box.Name,
+				Unit:      box.Id,
 			}
-			fmt.Println(bl.Message)
 			logs = append(logs, bl)
 		}
 	}
 	if len(logs) > 0 {
-		a, err := loggers.Get(source)
-
-		if err != nil {
-			log.Errorf("fatal error, couldn't located the Logger %s", source)
-			return err
-		}
-
-		Logger = a
-		if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
-			err = initializableLogger.Notify(box.GetFullName(), logs, obj)
-			if err != nil {
-				log.Errorf("fatal error, couldn't initialize the Logger %s", source)
-				return err
-			}
-		}
-		//_ = notify(box.Name+"."+box.DomainName, logs)
+		_ = notify(box.GetFullName(), logs)
 	}
 	return nil
 }

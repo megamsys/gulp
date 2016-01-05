@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,29 +39,3 @@ func (s *S) TestRegisterOnNilMap(c *check.C) {
 	Register("nope", mngr)
 	c.Assert(managers["nope"], check.Equals, mngr)
 }
-
-/*func (s *S) TestManager(c *check.C) {
-	mngr := nopManager{}
-	Register("nope", mngr)
-	config.Set("repo-manager", "nope")
-	defer config.Unset("repo-manager")
-	current := Manager()
-	c.Assert(current, check.Equals, mngr)
-}
-
-func (s *S) TestManagerUnconfigured(c *check.C) {
-	mngr := nopManager{}
-	Register("nope", mngr)
-	gitlab := nopManager{}
-	Register("gandalf", gitlab)
-	config.Unset("repo-manager")
-	current := Manager()
-	c.Assert(current, check.Equals, gandalf)
-}
-
-func (s *S) TestManagerUnknown(c *check.C) {
-	config.Set("repo-manager", "something")
-	defer config.Unset("repo-manager")
-	current := Manager()
-	c.Assert(current, check.FitsTypeOf, nopManager{})
-}*/

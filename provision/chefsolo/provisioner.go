@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,19 +18,19 @@
 package chefsolo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"path"
 	"strings"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/repository"
-	_ "github.com/megamsys/gulp/repository/github"
 	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/libgo/cmd"
 )
 
 const (
@@ -40,36 +40,20 @@ const (
 	// DefaultLogLevel is the set log level (default: info)
 	DefaultLogLevel = "info"
 
-	//set the default sandbox path
-	DefaultSandBoxPath = "/var/lib/megam"
-
-	//set the default root path
-	DefaultRootPath = "/var/lib/megam"
-
 	//Do not run commands with sudo (enabled by default)
-	DefaultSudo = true
-
-	Repository        = "repository"
-	RepositoryPath    = "repository_path"
-	RepositoryTarPath = "repository_tar_path"
-	HomeDir           = "dir"
-	RECEIPE           = "receipe"
-
-	SOURCE = "source"
+	DefaultSudo       = true
+	NAME              = "name"
+	CHEFREPO_GIT      = "chefrepo"
+	CHEFREPO_TARBALL  = "chefrepo_tarball"
+	CHEFREPO_COOKBOOK = "cookbook"
 )
 
 var mainChefSoloProvisioner *chefsoloProvisioner
 
-func init() {
-	mainChefSoloProvisioner = &chefsoloProvisioner{}
-	provision.Register("chefsolo", mainChefSoloProvisioner)
-}
-
 type Attributes struct {
-	RunList     []string `json:"run_list"`
-	ToscaType   string   `json:"tosca_type"`
-	RabbitmqURL string   `json:"rabbitmq_url"`
-	Scm         string   `json:"scm"`
+	RunList   []string `json:"run_list"`
+	ToscaType string   `json:"tosca_type"`
+	Scm       string   `json:"scm"`
 }
 
 // Provisioner is a provisioner based on Chef Solo.
@@ -79,82 +63,87 @@ type chefsoloProvisioner struct {
 	Format      string
 	LogLevel    string
 	SandboxPath string
+	Cookbook    string
 	RootPath    string
 	Sudo        bool
 }
 
-type runRepositoryActionArgs struct {
-	repository string
-	url        string
-	tar_url    string
-	dir        string
+func init() {
+	mainChefSoloProvisioner = &chefsoloProvisioner{}
+	provision.Register(provision.CHEFSOLO, mainChefSoloProvisioner)
 }
 
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
-	//  p.RunList = []string{ m["receipe"] }
-	args := &runRepositoryActionArgs{
-		repository: m[Repository],
-		url:        m[RepositoryPath],
-		tar_url:    m[RepositoryTarPath],
-		dir:        m[HomeDir],
-	}
-	return p.setupRequirements(args)
-}
+	p.Cookbook = m[CHEFREPO_COOKBOOK]
 
-//this setup the requirements for provisioner using megam default repository
-func (p *chefsoloProvisioner) setupRequirements(args *runRepositoryActionArgs) error {
-	a, err := repository.Get(args.repository)
-	if err != nil {
-		log.Errorf("fatal error, couldn't locate the Repository %s", args.repository)
+	logWriter := carton.NewLogWriter(&provision.Box{CartonName: m[NAME]})
+	writer := io.MultiWriter(&logWriter)
+	defer logWriter.Close()
+
+	cr := NewChefRepo(m, writer)
+	if err := cr.Download(); err != nil {
 		return err
 	}
-
-	provision.Repository = a
-	if initializableRepository, ok := provision.Repository.(repository.InitializableRepository); ok {
-		log.Debugf("Before repository initialization.")
-
-		s := strings.Split(args.url, "/")[4]
-		filename := strings.Split(s, ".")[0]
-		log.Debugf(args.dir + filename)
-
-		_, er := os.Stat(args.dir + "/" + filename)
-		if er != nil {
-			err = initializableRepository.Initialize(args.url, args.tar_url)
-			if err != nil {
-				log.Errorf("fatal error, couldn't initialize the Repository %s", args.tar_url)
-				return err
-			} else {
-				log.Debugf("%s Initialized", args.repository)
-				return nil
-			}
-		} else {
-			log.Debugf("%s/%s Directory already exist", args.dir, filename)
-			return nil
-		}
+	if err := cr.Torr(); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (p *chefsoloProvisioner) StartupMessage() (string, error) {
-	out := "chefsolo provisioner reports the following:\n"
-	out += fmt.Sprintf("    chef-solo provisioner initiated. ")
-	return out, nil
+	w := new(tabwriter.Writer)
+	var b bytes.Buffer
+	w.Init(&b, 0, 8, 0, '\t', 0)
+	b.Write([]byte(cmd.Colorfy("  > chefsolo ", "white", "", "bold") + "\t" +
+		cmd.Colorfy(p.String(), "cyan", "", "")))
+	fmt.Fprintln(w)
+	w.Flush()
+	return strings.TrimSpace(b.String()), nil
 }
 
-/* new state */
+func (p *chefsoloProvisioner) String() string {
+	return "ready"
+}
+
+func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, "--- bootstrap box (%s)\n", box.GetFullName())
+
+	actions := []*action.Action{
+		&createMachine,
+		&updateStatusInRiak,
+		&updateIpsInRiak,
+		&appendAuthorizedKeys,
+		&updateStatusInRiak,
+		&changeStateofMachine,
+	}
+
+	pipeline := action.NewPipeline(actions...)
+
+	args := runMachineActionsArgs{
+		box:           box,
+		writer:        w,
+		machineStatus: provision.StatusBootstrapping,
+		provisioner:   p,
+	}
+
+	if err := pipeline.Execute(args); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
 	var repo string
 
 	if box.Repo != nil {
-		repo = box.Repo.Url
+		repo = box.Repo.Gitr()
 	}
 
 	res1D := &Attributes{
-		RunList:     []string{"recipe[" + box.Cookbook + "]"},
-		ToscaType:   strings.Split(box.Tosca, ".")[2],
-		RabbitmqURL: meta.MC.AMQP,
-		Scm:         repo,
+		RunList:   []string{"recipe[" + p.Cookbook + "]"},
+		ToscaType: strings.Split(box.Tosca, ".")[2],
+		Scm:       repo,
 	}
 
 	DefaultAttributes, _ := json.Marshal(res1D)
@@ -162,24 +151,22 @@ func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
 	p.Attributes = string(DefaultAttributes)
 	p.Format = DefaultFormat
 	p.LogLevel = DefaultLogLevel
-	p.SandboxPath = DefaultSandBoxPath
-	p.RootPath = DefaultRootPath
+	p.SandboxPath = "DefaultSandBoxPath"
+	p.RootPath = "DefaultRootPath"
 	p.Sudo = DefaultSudo
 
-	log.Info("Provisioner = %+v\n", p)
-
-	return p.createPipeline(box, w)
+	return p.kickOffSolo(box, w)
 }
 
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..
-func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) error {
+func (p *chefsoloProvisioner) kickOffSolo(box *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
-		&prepareJSON,
-		&prepareConfig,
-		&prepareBoxRepository,
-		&deploy,
+		&generateSoloJson,
+		&generateSoloConfig,
+		&cloneBox,
+		&chefSoloRun,
 		&updateStatusInRiak,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -190,8 +177,7 @@ func (p *chefsoloProvisioner) createPipeline(box *provision.Box, w io.Writer) er
 		provisioner:   p,
 	}
 
-	err := pipeline.Execute(args)
-	if err != nil {
+	if err := pipeline.Execute(args); err != nil {
 		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
 		return err
 	}
@@ -219,15 +205,5 @@ func (p chefsoloProvisioner) Command() []string {
 		"--log_level", logLevel,
 	}
 
-	//if len(p.RunList) > 0 {
-	//	cmd = append(cmd, "--override-runlist", strings.Join(p.RunList, ","))
-	//}
-	log.Debugf("provisioner command is  %s", cmd)
-
-	/*if !p.Sudo {
-		return cmd
-	} else {
-		return append([]string{"sudo"}, cmd...)
-	}*/
 	return cmd
 }

@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/cmd"
 	"launchpad.net/gnuflag"
 )
@@ -37,7 +38,6 @@ func (v *configFile) String() string {
 
 func (v *configFile) Set(value string) error {
 	v.value = value
-	//configPath := value
 	return nil
 }
 
@@ -49,37 +49,24 @@ type Start struct {
 
 func (g *Start) Info() *cmd.Info {
 	desc := `starts gulpd.
-
-If you use the '--dry' flag gulpd will do a dry run(parse conf) and exit.
-
 `
 	return &cmd.Info{
 		Name:    "start",
-		Usage:   `start [--dry] [--config]`,
+		Usage:   `start [--config]`,
 		Desc:    desc,
 		MinArgs: 0,
 	}
 }
 
 func (c *Start) Run(context *cmd.Context) error {
-	fmt.Println("[main] starting gulpd ...")
-	// Parse config
-	fmt.Println(c.file.String())
-	config, err := ParseConfig(c.file.String())
+	log.Infof("gulpd.")
+
+	config, err := c.ParseConfig(c.file.String())
 	if err != nil {
 		return fmt.Errorf("parse config: %s", err)
 	}
-
-	if c.dry {
-		return nil
-	}
-
 	cmd := NewCommand()
-
-	// Tell the server the build details.
-	cmd.Version = "0.9"
-	cmd.Commit = "commit"
-	cmd.Branch = "master"
+	cmd.Version = "0.9.2"
 
 	if err := cmd.Gpd(config, cmd.Version); err != nil {
 		return fmt.Errorf("run: %s", err)
@@ -116,29 +103,24 @@ func (c *Start) Run(context *cmd.Context) error {
 func (c *Start) Flags() *gnuflag.FlagSet {
 	if c.fs == nil {
 		c.fs = gnuflag.NewFlagSet("gulpd", gnuflag.ExitOnError)
-		c.fs.Var(&c.file, "config", "Path to configuration file (default to /gulp/gulpd.conf)")
-		c.fs.Var(&c.file, "c", "Path to configuration file (default to /gulp/gulpd.conf)")
-		c.fs.BoolVar(&c.dry, "dry", false, "dry-run: does not start the gulpd (for testing purpose)")
-		c.fs.BoolVar(&c.dry, "d", false, "dry-run: does not start the gulpd (for testing purpose)")
+		c.fs.Var(&c.file, "config", "Path to configuration file (default to /conf/gulpd.conf)")
+		c.fs.Var(&c.file, "c", "Path to configuration file (default to /conf/gulpd.conf)")
+
 	}
 	return c.fs
 }
 
 // ParseConfig parses the config at path.
-// Returns a demo configuration if path is blank.
-//func (cmd *Command) ParseConfig(path string) (*Config, error) {
-func ParseConfig(path string) (*Config, error) {
-	// Use  configuration from the path, if path is specified.
-	if path != "" {
-		//	fmt.Fprintf(cmd.Stdout, "Using configuration at: %s\n", path)
-	}
-
+func (c *Start) ParseConfig(path string) (*Config, error) {
 	config := NewConfig()
+	if path == "" {
+		path = config.Meta.Dir + "/gulpd.conf"
+	}
+	log.Warnf("Using configuration at: %s", path)
 	if _, err := toml.DecodeFile(path, &config); err != nil {
 		return nil, err
 	}
 
-	fmt.Println(config)
-
+	log.Debug(config)
 	return config, nil
 }

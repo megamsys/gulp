@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
 ** limitations under the License.
  */
 
-package operations
+package upgrade
 
 /*import (
 	"gopkg.in/check.v1"
   "testing"
- 	//"github.com/megamsys/gulp/operations/bind"
 )
 type S struct{}
 

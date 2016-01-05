@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -99,16 +99,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	return
-	//h.mux.ServeHTTP(w, r)
 }
 
 // servePing returns a simple response to let the client know the server is running.
 func (h *Handler) servePing(w http.ResponseWriter, r *http.Request) {
 	v := make(map[string]string)
 	v["name"] = "gulp"
-	v["version"] = "0.9"
+	v["version"] = "0.9.2"
 	w.Header().Set("Content-Type", "application/json")
-	//return json.NewEncoder(w).Encode(&v)
 }
 
 // versionHeader takes a HTTP handler and returns a HTTP handler
@@ -121,7 +119,6 @@ func versionHeader(inner http.Handler, h *Handler) http.Handler {
 }
 
 func (h *Handler) logs(w http.ResponseWriter, r *http.Request) {
-
 	body, _ := ioutil.ReadAll(r.Body)
 	dockr := &docker.DockerProvisioner{}
 	json.Unmarshal(body, dockr)
@@ -130,11 +127,9 @@ func (h *Handler) logs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) networks(w http.ResponseWriter, r *http.Request) {
-
 	body, _ := ioutil.ReadAll(r.Body)
 	dockr := &docker.DockerProvisioner{}
 	json.Unmarshal(body, dockr)
 	dockr.HomeDir = h.config.Dir
 	dockr.NetworkExec()
-
 }
