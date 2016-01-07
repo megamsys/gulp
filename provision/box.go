@@ -18,15 +18,18 @@ package provision
 import (
 	"fmt"
 	"net/url"
+	"os"
+	"os/user"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/megamsys/gulp/carton/bind"
-	"github.com/megamsys/gulp/upgrade"
-
 	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/gulp/upgrade"
 	"gopkg.in/yaml.v2"
 )
 
@@ -54,6 +57,47 @@ type Boxlog struct {
 	Source    string
 	Name      string
 	Unit      string
+}
+
+type BoxSSH struct {
+	User   string
+	Prefix string
+}
+
+func (bs *BoxSSH) Pub() string {
+	return bs.Prefix + "_pub"
+}
+
+//authorized_keys path is same in all linux i think
+func (bs *BoxSSH) AuthKeysFile() string {
+	dotssh_dir := ""
+	dotssh := ""
+	switch runtime.GOOS {
+	case "linux":
+		dotssh_dir = filepath.Join(home(bs.User), ".ssh")
+		dotssh = filepath.Join(dotssh_dir, "authorized_keys")
+	default:
+		dotssh_dir = filepath.Join(home(bs.User), ".ssh")
+		dotssh = filepath.Join(dotssh_dir, "authorized_keys")
+	}
+
+	if _, err := os.Stat(dotssh_dir); err != nil { //create  authorized_keys file, if it aint there
+		os.Mkdir(dotssh_dir, 755)
+	}
+
+	if _, err := os.Stat(dotssh); err != nil { //create  authorized_keys file, if it aint there
+		w, _ := os.Create(dotssh)
+		defer w.Close()
+	}
+	return dotssh
+}
+
+func home(name string) string {
+	if auth_user, err := user.Lookup(name); err == nil {
+		return auth_user.HomeDir
+	}
+	curr_user, _ := user.Current()
+	return curr_user.HomeDir // hmm no error trap ?
 }
 
 type BoxCompute struct {
@@ -125,10 +169,11 @@ type Box struct {
 	Tosca        string
 	ImageVersion string
 	Compute      BoxCompute
+	SSH          BoxSSH
+	PublicIp     string
 	Repo         *repository.Repo
 	Status       Status
 	Provider     string
-	PublicIp     string
 	Commit       string
 	Envs         bind.EnvVars
 	Address      *url.URL
@@ -188,7 +233,6 @@ func (b *Box) Clone() error {
 	}
 	return nil
 }
-
 
 // Available returns true if the unit is available. It will return true
 // whenever the unit itself is available, even when the application process is

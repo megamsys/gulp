@@ -18,6 +18,7 @@ package bind
 import (
 	"fmt"
 	"runtime"
+	"strings"
 
 	"github.com/megamsys/libgo/os"
 )
@@ -33,11 +34,11 @@ func (e *EnvVar) String() string {
 	return fmt.Sprintf("%s=%s", e.Name, e.Value)
 }
 
-type EnvVars  []EnvVar
+type EnvVars []EnvVar
 
 func (en EnvVars) WrapForInitds() string {
 	var envs = ""
-	for _,de := range en {
+	for _, de := range en {
 		envs += wrapForInitdservice(de.Name, de.Value)
 	}
 	return envs
@@ -55,7 +56,6 @@ func wrapForInitdservice(key string, value string) string {
 	}
 	return "initctl set-env " + key + "=" + value + "\n"
 }
-
 
 type JsonPair struct {
 	K string `json:"key"`
@@ -81,17 +81,25 @@ func (p *JsonPairs) Match(k string) string {
 	return ""
 }
 
-//match for a value in the JSONPair and send the value
+//Delete old keys and update them with the new values
 func (p *JsonPairs) NukeAndSet(m map[string][]string) {
-	for mkey, mvals := range m { //r is key, s is value
-		for i, j := range *p { //i index, j is value
-			if j.K == mkey {
-				p1 := *p
-				p1 = append(p1[:i], p1[i+1:]...) //nuke the old ones that match r.
+	swap := make(JsonPairs, 0)
+	for _, j := range *p { //j is value
+		exists := false
+		for k, _ := range m { //k is key
+			if strings.Compare(j.K, k) == 0 {
+				exists = true
+				break
 			}
 		}
-		for _, mval := range mvals {
-			*p = append(*p, NewJsonPair(mkey, mval))
+		if !exists {
+			swap = append(swap, j)
 		}
 	}
+	for mkey, mvals := range m {
+		for _, mval := range mvals {
+			swap = append(swap, NewJsonPair(mkey, mval))
+		}
+	}
+	*p = swap
 }

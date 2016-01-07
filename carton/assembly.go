@@ -23,6 +23,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
+	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"gopkg.in/yaml.v2"
 )
@@ -86,10 +87,12 @@ func mkCarton(aies string, ay string) (*Carton, error) {
 		ImageVersion: a.imageVersion(),
 		DomainName:   a.domain(),
 		Compute:      a.newCompute(),
+		SSH:          a.newSSH(),
 		Provider:     a.provider(),
 		PublicIp:     a.publicIp(),
 		Boxes:        &b,
 	}
+	log.Debugf("Carton %v", c)
 	return c, nil
 }
 
@@ -107,6 +110,7 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 				b.CartonId = a.Id
 				b.CartonsId = aies
 				b.CartonName = a.Name
+
 				if len(strings.TrimSpace(b.Provider)) <= 0 {
 					b.Provider = a.provider()
 				}
@@ -118,6 +122,7 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 					b.Repo.Hook.BoxId = comp.Id
 				}
 				b.Compute = a.newCompute()
+				b.SSH = a.newSSH()
 				newBoxs = append(newBoxs, b)
 			}
 		}
@@ -150,9 +155,10 @@ func NewCarton(aies string, ay string) (*Carton, error) {
 
 func (a *Ambly) SetStatus(status provision.Status) error {
 	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
-
-	a.Inputs = append(a.Inputs, bind.NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate))
-	a.Inputs = append(a.Inputs, bind.NewJsonPair("status", status.String()))
+	m := make(map[string][]string, 2)
+	m["lastsuccessstatusupdate"] = []string{LastStatusUpdate}
+	m["status"] = []string{status.String()}
+	a.Inputs.NukeAndSet(m) //just nuke the matching output key:
 	a.Status = status.String()
 
 	if err := db.Store(ASSEMBLYBUCKET, a.Id, a); err != nil {
@@ -205,7 +211,7 @@ func (a *Assembly) dig() error {
 	return nil
 }
 
-func (a *Ambly) Sshkey() string {
+func (a *Assembly) sshkey() string {
 	return a.Inputs.Match(SSHKEY)
 }
 
@@ -218,7 +224,7 @@ func (a *Assembly) provider() string {
 }
 
 func (a *Assembly) publicIp() string {
-	return a.Outputs.Match(PUBLICIP)
+	return a.Outputs.Match(PUBLICIPV4)
 }
 
 func (a *Assembly) imageVersion() string {
@@ -231,6 +237,13 @@ func (a *Assembly) newCompute() provision.BoxCompute {
 		Memory:   a.getMemory(),
 		Swap:     a.getSwap(),
 		HDD:      a.getHDD(),
+	}
+}
+
+func (a *Assembly) newSSH() provision.BoxSSH {
+	return provision.BoxSSH{
+		User:   meta.MC.User,
+		Prefix: a.sshkey(),
 	}
 }
 

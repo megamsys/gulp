@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -25,6 +26,7 @@ type Machine struct {
 	CartonId  string
 	CartonsId string
 	Level     provision.BoxLevel
+	SSH       provision.BoxSSH
 	PublicIp  string
 	Status    provision.Status
 }
@@ -54,8 +56,7 @@ func (m *Machine) SetStatus(status provision.Status) error {
 // FindAndSetIps returns the non loopback local IP4 (can be public or private)
 // we also have to add it in for ipv6
 func (m *Machine) FindAndSetIps() error {
-	ips := make(map[string][]string)
-	ips["ip"] = m.findIps()
+	ips := m.findIps()
 
 	log.Debugf("  find and setips of machine (%s, %s)", m.Id, m.Name)
 
@@ -67,33 +68,47 @@ func (m *Machine) FindAndSetIps() error {
 	return nil
 }
 
-// FindAIps returns the non loopback local IP4 (can be public or private)
-func (m *Machine) findIps() []string {
-	var ips = []string{}
-
-	addrs, err := net.InterfaceAddrs()
+// FindIps returns the non loopback local IP4 (can be public or private)
+// if an iface contains a string "pub", then we consider it a public interface
+func (m *Machine) findIps() map[string][]string {
+	var ips = make(map[string][]string)
+	ifaces, err := net.Interfaces()
 	if err != nil {
 		return ips
 	}
 
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				ips = append(ips, ipnet.IP.String())
+	pubipv4s := []string{}
+	priipv4s := []string{}
+	for _, iface := range ifaces {
+		ifaddress, err := iface.Addrs()
+		if err != nil {
+			return ips
+		}
+		for _, address := range ifaddress {
+			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					if strings.Contains(iface.Name, "pub") {
+						pubipv4s = append(pubipv4s, ipnet.IP.String())
+					} else {
+						priipv4s = append(priipv4s, ipnet.IP.String())
+					}
+				}
 			}
 		}
 	}
+	ips[carton.PUBLICIPV4] = pubipv4s
+	ips[carton.PRIVATEIPV4] = priipv4s
 	return ips
 }
 
 // append user sshkey into authorized_keys file
-func (m *Machine) AppendAuthorizedKeys() error {
-	sshkey, err := db.FetchObject(SSHFILESBUCKET, "m.Assembly.Sshkey()"+"_pub")
+func (m *Machine) AppendAuthKeys() error {
+	sshkey, err := db.FetchObject(SSHFILESBUCKET, m.SSH.Pub())
 	if err != nil {
 		return err
 	}
 
-	f, err := os.OpenFile("/root/.ssh/authorized_keys", os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile(m.SSH.AuthKeysFile(), os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
@@ -127,7 +142,6 @@ func (m *Machine) ChangeState(status provision.Status) error {
 	}
 
 	log.Debugf("  pub to topic (%s, %s)", TOPIC, bytes)
-
 	if err = pons.Publish(TOPIC, bytes); err != nil {
 		return err
 	}

@@ -29,8 +29,8 @@ import (
 
 const (
 	DOMAIN        = "domain"
-	PUBLICIP      = "publicip"
-	PRIVATEIP     = "privateip"
+	PUBLICIPV4    = "publicipv4"
+	PRIVATEIPV4   = "privateipv4"
 	COMPBUCKET    = "components"
 	IMAGE_VERSION = "version"
 	ONECLICK      = "oneclick"
@@ -112,8 +112,10 @@ func (c *Component) mkBox() (provision.Box, error) {
 
 func (c *Component) SetStatus(status provision.Status) error {
 	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
-	c.Inputs = append(c.Inputs, bind.NewJsonPair("lastsuccessstatusupdate", LastStatusUpdate))
-	c.Inputs = append(c.Inputs, bind.NewJsonPair("status", status.String()))
+	m := make(map[string][]string, 2)
+	m["lastsuccessstatusupdate"] = []string{LastStatusUpdate}
+	m["status"] = []string{status.String()}
+	c.Inputs.NukeAndSet(m) //just nuke the matching output key:
 
 	c.Status = status.String()
 
@@ -150,7 +152,7 @@ func (c *Component) provider() string {
 }
 
 func (c *Component) publicIp() string {
-	return c.Outputs.Match(PUBLICIP)
+	return c.Outputs.Match(PUBLICIPV4)
 }
 
 func (c *Component) withOneClick() bool {
