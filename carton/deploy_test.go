@@ -33,7 +33,7 @@ var _ = check.Suite(&S{})
 
 
 /*func (s *S) TestBindService(c *check.C) {
- var z = make([]bind.EnvVar,1)
+ var z = make(bind.EnvVars,1)
  var envs = bind.EnvVar{
     Name: "port",
     Value: "8080",

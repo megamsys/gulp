@@ -2,13 +2,13 @@ package carton
 
 import (
 	"fmt"
-	"log"
-	"strconv"
+	"io"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/upgrade"
+	"github.com/megamsys/libgo/action"
 )
 
 type Upgradeable struct {
@@ -27,110 +27,101 @@ func NewUpgradeable(box *provision.Box) *Upgradeable {
 }
 
 func (u *Upgradeable) register() {
-	err := upgrade.Register("snaps-ci", u.snapCI)
+	err := upgrade.Register("ci", u.opsBuild)
 	if err != nil {
-		log.Fatalf("unable to register snap-ci: %s", err)
+		log.Fatalf("unable to register ops ci: %s", err)
 	}
-	err = upgrade.Register("snap-bindser", u.snapBind)
+	err = upgrade.Register("bind", u.opsBind)
 	if err != nil {
-		log.Fatalf("unable to register snap-bindser: %s", err)
+		log.Fatalf("unable to register ops bind: %s", err)
 	}
 }
 
 // Boot runs the boot of the vm.
 func (u *Upgradeable) Upgrade() error {
-	var outBuffer bytes.Buffer
-	start := time.Now()
 	logWriter := NewLogWriter(u.B)
 	defer logWriter.Close()
-	writer := io.MultiWriter(&outBuffer, &logWriter)
-	u.w = writer
-
-	err := u.kickOffSerially(writer)
-	elapsed := time.Since(start)
-	saveErr := saveData(outBuffer.String(), elapsed)
-	if saveErr != nil {
-		log.Errorf("WARNING: couldn't save ops data, ops opts: %#v", u)
-	}
-
+	writer := io.MultiWriter(&logWriter)
+	err := u.operateBox(writer)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *Upgradeable) kickOffSerially(writer io.Writer) error {
-	return upgrade.Run(upgrade.RunArgs{
+func (u *Upgradeable) operateBox(writer io.Writer) error {
+	u.w = writer
+	start := time.Now()
+	opsRan, err := upgrade.Run(upgrade.RunArgs{
+		Name:   u.B.GetFullName(),
+		O:      u.B.Operations,
 		Writer: writer,
-		Box:    u.B,
-		Force:  true,
+		Force:  false,
 	})
+	if err != nil {
+		return err
+	}
+
+	if !opsRan.Successful() {
+		return nil
+	}
+	elapsed := time.Since(start)
+
+	if err := u.saveData(opsRan, elapsed); err != nil {
+		log.Errorf("WARNING: couldn't save ops data, ops opts: %#v", u)
+		return err
+	}
+
+	if !u.ShouldRestart {
+		return nil
+	}
+
+	return Provisioner.Restart(u.B, u.w)
 }
 
-func (u *Upgradeable) snapBuild(ops *Operation) error {
-	fmt.Fprintf(u.w, "---- ci snap (%s) is kicking ----\n", u.B.GetFullName())
+func (u *Upgradeable) opsBuild() error {
+	fmt.Fprintf(u.w, "---- ops ci (%s) is kicking ----\n", u.B.GetFullName())
 
 	actions := []*action.Action{
 		&cloneBox,
-		&buildBox,
+		&buildBox, //buildpack does everthing
 	}
 	pipeline := action.NewPipeline(actions...)
-	args := runSnapsPipelineArgs{
-		box:    box,
-		writer: w,
+	args := runOpsPipelineArgs{
+		box:    u.B,
+		writer: u.w,
 	}
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
 
-	if err := saveSnaps(ps, provision.StatusSnapped); err != nil {
-		return err
-	}
-
-	if !u.ShouldRestart {
-		return nil
-	}
-	return Provisioner.Restart(u.B, u.w)
+	return nil
 }
 
-func (u *Upgradeable) snapBind(ops *Operation) error {
-	fmt.Fprintf(u.w, "---- Bind snap (%s) is kicking ----\n", u.B.GetFullName())
+func (u *Upgradeable) opsBind() error {
+	fmt.Fprintf(u.w, "---- ops bind (%s) is kicking ----\n", u.B.GetFullName())
 	actions := []*action.Action{
 		&setEnvsAction,
-		&setUpgraded,
 	}
 	pipeline := action.NewPipeline(actions...)
-	args := runSnapsPipelineArgs{
-		box:    box,
-		writer: w,
+	args := runOpsPipelineArgs{
+		box:    u.B,
+		writer: u.w,
 	}
 	if err := pipeline.Execute(args); err != nil {
 		return err
-	}
-
-	if err := saveSnaps(ops, provision.StatusSnapped); err != nil {
-		return err
-	}
-
-	if !u.ShouldRestart {
-		return nil
-	}
-	return Provisioner.Restart(u.B, u.w)
-}
-
-func (u *Upgradeable) saveSnaps(ops *Operation, status provison.Status) error {
-	if u.B.Level == provision.BoxSome {
-		log.Debugf("  save snap status[%s] of box (%s, %s)", m.Id, m.Name, status.String())
-
-		if comp, err := carton.NewComponent(m.Id); err != nil {
-			return err
-		} else if err = comp.SetDoneOperation(ops, status); err != nil {
-			return err
-		}
 	}
 	return nil
 }
 
-func (u *Upgradeable) saveData(out string, elapsed time.Duration) error {
+func (u *Upgradeable) saveData(opsRan upgrade.OperationsRan, elapsed time.Duration) error {
+	if u.B.Level == provision.BoxSome {
+		log.Debugf("  update operation run for box (%s, %s)", u.B.Id, u.B.GetFullName())
+		if comp, err := NewComponent(u.B.Id); err != nil {
+			return err
+		} else if err = comp.UpdateOpsRun(opsRan); err != nil {
+			return err
+		}
+	}
 	return nil
 }

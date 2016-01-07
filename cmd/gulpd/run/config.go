@@ -40,7 +40,6 @@ func (c Config) String() string {
 func NewConfig() *Config {
 	c := &Config{}
 	c.Meta = meta.NewConfig()
-
 	c.Gulpd = gulpd.NewConfig()
 	c.HTTPD = httpd.NewConfig()
 	return c

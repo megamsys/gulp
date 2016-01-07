@@ -49,8 +49,8 @@ var MC *Config
 type Config struct {
 	Enabled         bool   `toml:"enabled"`
 	Name            string `toml:"name"`
-	CartonsId       string `toml:"assemblies_id"`
 	CartonId        string `toml:"assembly_id"`
+	CartonsId       string `toml:"assemblies_id"`
 	Provider        string `toml:"provider"`
 	Cookbook        string `toml:"cookbook"`
 	ChefRepoGit     string `toml:"chefrepo"`

@@ -41,7 +41,7 @@ func (c *Carton) toBox() error { //assemblies id.
 	switch c.lvl() {
 	case provision.BoxNone:
 		c.Boxes = &[]provision.Box{provision.Box{
-			Id:           c.Id,        //should be the component id, but in case of BoxNone there is no component id.
+			Id:           c.Id,        //the component id, but in case of BoxNone there is no component id.
 			CartonId:     c.Id,        //We stick the assemlyid here.
 			CartonsId:    c.CartonsId, //assembliesId,
 			CartonName:   c.Name,
@@ -69,46 +69,6 @@ func (c *Carton) Available() bool {
 	return false
 }
 
-// starts the box calling the provisioner.
-// changing the boxes state to StatusStarted.
-func (c *Carton) Start() error {
-	/*	for _, box := range *c.Boxes {
-		err := Provisioner.Start(&box, "", nil)
-		if err != nil {
-			log.Errorf("Unable to start the box  %s", err)
-			return err
-		}
-	}*/
-	return nil
-}
-
-// stops the box calling the provisioner.
-// changing the boxes state to StatusStopped.
-func (c *Carton) Stop() error {
-	/*for _, box := range *c.Boxes {
-		err := ProvisionerMap[box.Provider].Stop(&box, "", nil)
-		if err != nil {
-			log.Errorf("Unable to stop the box %s", err)
-			return err
-		}
-	}*/
-	return nil
-}
-
-// restarts the box calling the provisioner.
-// changing the boxes state to StatusStarted.
-func (c *Carton) Restart() error {
-	/*for _, box := range *c.Boxes {
-		err := ProvisionerMap[box.Provider].Restart(&box, "", nil)
-		if err != nil {
-			log.Errorf("[start] error on start the box %s - %s", box.Name, err)
-			return err
-		}
-	}*/
-	return nil
-}
-
-//-------------------------------------------------
 func (c *Carton) Boot() error {
 	for _, box := range *c.Boxes {
 		err := Boot(&BootOpts{B: &box})
@@ -124,19 +84,55 @@ func (c *Carton) Stateup() error {
 	for _, box := range *c.Boxes {
 		err := Stateup(&StateOpts{B: &box})
 		if err != nil {
-			log.Errorf("Unable to deploy box : %s", err)
+			log.Errorf("Unable to stateup box : %s", err)
 			return err
 		}
 	}
 	return nil
 }
 
+//upgrade run thru all the ops.
 func (c *Carton) Upgrade() error {
 	for _, box := range *c.Boxes {
-
 		err := NewUpgradeable(&box).Upgrade()
 		if err != nil {
 			log.Errorf("Unable to upgrade box : %s", err)
+			return err
+		}
+	}
+	return nil
+}
+
+// starts box
+func (c *Carton) Start() error {
+	for _, box := range *c.Boxes {
+		err := Start(&LifecycleOpts{B: &box})
+		if err != nil {
+			log.Errorf("Unable to start the box  %s", err)
+			return err
+		}
+	}
+	return nil
+}
+
+// stops the box
+func (c *Carton) Stop() error {
+	for _, box := range *c.Boxes {
+		err := Stop(&LifecycleOpts{B: &box})
+		if err != nil {
+			log.Errorf("Unable to stop the box %s", err)
+			return err
+		}
+	}
+	return nil
+}
+
+// restarts the box
+func (c *Carton) Restart() error {
+	for _, box := range *c.Boxes {
+		err := Restart(&LifecycleOpts{B: &box})
+		if err != nil {
+			log.Errorf("Unable to restart the box %s", err)
 			return err
 		}
 	}

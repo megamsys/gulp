@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/megamsys/gulp/meta"
@@ -41,7 +42,11 @@ func (ch *ChefRepo) Download() error {
 
 func (ch *ChefRepo) Torr() error {
 	if !ch.exists() {
-		return NewTorr(ch.tarfile()).untar()
+		tr := NewTorr(ch.tarfile())
+		if err := tr.untar(); err != nil {
+			return err
+		}
+		return tr.cleanup()
 	}
 	return nil
 }
@@ -55,12 +60,12 @@ func (ch *ChefRepo) repodir() string {
 	if err != nil {
 		return ""
 	}
-	return ch.dir + "/" + f
+	return filepath.Join(ch.dir, f)
 }
 
 func (ch *ChefRepo) tarfile() string {
 	tokens := strings.Split(ch.tar, "/")
-	return ch.dir + "/" + tokens[len(tokens)-1]
+	return filepath.Join(ch.dir, tokens[len(tokens)-1])
 }
 
 func scm() repository.RepositoryManager {

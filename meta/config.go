@@ -34,7 +34,7 @@ const (
 
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
-	
+
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
 )
@@ -46,7 +46,7 @@ type Config struct {
 	Home       string   `toml:"home"`
 	Dir        string   `toml:"dir"`
 	Riak       []string `toml:"riak"`
-	NSQd       []string   `toml:"nsqd"`
+	NSQd       []string `toml:"nsqd"`
 	DockerPath string   `toml:"docker_path"`
 }
 

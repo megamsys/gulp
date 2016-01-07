@@ -14,36 +14,38 @@
 ** limitations under the License.
  */
 
-package github
+package machine
 
 import (
-	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/repository"
-	skia "go.skia.org/infra/go/gitinfo"
+	"fmt"
+	"runtime"
+	"strings"
+
+	"github.com/megamsys/libgo/os"
 )
 
-func init() {
-	repository.Register("github", gitHubManager{})
+type Scriptd struct {
+	name    string
+	control string
+	os      string
 }
 
-type gitHubManager struct{}
-
-func (m gitHubManager) Clone(r repository.Repository) error {
-	repoName, err := r.GetShortName()
-	if err != nil {
-		return err
+func NewServiceScripter(name string, control string) *Scriptd {
+	return &Scriptd{
+		name:    name,
+		control: control,
 	}
-	basePath := meta.MC.Dir
+}
 
-	re := repository.NewRepoBackup(basePath, basePath)
-	if err := re.Backup(repoName); err != nil {
-		return err
+func (i *Scriptd) Cmd() []string {
+	osh := os.HostOS()
+	switch runtime.GOOS {
+	case "linux":
+		if osh != os.Ubuntu {
+			return strings.Fields(fmt.Sprintf("systemctl %s %s", i.control, i.name))
+		}
+	default:
+		return strings.Fields(fmt.Sprintf("%s %s", i.control, i.name))
 	}
-
-	if _, err = skia.Clone(r.Gitr(), basePath, false); err != nil {
-		re.Revert(repoName)
-		return err
-	}
-	re.Cleanup(repoName)
-	return err
+	return strings.Fields(fmt.Sprintf("%s %s", i.control, i.name))
 }

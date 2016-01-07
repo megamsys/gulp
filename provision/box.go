@@ -16,6 +16,7 @@
 package provision
 
 import (
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -129,9 +130,9 @@ type Box struct {
 	Provider     string
 	PublicIp     string
 	Commit       string
-	Envs         []bind.EnvVar
+	Envs         bind.EnvVars
 	Address      *url.URL
-	Operations   []*upgrade.Operate //MEGAMD
+	Operations   []*upgrade.Operation //MEGAMD
 }
 
 func (b *Box) String() string {
@@ -162,9 +163,8 @@ func (b *Box) GetFullName() string {
 	return b.CartonName
 }
 
-// GetTosca returns the tosca type of the box.
-func (b *Box) GetTosca() string {
-	return b.Tosca
+func (b *Box) GetShortTosca() string {
+	return strings.Split(b.Tosca, ".")[2]
 }
 
 // GetIp returns the Unit.IP.
@@ -176,46 +176,19 @@ func (box *Box) GetRouter() (string, error) {
 	return "route53", nil //dns.LoadConfig()
 }
 
-func(b *Box) Clone() error {
+func (b *Box) Clone() error {
 	if b.Repo == nil || b.Repo.Type == repository.IMAGE || b.Repo.OneClick {
 		scm := repository.Manager(b.Repo.Source)
 		if scm != nil {
 			return fmt.Errorf("fatal error, couldn't locate the repository manager (%s)", b.Repo.Source)
-
 		}
-
-		fmt.Fprintf(args.writer, "  cloning  repository %s", args.box.Repo)
-		if err := scm.Clone(args.box.Repo); err != nil {
-			return nil, err
+		if err := scm.Clone(b.Repo); err != nil {
+			return err
 		}
-		fmt.Fprintf(args.writer, "  clone repository %s successful", args.box.Repo.URL)
-	}
-}
-
-
-/* Log adds a log message to the app. Specifying a good source is good so the
-// user can filter where the message come from.
-func (box *Box) Log(message, source, unit string) error {
-	messages := strings.Split(message, "\n")
-	logs := make([]interface{}, 0, len(messages))
-	for _, msg := range messages {
-		if len(strings.TrimSpace(msg)) > 0 {
-			bl := Boxlog{
-				Timestamp: time.Now().Local().Format(time.RFC822),
-				Message:   msg,
-				Source:    source,
-				Name:      box.Name,
-				Unit:      box.Id,
-			}
-			logs = append(logs, bl)
-		}
-	}
-	if len(logs) > 0 {
-		_ = notify(box.GetFullName(), logs)
 	}
 	return nil
 }
-*/
+
 
 // Available returns true if the unit is available. It will return true
 // whenever the unit itself is available, even when the application process is

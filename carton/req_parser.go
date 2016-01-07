@@ -24,14 +24,14 @@ import (
 
 var (
 	//the state actions available are.
-	STATE     = "state"
-	BOOT      = "boot"
-	STATEUP   = "stateup"
+	STATE   = "state"
+	BOOT    = "boot"
+	STATEUP = "stateup"
 
 	//the control actions available are.
 	CONTROL = "control"
-	STOP    = "stop"
 	START   = "start"
+	STOP    = "stop"
 	RESTART = "restart"
 
 	//the operation actions is just one called upgrade
