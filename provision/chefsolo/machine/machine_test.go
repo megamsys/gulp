@@ -151,7 +151,7 @@ func (s *S) TestContainerCreateAllocatesPort(c *check.C) {
 	c.Assert(info.HTTPHostPort, check.Not(check.Equals), "")
 }
 
-func (s *S) TestContainerCreateDoesNotAlocatesPortForDeploy(c *check.C) {
+func (s *S) TestContainerCreateDoesNotAlocatesPortForStateup(c *check.C) {
 	app := provisiontest.NewFakeApp("app-name", "brainfuck", 1)
 	app.Memory = 15
 	routertest.FakeRouter.AddBackend(app.GetName())

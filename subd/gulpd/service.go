@@ -25,7 +25,6 @@ import (
 	nsqc "github.com/crackcomm/nsqueue/consumer"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/meta"
-	_ "github.com/megamsys/gulp/operations/bind"
 	"github.com/megamsys/gulp/provision"
 	_ "github.com/megamsys/gulp/provision/chefsolo"
 	nsq "github.com/nsqio/go-nsq"
@@ -61,7 +60,7 @@ func NewService(c *meta.Config, d *Config) *Service {
 // Open starts the service
 func (s *Service) Open() error {
 	go func() error {
-		log.Info("starting deployd service")
+		log.Info("starting deployd agent service")
 		if err := nsqc.Register(s.Gulpd.Name, "agent", maxInFlight, s.processNSQ); err != nil {
 			return err
 		}

@@ -37,18 +37,18 @@ const (
 )
 
 type Component struct {
-	Id                string                `json:"id"`
-	Name              string                `json:"name"`
-	Tosca             string                `json:"tosca_type"`
-	Inputs            bind.JsonPairs        `json:"inputs"`
-	Outputs           bind.JsonPairs        `json:"outputs"`
-	Envs              bind.JsonPairs        `json:"envs"`
-	Repo              Repo                  `json:"repo"`
-	Artifacts         *Artifacts            `json:"artifacts"`
-	RelatedComponents []string              `json:"related_components"`
-	Operations        []*upgrade.Operate `json:"operations"`
-	Status            string                `json:"status"`
-	CreatedAt         string                `json:"created_at"`
+	Id                string               `json:"id"`
+	Name              string               `json:"name"`
+	Tosca             string               `json:"tosca_type"`
+	Inputs            bind.JsonPairs       `json:"inputs"`
+	Outputs           bind.JsonPairs       `json:"outputs"`
+	Envs              bind.JsonPairs       `json:"envs"`
+	Repo              Repo                 `json:"repo"`
+	Artifacts         *Artifacts           `json:"artifacts"`
+	RelatedComponents []string             `json:"related_components"`
+	Operations        []*upgrade.Operation `json:"operations"`
+	Status            string               `json:"status"`
+	CreatedAt         string               `json:"created_at"`
 }
 
 type Artifacts struct {
@@ -123,21 +123,23 @@ func (c *Component) SetStatus(status provision.Status) error {
 	return nil
 }
 
-func (c *Component) Delete(compid string) {
-	_ = db.Delete(COMPBUCKET, compid)
-}
+func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
+	mutatedOps := make([]*upgrade.Operation, 0, len(opsRan))
 
-/*func (c *Component) setDeployData(dd DeployData) error {
-	c.Inputs = append(c.Inputs, NewJsonPair("lastsuccessstatusupdate", ""))
-	c.Inputs = append(c.Inputs, NewJsonPair("status", ""))
+	for _, o := range opsRan {
+		mutatedOps = append(mutatedOps, o.Raw)
+	}
+	c.Operations = mutatedOps
 
 	if err := db.Store(COMPBUCKET, c.Id, c); err != nil {
 		return err
 	}
 	return nil
-
 }
-*/
+
+func (c *Component) Delete(compid string) {
+	_ = db.Delete(COMPBUCKET, compid)
+}
 
 func (c *Component) domain() string {
 	return c.Inputs.Match(DOMAIN)
@@ -157,8 +159,8 @@ func (c *Component) withOneClick() bool {
 
 //all the variables in the inputs shall be treated as ENV.
 //we can use a filtered approach as well.
-func (c *Component) envs() []bind.EnvVar {
-	envs := make([]bind.EnvVar, 0, len(c.Envs))
+func (c *Component) envs() bind.EnvVars {
+	envs := make(bind.EnvVars, 0, len(c.Envs))
 	for _, i := range c.Envs {
 		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
 	}

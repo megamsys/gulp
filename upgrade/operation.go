@@ -25,51 +25,79 @@ import (
 	"github.com/megamsys/gulp/repository"
 )
 
-type Operate struct {
-	Type        string         `json:"operation_type"`
-	Description string         `json:"description"`
-	Properties  bind.JsonPairs `json:"properties"`
-}
-
-func (o Operate) GetType() string {
-	return o.Type
-}
-
-func (o Operate) GetDescription() string {
-	return o.Description
-}
-
-type Operation interface {
-}
-
 // ErrDuplicateOperation is the error returned by Register when the given name
 // is already in use.
 var ErrDuplicateOperation = errors.New("there's already a operation with this name")
 
-// ErrOperationNotFound is the error returned by RunOptional when the given
-// name is not a registered operation.
-var ErrOperationNotFound = errors.New("operation not found")
+//duplicate flags as they are in provision.StatusUpgraded as well
+const StatusUpgraded = "upgraded"
+const StatusError    = "error"
 
-// ErrOperationMandatory is the error returned by Run when the given name is
-// not an optional operation. It should be executed calling Run.
-var ErrOperationMandatory = errors.New("operation is mandatory")
+type Operation struct {
+	Type        string         `json:"type"`
+	Description string         `json:"description"`
+	Properties  bind.JsonPairs `json:"properties"`
+	Status      string         `json:"status"`
+}
 
-// ErrOperationAlreadyExecuted is the error returned by Run when the given
-// name was previously executed and the force parameter was not supplied.
-var ErrOperationAlreadyExecuted = errors.New("operation already executed")
-
-// ErrCannotForceMandatory is the error returned by Run when the force
-// paramter is supplied without the name of a operation to run.
-var ErrCannotForceMandatory = errors.New("mandatory operations can only run once")
+type operation struct {
+	Name     string
+	Ran      bool
+	Optional bool
+	fn       OperateFunc
+}
 
 // OperateFunc represents a operation function, that can be registered with the
 // Register function. Operations are later ran in the registration order, and
 // this package keeps track of which ate have ran already.
 type OperateFunc func() error
 
+var operations []operation
 
+// RunArgs is used by Run and RunOptional functions to modify how operations
+// are executed.
+type RunArgs struct {
+	Id     string
+	Name   string
+	O      []*Operation
+	Writer io.Writer
+	Force  bool
+}
 
-func BuildHook(ops []*Operate, opsType string) *repository.Hook {
+type OperationsToRun struct {
+	Raw      *Operation
+	Ran      bool
+	Optional bool
+	fn       OperateFunc
+}
+
+type OperationsRan []OperationsToRun
+
+func (o *Operation) Ran() bool {
+	return o.Status == StatusUpgraded
+}
+
+func (o *Operation) prepBuildHook() *repository.Hook {
+	return &repository.Hook{
+		Enabled:  true,
+		Token:    o.Properties.Match(repository.TOKEN),
+		UserName: o.Properties.Match(repository.USERNAME),
+	}
+}
+
+func (op OperationsRan) Successful() bool {
+	var success = false
+
+	if len(op) > 0 {
+		success = true
+	}
+	for _, pastOpsRun := range op {
+		success = success && (pastOpsRun.Raw.Status == StatusUpgraded)
+	}
+	return success
+}
+
+func BuildHook(ops []*Operation, opsType string) *repository.Hook {
 	for _, o := range ops {
 		switch o.Type {
 		case opsType:
@@ -79,41 +107,10 @@ func BuildHook(ops []*Operate, opsType string) *repository.Hook {
 	return nil
 }
 
-func (o *Operate) prepBuildHook() *repository.Hook {
-	return &repository.Hook{
-		Enabled:  true,
-		Token:    o.Properties.Match(repository.TOKEN),
-		UserName: o.Properties.Match(repository.USERNAME),
-	}
-}
-
-// RunArgs is used by Run and RunOptional functions to modify how operations
-// are executed.
-type RunArgs struct {
-	Name   string
-	Writer io.Writer
-	Force  bool
-}
-
-type operation struct {
-	Name     string
-	Ran      bool
-	Optional bool
-	fn       UpgradeFunc
-}
-
-var operations []operation
-
 // Register register a new operation for later execution with the Run
 // functions.
 func Register(name string, fn OperateFunc) error {
 	return register(name, false, fn)
-}
-
-// RegisterOptional register a new operation that will not run automatically
-// when calling the Run funcition.
-func RegisterOptional(name string, fn OperateFunc) error {
-	return register(name, true, fn)
 }
 
 func register(name string, optional bool, fn OperateFunc) error {
@@ -126,128 +123,54 @@ func register(name string, optional bool, fn OperateFunc) error {
 	return nil
 }
 
-// Run runs all registered non optional operations if no ".Name" is informed.
-// Migrations are executed in the order that they were registered. If ".Name"
-// is informed, an optional operation with the given name is executed.
-func Run(args RunArgs) error {
-	if args.Name != "" {
-		return runOptional(args)
-	}
-	if args.Force {
-		return ErrCannotForceMandatory
-	}
+// Run runs all registered non optional operations
+func Run(args RunArgs) (OperationsRan, error) {
 	return run(args)
 }
 
-func run(args RunArgs) error {
-	operationsToRun, err := getOperations(true)
+func run(args RunArgs) (OperationsRan, error) {
+	operationsToRun, err := getOperations(args.O, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	coll, err := collection()
-	if err != nil {
-		return err
-	}
-	defer coll.Close()
 	for _, m := range operationsToRun {
 		if m.Optional {
 			continue
 		}
-		fmt.Fprintf(args.Writer, "Running %q... ", m.Name)
-		err := m.fn()
-		if err != nil {
-			return err
-		}
-		m.Ran = true
-		err = coll.Insert(m)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintln(args.Writer, "OK")
-	}
-	return nil
-}
-
-func runOptional(args RunArgs) error {
-	operationsToRun, err := getOperations(false)
-	if err != nil {
-		return err
-	}
-	var toRun *operation
-	for i, m := range operationsToRun {
-		if m.Name == args.Name {
-			toRun = &operationsToRun[i]
-			break
+		if m.Ran && !args.Force {
+			fmt.Fprintf(args.Writer, "Running operation (%q)...\n", m.Raw.Type)
+			err := m.fn()
+			if err != nil {
+				m.Raw.Status = StatusError
+				return nil, err
+			}
+			m.Ran = true
+			m.Raw.Status = StatusUpgraded
+			fmt.Fprintf(args.Writer, "Ran operation (%s) OK\n", m.Raw.Type)
+		} else {
+			fmt.Fprintf(args.Writer, "Skip operation (%s) OK\n", m.Raw.Type)
 		}
 	}
-	if toRun == nil {
-		return ErrOperationNotFound
-	}
-	if !toRun.Optional {
-		return ErrOperationMandatory
-	}
-	if toRun.Ran && !args.Force {
-		return ErrOperationAlreadyExecuted
-	}
-	fmt.Fprintf(args.Writer, "Running %q... ", toRun.Name)
-	coll, err := collection()
-	if err != nil {
-		return err
-	}
-	defer coll.Close()
-	err = toRun.fn()
-	if err != nil {
-		return err
-	}
-	toRun.Ran = true
-	_, err = coll.Upsert(bson.M{"name": toRun.Name}, toRun)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintln(args.Writer, "OK")
-	return nil
+	return operationsToRun, nil
 }
 
-func List() ([]operation, error) {
-	return getOperations(false)
-}
-
-func getOperations(ignoreRan bool) ([]operation, error) {
-	coll, err := collection()
-	if err != nil {
-		return nil, err
-	}
-	defer coll.Close()
-	result := make([]operation, 0, len(operations))
-	names := make([]string, len(operations))
-	for i, m := range operations {
-		names[i] = m.Name
-	}
-	query := bson.M{"name": bson.M{"$in": names}, "ran": true}
-	var ran []operation
-	err = coll.Find(query).All(&ran)
-	if err != nil {
-		return nil, err
-	}
+func getOperations(ran []*Operation, ignoreRan bool) ([]OperationsToRun, error) {
+	result := make([]OperationsToRun, 0, len(ran))
 	for _, m := range operations {
 		m.Ran = false
 		for _, r := range ran {
-			if r.Name == m.Name {
-				m.Ran = true
-				break
+			if r.Type == m.Name {
+				if !ignoreRan || !m.Ran {
+					opr := OperationsToRun{
+						Raw:      r,
+						Ran:      r.Ran(),
+						fn:       m.fn,
+						Optional: m.Optional,
+					}
+					result = append(result, opr)
+				}
 			}
-		}
-		if !ignoreRan || !m.Ran {
-			result = append(result, m)
 		}
 	}
 	return result, nil
-}
-
-func collection() (*storage.Collection, error) {
-	conn, err := db.Conn()
-	if err != nil {
-		return nil, err
-	}
-	return conn.Collection("operations"), nil
 }

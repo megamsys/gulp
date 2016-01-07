@@ -20,6 +20,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/megamsys/libgo/exec"
 )
 
 const (
@@ -28,9 +30,9 @@ const (
 )
 
 var (
-	ErrEmptyCarton   = errors.New("no boxs for this carton")
-	ErrBoxNotFound   = errors.New("box not found")
-	ErrNoIpsFound    = errors.New("no ips found in the box. Did you set network correctly ?")
+	ErrEmptyCarton = errors.New("no boxs for this carton")
+	ErrBoxNotFound = errors.New("box not found")
+	ErrNoIpsFound  = errors.New("no ips found in the box. Did you set network correctly ?")
 )
 
 // Status represents the status of a unit in megamd
@@ -41,13 +43,12 @@ func (s Status) String() string {
 }
 
 const (
-	// StatusBoot is the status for box being bootted the first time.
-	StatusBoot = Status("boot")
+	// StatusLaunched is the status for box being bootted the first time.
+	StatusLaunched = Status("launched")
 
 	// StatusBootstrapping is the status for box being bootstrapping by the
 	// provisioner, like in the bootstrap.
 	StatusBootstrapping = Status("bootstrapping")
-
 	// StatusBootstrapped is the status for box after being bootstrapped by the
 	// provisioner, updated by gulp
 	StatusBootstrapped = Status("bootstrapped")
@@ -59,18 +60,20 @@ const (
 	// StatusRunning
 	StatusRunning = Status("running")
 
+	StatusStarting = Status("starting")
+	StatusStarted  = Status("started")
+
+	StatusStopping = Status("stopping")
+	StatusStopped  = Status("stopped")
+
+	StatusRestarting = Status("restarting")
+	StatusRestarted  = Status("restarted")
+
+	StatusUpgraded = Status("upgraded")
+
 	// StatusError is the status for units that failed to start, because of
 	// a box error.
 	StatusError = Status("error")
-
-	// StatusStarted
-	StatusStarted = Status("started")
-
-	// StatusStopped
-	StatusStopped = Status("stopped")
-
-	// StatusRestarted
-	StatusRestarted = Status("restarted")
 )
 
 // Named is something that has a name, providing the GetName method.
@@ -99,16 +102,17 @@ type Carton interface {
 // Deployer is a provisioner that can deploy the box from a
 type Deployer interface {
 	Bootstrap(b *Box, w io.Writer) error
-	Deploy(b *Box, w io.Writer) error
+	Stateup(b *Box, w io.Writer) error
 }
 
 // Provisioner is the basic interface of this package.
 //
-// Any gulpd provisioner must implement this interface in order to provision
-// gulpd cartons.
-// A Provisioner is responsible for provisioning a machine with Chef.
+// A Provisioner is responsible for managing the state of the machine.
 type Provisioner interface {
 	Command() []string
+	Start(b *Box, w io.Writer) error
+	Stop(b *Box, w io.Writer) error
+	Restart(b *Box, w io.Writer) error
 }
 
 // Provisioner message
@@ -163,4 +167,15 @@ func (e *Error) Error() string {
 		err = e.Reason
 	}
 	return err
+}
+
+func ExecuteCommandOnce(commandWords []string, w io.Writer) error {
+	var e exec.OsExecutor
+
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, w, w); err != nil {
+			return err
+		}
+	}
+	return nil
 }

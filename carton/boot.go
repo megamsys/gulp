@@ -18,6 +18,7 @@ package carton
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"time"
 
@@ -29,6 +30,10 @@ type BootOpts struct {
 	B *provision.Box
 }
 
+func (opts *BootOpts) OK() bool {
+	return opts.B.Status == provision.StatusLaunched
+}
+
 // Boot runs the boot of the vm.
 func Boot(opts *BootOpts) error {
 	var outBuffer bytes.Buffer
@@ -37,7 +42,7 @@ func Boot(opts *BootOpts) error {
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 
-	err := bootToProvisioner(opts, writer)
+	err := bootUpBox(opts, writer)
 	elapsed := time.Since(start)
 	saveErr := saveBootData(opts, outBuffer.String(), elapsed)
 	if saveErr != nil {
@@ -50,13 +55,17 @@ func Boot(opts *BootOpts) error {
 	return nil
 }
 
-func bootToProvisioner(opts *BootOpts, writer io.Writer) error {
-	if bs, ok := Provisioner.(provision.Deployer); ok {
-		return bs.Bootstrap(opts.B, writer)
+func bootUpBox(boot *BootOpts, writer io.Writer) error {
+	if boot.OK() {
+		fmt.Fprintf(writer, "  boot for box (%s)\n", boot.B.GetFullName())
+		if bs, ok := Provisioner.(provision.Deployer); ok {
+			return bs.Bootstrap(boot.B, writer)
+		}
 	}
+	fmt.Fprintf(writer, "  boot for box (%s) OK\n", boot.B.GetFullName())
 	return nil
 }
 
-func saveBootData(opts *BootOpts, out string, elapsed time.Duration) error {
+func saveBootData(boot *BootOpts, out string, elapsed time.Duration) error {
 	return nil
 }

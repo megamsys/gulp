@@ -37,9 +37,7 @@ func (p *ReqOperator) Accept(r *MegdProcessor) error {
 	}
 
 	md := *r
-
 	log.Debugf(cmd.Colorfy(md.String(), "cyan", "", "bold"))
-
 	return md.Process(c)
 }
 

@@ -82,3 +82,12 @@ func (t *Torr) untar() error {
 	}
 	return nil
 }
+
+func (t *Torr) cleanup() error {
+	if _, err := os.Stat(t.Source); err == nil {
+		if err = os.Remove(t.Source); err != nil {
+			return err
+		}
+	}
+	return nil
+}

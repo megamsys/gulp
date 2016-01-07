@@ -28,6 +28,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/cmd"
@@ -58,14 +59,13 @@ type Attributes struct {
 
 // Provisioner is a provisioner based on Chef Solo.
 type chefsoloProvisioner struct {
-	RunList     []string
-	Attributes  string
-	Format      string
-	LogLevel    string
-	SandboxPath string
-	Cookbook    string
-	RootPath    string
-	Sudo        bool
+	RunList    []string
+	Attributes string
+	Format     string
+	LogLevel   string
+	Cookbook   string
+	RootPath   string
+	Sudo       bool
 }
 
 func init() {
@@ -108,7 +108,6 @@ func (p *chefsoloProvisioner) String() string {
 
 func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, "--- bootstrap box (%s)\n", box.GetFullName())
-
 	actions := []*action.Action{
 		&createMachine,
 		&updateStatusInRiak,
@@ -130,38 +129,36 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
+	fmt.Fprintf(w, "--- kickofff chefsolo box (%s) OK\n", box.GetFullName())
 	return nil
 }
 
-func (p *chefsoloProvisioner) Deploy(box *provision.Box, w io.Writer) error {
+func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, "--- stateup box (%s)\n", b.GetFullName())
 	var repo string
-
-	if box.Repo != nil {
-		repo = box.Repo.Gitr()
+	if b.Repo != nil {
+		repo = b.Repo.Gitr()
 	}
 
-	res1D := &Attributes{
+	DefaultAttributes, _ := json.Marshal(&Attributes{
 		RunList:   []string{"recipe[" + p.Cookbook + "]"},
-		ToscaType: strings.Split(box.Tosca, ".")[2],
+		ToscaType: b.GetShortTosca(),
 		Scm:       repo,
-	}
-
-	DefaultAttributes, _ := json.Marshal(res1D)
+	})
 
 	p.Attributes = string(DefaultAttributes)
 	p.Format = DefaultFormat
 	p.LogLevel = DefaultLogLevel
-	p.SandboxPath = "DefaultSandBoxPath"
-	p.RootPath = "DefaultRootPath"
+	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
-
-	return p.kickOffSolo(box, w)
+	return p.kickOffSolo(b, w)
 }
 
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..
-func (p *chefsoloProvisioner) kickOffSolo(box *provision.Box, w io.Writer) error {
+func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, "--- kickofff chefsolo box (%s)\n", b.GetFullName())
 	actions := []*action.Action{
 		&generateSoloJson,
 		&generateSoloConfig,
@@ -171,16 +168,87 @@ func (p *chefsoloProvisioner) kickOffSolo(box *provision.Box, w io.Writer) error
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
-		box:           box,
+		box:           b,
 		writer:        w,
 		machineStatus: provision.StatusRunning,
 		provisioner:   p,
 	}
 
 	if err := pipeline.Execute(args); err != nil {
-		log.Errorf("error on execute create pipeline for box %s - %s", box.GetFullName(), err)
+		log.Errorf("error on execute chefsolo pipeline for box %s - %s", b.GetFullName(), err)
 		return err
 	}
+	fmt.Fprintf(w, "--- kickofff chefsolo box (%s) OK\n", b.GetFullName())
+	return nil
+}
+
+func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, "--- start box (%s)\n", b.GetFullName())
+	actions := []*action.Action{
+		&updateStatusInRiak,
+		&startBox,
+		&updateStatusInRiak,
+	}
+	pipeline := action.NewPipeline(actions...)
+	args := runMachineActionsArgs{
+		box:           b,
+		writer:        w,
+		machineStatus: provision.StatusStarting,
+		provisioner:   p,
+	}
+
+	if err := pipeline.Execute(args); err != nil {
+		log.Errorf("error on execute start pipeline for box %s - %s", b.GetFullName(), err)
+		return err
+	}
+	fmt.Fprintf(w, "--- start box (%s) OK\n", b.GetFullName())
+	return nil
+}
+
+func (p *chefsoloProvisioner) Stop(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, "--- stop box (%s)\n", b.GetFullName())
+	actions := []*action.Action{
+		&updateStatusInRiak,
+		&stopBox,
+		&updateStatusInRiak,
+	}
+	pipeline := action.NewPipeline(actions...)
+	args := runMachineActionsArgs{
+		box:           b,
+		writer:        w,
+		machineStatus: provision.StatusStopping,
+		provisioner:   p,
+	}
+
+	if err := pipeline.Execute(args); err != nil {
+		log.Errorf("error on execute stop pipeline for box %s - %s", b.GetFullName(), err)
+		return err
+	}
+	fmt.Fprintf(w, "--- stop box (%s) OK\n", b.GetFullName())
+	return nil
+}
+
+func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, "--- restart box (%s)\n", b.GetFullName())
+	actions := []*action.Action{
+		&updateStatusInRiak,
+		&stopBox,
+		&startBox,
+		&updateStatusInRiak,
+	}
+	pipeline := action.NewPipeline(actions...)
+	args := runMachineActionsArgs{
+		box:           b,
+		writer:        w,
+		machineStatus: provision.StatusRestarting,
+		provisioner:   p,
+	}
+
+	if err := pipeline.Execute(args); err != nil {
+		log.Errorf("error on execute restart pipeline for box %s - %s", b.GetFullName(), err)
+		return err
+	}
+	fmt.Fprintf(w, "--- restart box (%s) OK\n", b.GetFullName())
 	return nil
 }
 
@@ -204,6 +272,5 @@ func (p chefsoloProvisioner) Command() []string {
 		"--format", format,
 		"--log_level", logLevel,
 	}
-
 	return cmd
 }

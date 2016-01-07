@@ -17,6 +17,8 @@ package bind
 
 import (
 	"fmt"
+	"runtime"
+
 	"github.com/megamsys/libgo/os"
 )
 
@@ -30,6 +32,30 @@ type EnvVar struct {
 func (e *EnvVar) String() string {
 	return fmt.Sprintf("%s=%s", e.Name, e.Value)
 }
+
+type EnvVars  []EnvVar
+
+func (en EnvVars) WrapForInitds() string {
+	var envs = ""
+	for _,de := range en {
+		envs += wrapForInitdservice(de.Name, de.Value)
+	}
+	return envs
+}
+
+func wrapForInitdservice(key string, value string) string {
+	osh := os.HostOS()
+	switch runtime.GOOS {
+	case "linux":
+		if osh != os.Ubuntu {
+			return key + "=" + value //systemd
+		}
+	default:
+		return "initctl set-env " + key + "=" + value + "\n"
+	}
+	return "initctl set-env " + key + "=" + value + "\n"
+}
+
 
 type JsonPair struct {
 	K string `json:"key"`
@@ -68,25 +94,4 @@ func (p *JsonPairs) NukeAndSet(m map[string][]string) {
 			*p = append(*p, NewJsonPair(mkey, mval))
 		}
 	}
-}
-
-func (p *JsonPairs) ForInitService() string {
-	var envs = ""
-	for _, value := range *p {
-		envs += initServiceEnv(value.Name, value.Value)
-	}
-	return envs
-}
-
-func initServiceEnv(key string, value string) string {
-	osh := os.HostOS()
-	switch runtime.GOOS {
-	case "linux":
-		if osh != os.Ubuntu {
-			return key + "=" + value //systemd
-		}
-	default:
-		return "initctl set-env " + key + "=" + value + "\n"
-	}
-	return "initctl set-env " + key + "=" + value + "\n"
 }

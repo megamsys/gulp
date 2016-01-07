@@ -70,5 +70,5 @@ func (w *LogWriter) Write(data []byte) (int, error) {
 }
 
 func (w *LogWriter) write(data []byte) error {
-	return w.Box.Log(string(data), "megd", "box")
+	return w.Box.Log(string(data), "gulp", "box")
 }

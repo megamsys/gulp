@@ -44,7 +44,7 @@ func Stateup(opts *StateOpts) error {
 
 func deployToProvisioner(opts *StateOpts, writer io.Writer) error {
 	if deployer, ok := Provisioner.(provision.Deployer); ok {
-		return deployer.Deploy(opts.B, writer)
+		return deployer.Stateup(opts.B, writer)
 	}
 	return nil
 }

@@ -2,7 +2,7 @@
 Gulpd
 =================
 
-Gulpd is an agent for Megam cloud platform
+Gulpd is an agent for Megam vertis
 
 ### Requirements
 
