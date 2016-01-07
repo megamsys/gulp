@@ -87,7 +87,7 @@ _gulpd:
 	go build $(GO_EXTRAFLAGS) -ldflags="-X main.date=$(shell date +%Y-%m-%d_%H:%M:%S%Z)" -o gulpd ./cmd/gulpd
 
 _gulpdr:
-	sudo ./gulpd start --config $(MEGAM_HOME)/gulpd.conf
+	./gulpd -v start
 	rm -f gulpd
 
 _sh_tests:

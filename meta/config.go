@@ -43,8 +43,9 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home       string   `toml:"home"`
+	Home       string   `toml:"home"` //figured out from MEGAM_HOME variable
 	Dir        string   `toml:"dir"`
+	User       string   `toml:"user"`
 	Riak       []string `toml:"riak"`
 	NSQd       []string `toml:"nsqd"`
 	DockerPath string   `toml:"docker_path"`
@@ -58,6 +59,7 @@ func (c Config) String() string {
 		cmd.Colorfy("Meta", "green", "", "") + "\n"))
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
+	b.Write([]byte("User" + "\t" + c.User + "\n"))
 	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
 	b.Write([]byte("NSQd      " + "\t" + strings.Join(c.NSQd, ",") + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
@@ -81,7 +83,7 @@ func NewConfig() *Config {
 	// Config represents the configuration format for the gulpd.
 	return &Config{
 		Home:       homeDir,
-		Dir:        defaultDir,
+		Dir:        defaultDir,		
 		Riak:       []string{DefaultRiak},
 		NSQd:       []string{DefaultNSQd},
 		DockerPath: DefaultDockerPath,

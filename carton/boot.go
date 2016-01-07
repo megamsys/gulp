@@ -22,6 +22,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/megamsys/libgo/cmd"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 )
@@ -61,11 +62,17 @@ func bootUpBox(boot *BootOpts, writer io.Writer) error {
 		if bs, ok := Provisioner.(provision.Deployer); ok {
 			return bs.Bootstrap(boot.B, writer)
 		}
+	} else {
+		fmt.Fprintf(writer, "  skip boot for box (%s)\n", boot.B.GetFullName())
 	}
 	fmt.Fprintf(writer, "  boot for box (%s) OK\n", boot.B.GetFullName())
 	return nil
 }
 
-func saveBootData(boot *BootOpts, out string, elapsed time.Duration) error {
+func saveBootData(boot *BootOpts, blog string, elapsed time.Duration) error {
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(boot.B.GetFullName(), "cyan", "", "bold"),
+		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
+		cmd.Colorfy(blog, "yellow", "", ""))
 	return nil
 }

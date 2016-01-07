@@ -49,6 +49,7 @@ var updateStatusInRiak = action.Action{
 				CartonId: args.box.CartonId,
 				Level:    args.box.Level,
 				Name:     args.box.GetFullName(),
+				SSH:      args.box.SSH,
 				Status:   args.machineStatus,
 			}
 		}
@@ -73,8 +74,10 @@ var createMachine = action.Action{
 		mach := machine.Machine{
 			Id:       args.box.Id,
 			CartonId: args.box.CartonId,
+			CartonsId: args.box.CartonsId,
 			Level:    args.box.Level,
 			Name:     args.box.GetFullName(),
+			SSH: args.box.SSH,
 		}
 		mach.Status = provision.StatusBootstrapping
 		return mach, nil
@@ -103,13 +106,13 @@ var updateIpsInRiak = action.Action{
 	},
 }
 
-var appendAuthorizedKeys = action.Action{
-	Name: "append-authorized-keys",
+var appendAuthKeys = action.Action{
+	Name: "append-auth-keys",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
-		args := ctx.Params[0].(*runMachineActionsArgs)
+		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  append authorized keys for box (%s)\n", args.box.GetFullName())
-		err := mach.AppendAuthorizedKeys()
+		err := mach.AppendAuthKeys()
 		if err != nil {
 			fmt.Fprintf(args.writer, "  append authorized keys for box failed\n%s\n", err.Error())
 			return nil, err
