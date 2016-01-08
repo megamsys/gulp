@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io"
 	"time"
+	"bytes"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/upgrade"
 	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/libgo/cmd"
 )
 
 type Upgradeable struct {
@@ -39,10 +41,17 @@ func (u *Upgradeable) register() {
 
 // Boot runs the boot of the vm.
 func (u *Upgradeable) Upgrade() error {
+	var outBuffer bytes.Buffer
+	start := time.Now()
 	logWriter := NewLogWriter(u.B)
 	defer logWriter.Close()
-	writer := io.MultiWriter(&logWriter)
+	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := u.operateBox(writer)
+	elapsed := time.Since(start)
+	saveErr := saveUpgradeData(u, outBuffer.String(), elapsed)
+	if saveErr != nil {
+		log.Errorf("WARNING: couldn't save upgrade data, deploy opts: %#v", u)
+	}
 	if err != nil {
 		return err
 	}
@@ -51,6 +60,8 @@ func (u *Upgradeable) Upgrade() error {
 
 func (u *Upgradeable) operateBox(writer io.Writer) error {
 	u.w = writer
+	fmt.Fprintf(u.w, "---- operate box (%s)\n", u.B.GetFullName())
+
 	start := time.Now()
 	opsRan, err := upgrade.Run(upgrade.RunArgs{
 		Name:   u.B.GetFullName(),
@@ -75,12 +86,12 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 	if !u.ShouldRestart {
 		return nil
 	}
-
+	fmt.Fprintf(u.w, "---- operate box (%s) OK\n", u.B.GetFullName())
 	return Provisioner.Restart(u.B, u.w)
 }
 
 func (u *Upgradeable) opsBuild() error {
-	fmt.Fprintf(u.w, "---- ops ci (%s) is kicking ----\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, "  ops ci (%s) is kicking\n", u.B.GetFullName())
 
 	actions := []*action.Action{
 		&cloneBox,
@@ -94,12 +105,13 @@ func (u *Upgradeable) opsBuild() error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
-
+	fmt.Fprintf(u.w, "  ops ci (%s) OK\n", u.B.GetFullName())
 	return nil
 }
 
 func (u *Upgradeable) opsBind() error {
-	fmt.Fprintf(u.w, "---- ops bind (%s) is kicking ----\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, "  ops bind (%s) is kicking\n", u.B.GetFullName())
+
 	actions := []*action.Action{
 		&setEnvsAction,
 	}
@@ -111,17 +123,27 @@ func (u *Upgradeable) opsBind() error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
+	fmt.Fprintf(u.w, "  ops bind (%s) OK\n", u.B.GetFullName())
 	return nil
 }
 
 func (u *Upgradeable) saveData(opsRan upgrade.OperationsRan, elapsed time.Duration) error {
 	if u.B.Level == provision.BoxSome {
-		log.Debugf("  update operation run for box (%s, %s)", u.B.Id, u.B.GetFullName())
+		fmt.Fprintf(u.w, "  operate box saving.. (%s)\n", u.B.GetFullName())
 		if comp, err := NewComponent(u.B.Id); err != nil {
 			return err
 		} else if err = comp.UpdateOpsRun(opsRan); err != nil {
 			return err
 		}
 	}
+	fmt.Fprintf(u.w, "  operate box saving (%s) OK\n", u.B.GetFullName())
+	return nil
+}
+
+func saveUpgradeData(opts *Upgradeable, ulog string, duration time.Duration) error {
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(opts.B.GetFullName(), "cyan", "", "bold"),
+		cmd.Colorfy(duration.String(), "green", "", "bold"),
+		cmd.Colorfy(ulog, "yellow", "", ""))
 	return nil
 }

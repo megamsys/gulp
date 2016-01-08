@@ -55,7 +55,7 @@ var updateStatusInRiak = action.Action{
 		}
 
 		if err := mach.SetStatus(mach.Status); err != nil {
-			fmt.Fprintf(args.writer, "  update status for machine failed.")
+			fmt.Fprintf(args.writer, "  update status for machine failed.\n")
 			return err, nil
 		}
 		return mach, nil

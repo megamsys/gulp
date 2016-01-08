@@ -1,8 +1,8 @@
 package chefsolo
 
 import (
-	"fmt"
 	"io"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -31,23 +31,30 @@ func NewChefRepo(m map[string]string, w io.Writer) *ChefRepo {
 	}
 }
 
-func (ch *ChefRepo) Download() error {
+//try downloading tar first, if not, do a clone of the chef-repo
+func (ch *ChefRepo) Download(force bool) error {
+	fmt.Fprintf(ch.writer, "--- download (%s)\n", ch.repodir())
 	if !ch.exists() || !ch.isUptodate() {
-		if err := ch.download(); err != nil {
+		if err := ch.download(force); err != nil {
 			return scm().Clone(repository.Repo{URL: ch.git})
 		}
 	}
+	fmt.Fprintf(ch.writer, "--- download (%s) OK\n", ch.repodir())
 	return nil
 }
 
 func (ch *ChefRepo) Torr() error {
+	fmt.Fprintf(ch.writer, "--- torr (%s)\n", ch.tarfile())
 	if !ch.exists() {
 		tr := NewTorr(ch.tarfile())
+		tr.Base = ch.repodir()
+		tr.writer = ch.writer
 		if err := tr.untar(); err != nil {
 			return err
 		}
 		return tr.cleanup()
 	}
+	fmt.Fprintf(ch.writer, "--- torr (%s) OK\n", ch.tarfile())
 	return nil
 }
 
@@ -75,31 +82,35 @@ func scm() repository.RepositoryManager {
 func (ch *ChefRepo) exists() bool {
 	var exists = false
 	if f := ch.repodir(); len(strings.TrimSpace(f)) > 0 {
-		if _, err := os.Stat(ch.repodir()); err != nil {
+		if _, err := os.Stat(ch.repodir()); err == nil {
 			exists = true
 		}
 	}
 	return exists
 }
 
+//for now its always uptodate
 func (ch *ChefRepo) isUptodate() bool {
 	return true
 }
 
-func (ch *ChefRepo) download() error {
+func (ch *ChefRepo) download(force bool) error {
+	if force {
+		_ = os.RemoveAll(ch.tarfile())
+	}
+	fmt.Fprintf(ch.writer, "  create tar (%s)\n", ch.tarfile())
+
 	output, err := os.Create(ch.tarfile())
 	if err != nil {
-		fmt.Println("Error while creating", ch.tarfile(), "-", err)
 		return err
 	}
 	defer output.Close()
-
 	response, err := http.Get(ch.tar)
 	if err != nil {
-		fmt.Println("Error while downloading", ch.tar, "-", err)
 		return err
 	}
 	defer response.Body.Close()
+	fmt.Fprintf(ch.writer, "  http GET tar (%s)\n", ch.tar)
 
 	// Create the progress reader
 	progressR := &ioprogress.Reader{
@@ -107,12 +118,10 @@ func (ch *ChefRepo) download() error {
 		Size:   response.ContentLength,
 	}
 
-	n, err := io.Copy(output, progressR)
+	_, err = io.Copy(output, progressR)
 	if err != nil {
-		fmt.Println("Error while downloading", ch.tar, "-", err)
 		return err
 	}
-
-	fmt.Println(n, "bytes downloaded.")
+	fmt.Fprintf(ch.writer, "  http GET, write tar (%s) OK\n", ch.tar)
 	return nil
 }

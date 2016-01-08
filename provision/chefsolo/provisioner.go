@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 	"path"
 	"strings"
 	"text/tabwriter"
@@ -75,19 +76,27 @@ func init() {
 
 //initialize the provisioner and setup the requirements for provisioner
 func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
-	p.Cookbook = m[CHEFREPO_COOKBOOK]
+	var outBuffer bytes.Buffer
+	start := time.Now()
 
+	p.Cookbook = m[CHEFREPO_COOKBOOK]
 	logWriter := carton.NewLogWriter(&provision.Box{CartonName: m[NAME]})
-	writer := io.MultiWriter(&logWriter)
+	writer := io.MultiWriter(&outBuffer, &logWriter)
 	defer logWriter.Close()
 
 	cr := NewChefRepo(m, writer)
-	if err := cr.Download(); err != nil {
+	if err := cr.Download(true); err != nil {
 		return err
 	}
 	if err := cr.Torr(); err != nil {
 		return err
 	}
+	elapsed := time.Since(start)
+
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(m[NAME], "cyan", "", "bold"),
+		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
+		cmd.Colorfy(outBuffer.String(), "yellow", "", ""))
 	return nil
 }
 

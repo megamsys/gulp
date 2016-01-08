@@ -17,10 +17,13 @@
 package carton
 
 import (
+	"time"
 	"bytes"
 	"io"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/libgo/cmd"
 )
 
 type StateOpts struct {
@@ -31,11 +34,18 @@ type StateOpts struct {
 // Deploy runs a deployment of an application.
 func Stateup(opts *StateOpts) error {
 	var outBuffer bytes.Buffer
+	start := time.Now()
+
 	logWriter := NewLogWriter(opts.B)
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := deployToProvisioner(opts, writer)
+	elapsed := time.Since(start)
 
+	saveErr := saveDeployData(opts, outBuffer.String(), elapsed)
+	if saveErr != nil {
+		log.Errorf("WARNING: couldn't save deploy data, deploy opts: %#v", opts)
+	}
 	if err != nil {
 		return err
 	}
@@ -46,5 +56,13 @@ func deployToProvisioner(opts *StateOpts, writer io.Writer) error {
 	if deployer, ok := Provisioner.(provision.Deployer); ok {
 		return deployer.Stateup(opts.B, writer)
 	}
+	return nil
+}
+
+func saveDeployData(opts *StateOpts, dlog string, duration time.Duration) error {
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(opts.B.GetFullName(), "cyan", "", "bold"),
+		cmd.Colorfy(duration.String(), "green", "", "bold"),
+		cmd.Colorfy(dlog, "yellow", "", ""))
 	return nil
 }
