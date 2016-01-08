@@ -32,7 +32,7 @@ const (
 var (
 	ErrEmptyCarton = errors.New("no boxs for this carton")
 	ErrBoxNotFound = errors.New("box not found")
-	ErrNoIpsFound  = errors.New("no ips found in the box. Did you set network correctly ?")
+	ErrNoOutputsFound  = errors.New("no outputs found in the box. Did you set it ?")
 )
 
 // Status represents the status of a unit in megamd
