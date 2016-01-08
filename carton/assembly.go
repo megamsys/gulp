@@ -177,7 +177,7 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 			return err
 		}
 	} else {
-		return provision.ErrNoIpsFound
+		return provision.ErrNoOutputsFound
 	}
 	return nil
 }
