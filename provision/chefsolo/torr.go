@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 )
 
 type Torr struct {
 	Source string
+	Base   string
+	writer io.Writer
 }
 
 func NewTorr(sourcefile string) *Torr {
@@ -18,6 +22,8 @@ func NewTorr(sourcefile string) *Torr {
 }
 
 func (t *Torr) untar() error {
+	fmt.Fprintf(t.writer, "  untar (%s)\n", t.Source)
+
 	file, err := os.Open(t.Source)
 	if err != nil {
 		return err
@@ -25,7 +31,6 @@ func (t *Torr) untar() error {
 
 	defer file.Close()
 	var fileReader io.ReadCloser = file
-
 	// just in case we are reading a tar.gz file, add a filter to handle gzipped file
 	if strings.HasSuffix(t.Source, ".gz") {
 		if fileReader, err = gzip.NewReader(file); err != nil {
@@ -46,12 +51,13 @@ func (t *Torr) untar() error {
 		}
 
 		// get the individual filename and extract to the current directory
-		filename := header.Name
+		_, remaining := path.Split(header.Name)
+		filename := filepath.Join(t.Base, remaining)
 
 		switch header.Typeflag {
 		case tar.TypeDir:
 			// handle directory
-			fmt.Println("Creating directory :", filename)
+			fmt.Fprintf(t.writer, "  creating directory (%s)\n", filename)
 			err = os.MkdirAll(filename, os.FileMode(header.Mode)) // or use 0755 if you prefer
 
 			if err != nil {
@@ -60,7 +66,7 @@ func (t *Torr) untar() error {
 
 		case tar.TypeReg:
 			// handle normal file
-			fmt.Println("Untarring :", filename)
+			fmt.Fprintf(t.writer, "  writing untarred (%s)\n", filename)
 			writer, err := os.Create(filename)
 
 			if err != nil {
@@ -77,17 +83,20 @@ func (t *Torr) untar() error {
 
 			writer.Close()
 		default:
-			fmt.Printf("Unable to untar type : %c in file %s", header.Typeflag, filename)
+			fmt.Fprintf(t.writer, "  unable to untar type : %c in file (%s)\n", header.Typeflag, filename)
 		}
 	}
+	fmt.Fprintf(t.writer, "  untar (%s) OK\n", t.Source)
 	return nil
 }
 
 func (t *Torr) cleanup() error {
+	fmt.Fprintf(t.writer, "  cleanup tar (%s) OK\n", t.Source)
 	if _, err := os.Stat(t.Source); err == nil {
 		if err = os.Remove(t.Source); err != nil {
 			return err
 		}
 	}
+	fmt.Fprintf(t.writer, "  cleanup tar (%s) OK\n", t.Source)
 	return nil
 }

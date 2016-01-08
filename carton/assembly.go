@@ -253,7 +253,6 @@ func (a *Assembly) getCpushare() string {
 
 func (a *Assembly) getMemory() string {
 	return a.Inputs.Match(provision.RAM)
-
 }
 
 func (a *Assembly) getSwap() string {

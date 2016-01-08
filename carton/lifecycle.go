@@ -17,12 +17,13 @@
 package carton
 
 import (
-	"fmt"
+	"bytes"
 	"io"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/libgo/cmd"
 )
 
 type LifecycleOpts struct {
@@ -30,62 +31,77 @@ type LifecycleOpts struct {
 	start     time.Time
 	logWriter LogWriter
 	writer    io.Writer
+	outBuffer bytes.Buffer
 }
 
-func (cy *LifecycleOpts) setLogger() {
-	cy.start = time.Now()
-	cy.logWriter = NewLogWriter(cy.B)
-	cy.writer = io.MultiWriter(&cy.logWriter)
+func (li *LifecycleOpts) setLogger() {
+	li.start = time.Now()
+	li.logWriter = NewLogWriter(li.B)
+	li.writer = io.MultiWriter(&li.outBuffer, &li.logWriter)
 }
 
 //if the state is in running, started, stopped, restarted then allow it to be lcycled.
 // to-do: allow states that ends with "*ing or *ed" that should fix this generically.
-func (cy *LifecycleOpts) canCycle() bool {
-	return cy.B.Status == provision.StatusRunning ||
-		cy.B.Status == provision.StatusStarted ||
-		cy.B.Status == provision.StatusStopped ||
-		cy.B.Status == provision.StatusStarted ||
-		cy.B.Status == provision.StatusUpgraded
+func (li *LifecycleOpts) canCycle() bool {
+	return li.B.Status == provision.StatusRunning ||
+		li.B.Status == provision.StatusStarted ||
+		li.B.Status == provision.StatusStopped ||
+		li.B.Status == provision.StatusStarted ||
+		li.B.Status == provision.StatusUpgraded
 }
 
 // Starts  the box.
-func Start(cy *LifecycleOpts) error {
-	log.Debugf("  start cycle for box (%s, %s)", cy.B.Id, cy.B.GetFullName())
-	cy.setLogger()
-	defer cy.logWriter.Close()
-	if cy.canCycle() {
-		if err := Provisioner.Start(cy.B, cy.writer); err != nil {
+func Start(li *LifecycleOpts) error {
+	li.setLogger()
+	defer li.logWriter.Close()
+	if li.canCycle() {
+		if err := Provisioner.Start(li.B, li.writer); err != nil {
 			return err
 		}
 	}
-	fmt.Fprintf(cy.writer, "    start (%s, %s, %s) OK\n", cy.B.GetFullName(), cy.B.Status.String(), time.Since(cy.start))
+	saveErr := saveLifecycleData(li, li.outBuffer.String(), time.Since(li.start))
+	if saveErr != nil {
+		log.Errorf("WARNING: couldn't save lifecycle data, lifecycle opts: %#v", li)
+	}
 	return nil
 }
 
 // Stops the box
-func Stop(cy *LifecycleOpts) error {
-	log.Debugf("  stop cycle for box (%s, %s)", cy.B.Id, cy.B.GetFullName())
-	cy.setLogger()
-	defer cy.logWriter.Close()
-	if cy.canCycle() {
-		if err := Provisioner.Stop(cy.B, cy.writer); err != nil {
+func Stop(li *LifecycleOpts) error {
+	li.setLogger()
+	defer li.logWriter.Close()
+	if li.canCycle() {
+		if err := Provisioner.Stop(li.B, li.writer); err != nil {
 			return err
 		}
 	}
-	fmt.Fprintf(cy.writer, "    stop (%s, %s, %s) OK\n", cy.B.GetFullName(), cy.B.Status.String(), time.Since(cy.start))
+	saveErr := saveLifecycleData(li, li.outBuffer.String(), time.Since(li.start))
+	if saveErr != nil {
+		log.Errorf("WARNING: couldn't save lifecycle data, lifecycle opts: %#v", li)
+	}
 	return nil
 }
 
 // Restart the box.
-func Restart(cy *LifecycleOpts) error {
-	log.Debugf("  restart cycle for box (%s, %s)", cy.B.Id, cy.B.GetFullName())
-	cy.setLogger()
-	defer cy.logWriter.Close()
-	if cy.canCycle() {
-		if err := Provisioner.Restart(cy.B, cy.writer); err != nil {
+func Restart(li *LifecycleOpts) error {
+	li.setLogger()
+	defer li.logWriter.Close()
+	if li.canCycle() {
+		if err := Provisioner.Restart(li.B, li.writer); err != nil {
 			return err
 		}
 	}
-	fmt.Fprintf(cy.writer, "    restart (%s, %s, %s) OK\n", cy.B.GetFullName(), cy.B.Status.String(), time.Since(cy.start))
+	saveErr := saveLifecycleData(li, li.outBuffer.String(), time.Since(li.start))
+	if saveErr != nil {
+		log.Errorf("WARNING: couldn't save lifecycle data, lifecycle opts: %#v", li)
+	}
+	return nil
+}
+
+func saveLifecycleData(li *LifecycleOpts, llog string, elapsed time.Duration) error {
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(li.B.GetFullName(), "cyan", "", "bold"),
+		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
+		cmd.Colorfy(llog, "yellow", "", ""))
 	return nil
 }

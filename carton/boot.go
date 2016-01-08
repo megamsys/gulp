@@ -22,9 +22,9 @@ import (
 	"io"
 	"time"
 
-	"github.com/megamsys/libgo/cmd"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/libgo/cmd"
 )
 
 type BootOpts struct {
