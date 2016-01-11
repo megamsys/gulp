@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -50,9 +49,7 @@ func (t *Torr) untar() error {
 			return err
 		}
 
-		// get the individual filename and extract to the current directory
-		_, remaining := path.Split(header.Name)
-		filename := filepath.Join(t.Base, remaining)
+		filename := filepath.Join(t.Base, header.Name[strings.Index(header.Name, "/")+1:])
 
 		switch header.Typeflag {
 		case tar.TypeDir:
