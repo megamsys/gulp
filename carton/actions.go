@@ -4,10 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
+	"strings"
 
-	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
 )
@@ -26,24 +25,24 @@ var setEnvsAction = action.Action{
 		}
 
 		fmt.Fprintf(args.writer, "  set envs for box (%s)\n", args.box.GetFullName())
+		bi := &bind.BindFile{}
 
 		if len(args.box.Envs) > 0 {
-			envFile := filepath.Join(meta.MC.Home, "env.sh")
-			if _, err := os.Stat(envFile); err == nil {
-				fmt.Fprintf(args.writer, "  set envs for box (%s) appending ...\n", args.box.GetFullName())
-				aenvFile, err := os.OpenFile(envFile, os.O_APPEND|os.O_WRONLY, 0755)
-				if err != nil {
-					return err, nil
-				}
-				io.WriteString(aenvFile, args.box.Envs.WrapForInitds())
-				aenvFile.Close()
+			bi.Name = "env.sh"
+			bi.BoxName = args.box.GetFullName()
+			bi.LogWriter = args.writer
+
+			if err := bi.Mutate(strings.NewReader(args.box.Envs.WrapForInitds())); err != nil {
+				return bi, err
 			}
 		}
 		fmt.Fprintf(args.writer, "  set envs for box (%s) OK\n", args.box.GetFullName())
-		return nil, nil
+		return bi, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		_, _ = ctx.Params[0].(*runOpsPipelineArgs)
+		c := ctx.FWResult.(bind.BindFile)
+		bind.Revert(&c)
 	},
 	MinParams: 1,
 }
