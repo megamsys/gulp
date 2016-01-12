@@ -71,12 +71,13 @@ func (bi *BindFile) envSHdot() string {
 }
 
 func (bi *BindFile) Mutate(newEnvReader io.Reader) (err error) {
-	backup(bi)
-
 	ei, err := bi.envSHString()
 	if err != nil {
 		return err
 	}
+
+	backup(bi)
+
 	ew, err := bi.envSHWriter()
 	if err != nil {
 		return err
