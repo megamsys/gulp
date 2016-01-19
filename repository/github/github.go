@@ -17,6 +17,8 @@
 package github
 
 import (
+	"path/filepath"
+	
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
 	skia "go.skia.org/infra/go/gitinfo"
@@ -40,7 +42,7 @@ func (m gitHubManager) Clone(r repository.Repository) error {
 		return err
 	}
 
-	if _, err = skia.Clone(r.Gitr(), basePath, false); err != nil {
+	if _, err = skia.Clone(r.Gitr(), filepath.Join(basePath, repoName), false); err != nil {
 		re.Revert(repoName)
 		return err
 	}
