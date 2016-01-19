@@ -36,6 +36,9 @@ func (ch *ChefRepo) Download(force bool) error {
 	fmt.Fprintf(ch.writer, "--- download (%s)\n", ch.repodir())
 	if !ch.exists() || !ch.isUptodate() {
 		if err := ch.download(force); err != nil {
+			fmt.Println("********************************")
+			fmt.Println(err)
+			fmt.Println("********************************")
 			return scm().Clone(repository.Repo{URL: ch.git})
 		}
 	}
@@ -96,17 +99,26 @@ func (ch *ChefRepo) isUptodate() bool {
 
 func (ch *ChefRepo) download(force bool) error {
 	if force {
+		fmt.Println("*************removeall tar*******************")
 		_ = os.RemoveAll(ch.tarfile())
 	}
+	fmt.Println(ch.tarfile())
+	fmt.Println("****************before tar create****************")
 	fmt.Fprintf(ch.writer, "  create tar (%s)\n", ch.tarfile())
 
 	output, err := os.Create(ch.tarfile())
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println("*************create err*******************")
 		return err
 	}
 	defer output.Close()
+	fmt.Println(ch.tar)
+	fmt.Println("***************after output.close*****************")
 	response, err := http.Get(ch.tar)
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println("***************http.Get*****************")
 		return err
 	}
 	defer response.Body.Close()
@@ -120,6 +132,8 @@ func (ch *ChefRepo) download(force bool) error {
 
 	_, err = io.Copy(output, progressR)
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println("***************io.Copy*****************")
 		return err
 	}
 	fmt.Fprintf(ch.writer, "  http GET, write tar (%s) OK\n", ch.tar)

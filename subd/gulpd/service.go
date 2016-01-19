@@ -70,13 +70,14 @@ func (s *Service) Open() error {
 
 		s.Consumer = nsqc.DefaultConsumer
 
-		if err := s.setProvisioner(); err != nil {
-			return err
-		}
 		nsqc.Start(true)
 		return nil
 	}()
 
+	if err := s.setProvisioner(); err != nil {
+		return err
+	}
+	
 	s.boot()
 	return nil
 }
