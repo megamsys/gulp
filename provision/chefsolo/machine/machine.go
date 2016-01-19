@@ -87,7 +87,7 @@ func (m *Machine) findIps() map[string][]string {
 		for _, address := range ifaddress {
 			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 				if ipnet.IP.To4() != nil {
-					if strings.Contains(iface.Name, "pub") {
+					if strings.Contains(iface.Name, "eth0") {
 						pubipv4s = append(pubipv4s, ipnet.IP.String())
 					} else {
 						priipv4s = append(priipv4s, ipnet.IP.String())
