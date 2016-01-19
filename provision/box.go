@@ -222,7 +222,7 @@ func (box *Box) GetRouter() (string, error) {
 }
 
 func (b *Box) Clone() error {
-	if b.Repo != nil || b.Repo.Type != repository.IMAGE || !b.Repo.OneClick {
+	if b.Repo != nil && b.Repo.Type != repository.IMAGE && !b.Repo.OneClick {
 		scm := repository.Manager(b.Repo.Source)
 		if scm != nil {
 			return fmt.Errorf("fatal error, couldn't locate the repository manager (%s)", b.Repo.Source)
