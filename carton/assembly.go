@@ -91,6 +91,8 @@ func mkCarton(aies string, ay string) (*Carton, error) {
 		Provider:     a.provider(),
 		PublicIp:     a.publicIp(),
 		Boxes:        &b,
+		Status:       provision.Status(a.Status),
+
 	}
 	log.Debugf("Carton %v", c)
 	return c, nil
@@ -123,6 +125,7 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 				}
 				b.Compute = a.newCompute()
 				b.SSH = a.newSSH()
+				b.Status = provision.Status(a.Status)
 				newBoxs = append(newBoxs, b)
 			}
 		}

@@ -18,6 +18,7 @@ type Carton struct {
 	Provider     string
 	PublicIp     string
 	Boxes        *[]provision.Box
+	Status       provision.Status
 }
 
 func (a *Carton) String() string {
@@ -55,6 +56,7 @@ func (c *Carton) toBox() error { //assemblies id.
 			Provider:     c.Provider,
 			PublicIp:     c.PublicIp,
 			Tosca:        c.Tosca,
+			Status:       c.Status,
 		},
 		}
 	}
