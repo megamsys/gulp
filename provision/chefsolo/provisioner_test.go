@@ -39,7 +39,7 @@ func (s *S) SetUpSuite(c *check.C) {
 	s.config = cfg
 	m := make(map[string]string)
 	m[CHEFREPO_GIT] = "https://github.com/megamsys/chef-repo.git"
-	m[CHEFREPO_TARBALL] = "https://github.com/megamsys/chef-repo/archive/0.94.tar.gz"
+	m[CHEFREPO_TARBALL] = "https://github.com/megamsys/chef-repo/archive/0.96.tar.gz"
 	s.M = m
 	c.Assert(s.config, check.NotNil)
   c.Assert(s.M, check.NotNil)
