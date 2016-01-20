@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"path"
 	"reflect"
+	"strings"
 
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
@@ -41,7 +42,7 @@ var updateStatusInRiak = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())
 		var mach machine.Machine
-		if ctx.Previous != nil && reflect.TypeOf(machine.Machine) {
+		if ctx.Previous != nil && strings.Compare(reflect.TypeOf(mach).Name(),"machine.Machine") == 0 {
 			mach = ctx.Previous.(machine.Machine)
 		} else {
 			mach = machine.Machine{
