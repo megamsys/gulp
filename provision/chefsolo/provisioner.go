@@ -138,7 +138,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
-	fmt.Fprintf(w, "--- kickofff chefsolo box (%s) OK\n", box.GetFullName())
+	fmt.Fprintf(w, "--- bootstrap box (%s) OK\n", box.GetFullName())
 	return nil
 }
 

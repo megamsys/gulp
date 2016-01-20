@@ -17,7 +17,6 @@ func logQueue(boxName string) string {
 }
 
 func notify(boxName string, messages []interface{}) error {
-
 	pons := nsqp.New()
 
 	if err := pons.Connect(meta.MC.NSQd[0]); err != nil {
