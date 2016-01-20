@@ -36,9 +36,6 @@ func (ch *ChefRepo) Download(force bool) error {
 	fmt.Fprintf(ch.writer, "--- download (%s)\n", ch.repodir())
 	if !ch.exists() || !ch.isUptodate() {
 		if err := ch.download(force); err != nil {
-			fmt.Println("********************************")
-			fmt.Println(err)
-			fmt.Println("********************************")
 			return scm().Clone(repository.Repo{URL: ch.git})
 		}
 	}
