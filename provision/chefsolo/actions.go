@@ -20,6 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
+	"reflect"
 
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
@@ -39,9 +40,8 @@ var updateStatusInRiak = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())
-
 		var mach machine.Machine
-		if ctx.Previous != nil {
+		if ctx.Previous != nil && reflect.TypeOf(machine.Machine) {
 			mach = ctx.Previous.(machine.Machine)
 		} else {
 			mach = machine.Machine{
