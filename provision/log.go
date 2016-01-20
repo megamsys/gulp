@@ -17,7 +17,7 @@ func logQueue(boxName string) string {
 }
 
 func notify(boxName string, messages []interface{}) error {
-	log.Debugf("  notify %s", logQueue(boxName))
+
 	pons := nsqp.New()
 
 	if err := pons.Connect(meta.MC.NSQd[0]); err != nil {
@@ -27,6 +27,7 @@ func notify(boxName string, messages []interface{}) error {
 	defer pons.Stop()
 
 	for _, msg := range messages {
+		log.Debugf("%s:%s", logQueue(boxName),msg)
 		if err := pons.PublishJSONAsync(logQueue(boxName), msg, nil); err != nil {
 			log.Errorf("Error on publish: %s", err.Error())
 		}
