@@ -34,7 +34,7 @@ const StatusUpgraded = "upgraded"
 const StatusError    = "error"
 
 type Operation struct {
-	Type        string         `json:"type"`
+	Type        string         `json:"operation_type"`
 	Description string         `json:"description"`
 	Properties  bind.JsonPairs `json:"properties"`
 	Status      string         `json:"status"`
