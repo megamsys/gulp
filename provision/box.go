@@ -29,6 +29,7 @@ import (
 
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/repository"
+	_ "github.com/megamsys/gulp/repository/github"
 	"github.com/megamsys/gulp/upgrade"
 	"gopkg.in/yaml.v2"
 )
@@ -225,7 +226,7 @@ func (b *Box) Clone() error {
 	if b.Repo != nil && b.Repo.Type != repository.IMAGE && !b.Repo.OneClick {
 		scm := repository.Manager(b.Repo.Source)
 		if scm != nil {
-			return fmt.Errorf("fatal error, couldn't locate the repository manager (%s)", b.Repo.Source)
+			return fmt.Errorf("couldn't locate the repository manager (%s)", b.Repo.Source)
 		}
 		if err := scm.Clone(b.Repo); err != nil {
 			return err
