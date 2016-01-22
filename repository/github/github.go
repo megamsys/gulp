@@ -18,7 +18,7 @@ package github
 
 import (
 	"path/filepath"
-	
+
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
 	skia "go.skia.org/infra/go/gitinfo"

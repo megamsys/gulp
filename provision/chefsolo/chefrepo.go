@@ -75,6 +75,7 @@ func (ch *ChefRepo) tarfile() string {
 	return filepath.Join(ch.dir, tokens[len(tokens)-1])
 }
 
+//bit screwy we are doing it twice inside here and in provisioner
 func scm() repository.RepositoryManager {
 	return repository.Manager("github")
 }
