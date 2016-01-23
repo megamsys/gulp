@@ -80,10 +80,12 @@ func NewConfig() *Config {
 
 	defaultDir := filepath.Join(homeDir, "gulp")
 
+	_ = os.MkdirAll(defaultDir, 0755)
+
 	// Config represents the configuration format for the gulpd.
 	return &Config{
 		Home:       homeDir,
-		Dir:        defaultDir,		
+		Dir:        defaultDir,
 		Riak:       []string{DefaultRiak},
 		NSQd:       []string{DefaultNSQd},
 		DockerPath: DefaultDockerPath,
