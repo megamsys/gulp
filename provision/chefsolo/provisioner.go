@@ -160,7 +160,11 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 	p.LogLevel = DefaultLogLevel
 	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
-	return p.kickOffSolo(b, w)
+	if b.Level != provision.BoxNone {
+			return p.kickOffSolo(b, w)
+	}
+	fmt.Fprintf(w, "--- stateup box (%s) OK\n", b.GetFullName())
+  return nil
 }
 
 //1. &prepareJSON in generate the json file for chefsolo
