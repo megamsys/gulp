@@ -160,8 +160,7 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 	p.LogLevel = DefaultLogLevel
 	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
-			return p.kickOffSolo(b, w)
-  return nil
+	return p.kickOffSolo(b, w)
 }
 
 //1. &prepareJSON in generate the json file for chefsolo
