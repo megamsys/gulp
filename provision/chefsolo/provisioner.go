@@ -160,10 +160,7 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 	p.LogLevel = DefaultLogLevel
 	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
-	if b.Level != provision.BoxNone {
 			return p.kickOffSolo(b, w)
-	}
-	fmt.Fprintf(w, "--- stateup box (%s) OK\n", b.GetFullName())
   return nil
 }
 
@@ -172,13 +169,13 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 //3. &updateStatus in Riak - Creating..
 func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, "--- kickofff chefsolo box (%s)\n", b.GetFullName())
-	actions := []*action.Action{
-		&generateSoloJson,
-		&generateSoloConfig,
-		&cloneBox,
-		&chefSoloRun,
-		&updateStatusInRiak,
+	soloAction := make([]*action.Action,0,4)
+  soloAction = append(soloAction,&generateSoloJson,&generateSoloConfig,&cloneBox,)
+	if b.Level != provision.BoxNone {
+	soloAction = append(soloAction,&chefSoloRun)
 	}
+	soloAction = append(soloAction,&updateStatusInRiak)
+	actions := soloAction
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
 		box:           b,
