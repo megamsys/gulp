@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	maxInFlight = 150
+	maxInFlight = 300
 )
 
 var LogPubSubQueueSuffix = "_log"
