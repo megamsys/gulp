@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/repository"
@@ -116,7 +117,7 @@ func Register(name string, fn OperateFunc) error {
 func register(name string, optional bool, fn OperateFunc) error {
 	for _, m := range operations {
 		if m.Name == name {
-			return ErrDuplicateOperation
+			return nil
 		}
 	}
 	operations = append(operations, operation{Name: name, Optional: optional, fn: fn})
@@ -137,7 +138,7 @@ func run(args RunArgs) (OperationsRan, error) {
 		if m.Optional {
 			continue
 		}
-		if m.Ran && !args.Force {
+		if !m.Ran || !args.Force {
 			fmt.Fprintf(args.Writer, "Running operation (%q)...\n", m.Raw.Type)
 			err := m.fn()
 			if err != nil {
@@ -159,7 +160,7 @@ func getOperations(ran []*Operation, ignoreRan bool) ([]OperationsToRun, error) 
 	for _, m := range operations {
 		m.Ran = false
 		for _, r := range ran {
-			if r.Type == m.Name {
+			if strings.EqualFold(r.Type,m.Name) {
 				if !ignoreRan || !m.Ran {
 					opr := OperationsToRun{
 						Raw:      r,

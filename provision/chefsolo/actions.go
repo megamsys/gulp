@@ -54,7 +54,6 @@ var updateStatusInRiak = action.Action{
 				Status:   args.machineStatus,
 			}
 		}
-
 		if err := mach.SetStatus(mach.Status); err != nil {
 			fmt.Fprintf(args.writer, "  update status for machine failed.\n")
 			return err, nil
@@ -223,7 +222,7 @@ var startBox = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  %s for box (%s)", carton.START, args.box.GetFullName())
 
-		scriptd := machine.NewServiceScripter(carton.START, args.box.GetShortTosca())
+		scriptd := machine.NewServiceScripter(args.box.GetShortTosca(), carton.START)
 		fmt.Fprintf(args.writer, "  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())
 
 		err := provision.ExecuteCommandOnce(scriptd.Cmd(), args.writer)
@@ -231,10 +230,16 @@ var startBox = action.Action{
 			fmt.Fprintf(args.writer, "  %s for box (%s) failed.\n%s\n", carton.START, args.box.GetFullName(), err.Error())
 			return nil, err
 		}
-
-		args.machineStatus = provision.StatusStarted
+		mach := machine.Machine{
+			Id:       args.box.Id,
+			CartonId: args.box.CartonId,
+			Level:    args.box.Level,
+			Name:     args.box.GetFullName(),
+			SSH:      args.box.SSH,
+			Status:   provision.StatusStarted,
+		}
 		fmt.Fprintf(args.writer, "  %s for box (%s) OK", carton.START, args.box.GetFullName())
-		return nil, nil
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		//this is tricky..
@@ -247,7 +252,7 @@ var stopBox = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  %s for box (%s)", carton.STOP, args.box.GetFullName())
 
-		scriptd := machine.NewServiceScripter(carton.STOP, args.box.GetShortTosca())
+		scriptd := machine.NewServiceScripter(args.box.GetShortTosca(), carton.STOP)
 		fmt.Fprintf(args.writer, "  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())
 
 		err := provision.ExecuteCommandOnce(scriptd.Cmd(), args.writer)
@@ -255,10 +260,16 @@ var stopBox = action.Action{
 			fmt.Fprintf(args.writer, "  %s for box (%s) failed.\n%s\n", carton.STOP, args.box.GetFullName(), err.Error())
 			return nil, err
 		}
-
-		args.machineStatus = provision.StatusStopped
+		mach := machine.Machine{
+			Id:       args.box.Id,
+			CartonId: args.box.CartonId,
+			Level:    args.box.Level,
+			Name:     args.box.GetFullName(),
+			SSH:      args.box.SSH,
+			Status:   provision.StatusStopped,
+		}
 		fmt.Fprintf(args.writer, "  %s for box (%s) OK", carton.STOP, args.box.GetFullName())
-		return nil, nil
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		//this is tricky..
