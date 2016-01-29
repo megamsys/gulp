@@ -49,6 +49,7 @@ func (u *Upgradeable) Upgrade() error {
 	err := u.operateBox(writer)
 	elapsed := time.Since(start)
 	saveErr := saveUpgradeData(u, outBuffer.String(), elapsed)
+
 	if saveErr != nil {
 		log.Errorf("WARNING: couldn't save upgrade data, deploy opts: %#v", u)
 	}
@@ -72,7 +73,6 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 	if err != nil {
 		return err
 	}
-
 	if !opsRan.Successful() {
 		return nil
 	}
@@ -82,7 +82,6 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 		log.Errorf("WARNING: couldn't save ops data, ops opts: %#v", u)
 		return err
 	}
-
 	if !u.ShouldRestart {
 		return nil
 	}
@@ -92,7 +91,7 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 
 func (u *Upgradeable) opsBuild() error {
 	fmt.Fprintf(u.w, "  ops ci (%s) is kicking\n", u.B.GetFullName())
-
+  fmt.Println(u.B.Status)
 	actions := []*action.Action{
 		&cloneBox,
 		&buildBox, //buildpack does everthing
@@ -102,7 +101,7 @@ func (u *Upgradeable) opsBuild() error {
 		box:    u.B,
 		writer: u.w,
 	}
-	if err := pipeline.Execute(args); err != nil {
+	if err := pipeline.Execute(&args); err != nil {
 		return err
 	}
 	fmt.Fprintf(u.w, "  ops ci (%s) OK\n", u.B.GetFullName())
@@ -120,7 +119,7 @@ func (u *Upgradeable) opsBind() error {
 		box:    u.B,
 		writer: u.w,
 	}
-	if err := pipeline.Execute(args); err != nil {
+	if err := pipeline.Execute(&args); err != nil {
 		return err
 	}
 	fmt.Fprintf(u.w, "  ops bind (%s) OK\n", u.B.GetFullName())

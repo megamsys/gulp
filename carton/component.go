@@ -93,6 +93,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		DomainName: c.domain(),
 		Envs:       c.envs(),
 		Tosca:      c.Tosca,
+		Operations: c.Operations,
 		Commit:     "",
 		Provider:   c.provider(),
 		PublicIp:   c.publicIp(),

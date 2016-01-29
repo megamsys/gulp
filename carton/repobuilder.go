@@ -70,8 +70,8 @@ func NewRepoBuilder(r repository.Repository, w io.Writer) *RepoBuilder {
 
 func (rb *RepoBuilder) Build(force bool) error {
 	fmt.Fprintf(rb.writer, "  %s (%s)\n", BuildFile, rb.R.Gitr())
-
 	custom, err := rb.custom()
+
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,6 @@ func (rb *RepoBuilder) Build(force bool) error {
 	if _, err = os.Stat(rb.BP.custom); err == nil {
 		return provision.ExecuteCommandOnce(strings.Fields(rb.BP.custom), rb.writer)
 	}
-
 	if _, err = os.Stat(rb.BP.platform); err == nil {
 		return provision.ExecuteCommandOnce(strings.Fields(rb.BP.platform), rb.writer)
 	}

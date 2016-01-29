@@ -32,7 +32,7 @@ func (s *S) TestConfig_Parse(c *check.C) {
 	if _, err := toml.Decode(`
 		[meta]
 			debug = true
-			dir = "/var/lib/megam/gulp/meta"
+			dir = "/var/lib/megam/"
 			riak = "192.168.1.100:8087"
 			nsq = "192.168.1.100:4161"
 

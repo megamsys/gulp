@@ -69,6 +69,7 @@ const (
 	StatusRestarting = Status("restarting")
 	StatusRestarted  = Status("restarted")
 
+	StatusUpgrading = Status("upgrading")
 	StatusUpgraded = Status("upgraded")
 
 	// StatusError is the status for units that failed to start, because of
