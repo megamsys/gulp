@@ -19,7 +19,7 @@ type runOpsPipelineArgs struct {
 var setEnvsAction = action.Action{
 	Name: "set-envs",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		args := ctx.Params[0].(*runOpsPipelineArgs)
+		args, _ := ctx.Params[0].(*runOpsPipelineArgs)
 		if args == nil {
 			return nil, errors.New("invalid arguments for pipeline, expected *runOpsPipelineArgs")
 		}

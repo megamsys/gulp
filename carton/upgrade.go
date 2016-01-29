@@ -91,7 +91,7 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 
 func (u *Upgradeable) opsBuild() error {
 	fmt.Fprintf(u.w, "  ops ci (%s) is kicking\n", u.B.GetFullName())
-  fmt.Println(u.B.Status)
+	
 	actions := []*action.Action{
 		&cloneBox,
 		&buildBox, //buildpack does everthing
