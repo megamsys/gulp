@@ -47,7 +47,6 @@ type Command struct {
 	Server *Server
 }
 
-// NewCommand return a new instance of Command.
 func NewCommand() *Command {
 	return &Command{
 		CPUProfile: "cpuprof",
@@ -57,11 +56,9 @@ func NewCommand() *Command {
 	}
 }
 
-//Short form for "Gulp daemon - Gpd" .We start the gulpd daemon.
 func (cmd *Command) Gpd(c *Config, version string) error {
-	cmd.funSpin(pp.Colorfy(logo, "green", "", "bold"), cmd.Version)
+	cmd.funSpin(pp.Colorfy(logo, "green", "", "bold"), version)
 
-	// Create server from config and start it.
 	s, err := NewServer(c, cmd.Version)
 	if err != nil {
 		return fmt.Errorf("create server: %s", err)
@@ -73,18 +70,8 @@ func (cmd *Command) Gpd(c *Config, version string) error {
 	}
 	cmd.Server = s
 
-	// Begin monitoring the server's error channel.
 	go cmd.monitorServerErrors()
-
 	return nil
-}
-
-func funSpin() {
-	s := spin.New()
-	for i := 0; i < 30; i++ {
-		fmt.Printf("\r  \033[36mcomputing\033[m %s ", s.Next())
-		time.Sleep(100 * time.Millisecond)
-	}
 }
 
 // Close shuts down the server.

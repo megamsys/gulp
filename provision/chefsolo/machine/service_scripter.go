@@ -14,16 +14,38 @@
 ** limitations under the License.
  */
 
-package repository
+package machine
 
 import (
-	"testing"
+	"fmt"
+	"runtime"
+	"strings"
 
-	"gopkg.in/check.v1"
+	"github.com/megamsys/libgo/os"
 )
 
-func Test(t *testing.T) { check.TestingT(t) }
+type Scriptd struct {
+	name    string
+	control string
+	os      string
+}
 
-type S struct{}
+func NewServiceScripter(name string, control string) *Scriptd {
+	return &Scriptd{
+		name:    name,
+		control: control,
+	}
+}
 
-var _ = check.Suite(&S{})
+func (i *Scriptd) Cmd() []string {
+	osh := os.HostOS()
+	switch runtime.GOOS {
+	case "linux":
+		if osh != os.Ubuntu {
+			return strings.Fields(fmt.Sprintf("systemctl %s %s", i.control, i.name))
+		}
+	default:
+		return strings.Fields(fmt.Sprintf("%s %s", i.control, i.name))
+	}
+	return strings.Fields(fmt.Sprintf("%s %s", i.control, i.name))
+}

@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,23 +20,28 @@ import (
 	"bytes"
 )
 
-// DeleteProcs represents a command for delete cartons.
-type DeleteProcess struct {
+// BootProcess represents the initial boot for applying cartons.
+type BootProcess struct {
 	Name string
 }
 
-func (s DeleteProcess) String() string {
+func (s BootProcess) String() string {
 	var buf bytes.Buffer
-	_, _ = buf.WriteString("DELETE CARTON ")
+	_, _ = buf.WriteString("BOOT CARTON ")
 	_, _ = buf.WriteString(s.Name)
 	return buf.String()
 }
 
-func (s DeleteProcess) Process(ca *Carton) error {
-	if err := ca.Delete(); err != nil {
+func (s BootProcess) Process(ca *Carton) error {
+	if err := ca.Boot(); err != nil {
 		return err
 	}
 	return nil
+}
+
+// DeleteProcs represents a command for delete cartons.
+type DeleteProcess struct {
+	Name string
 }
 
 // StartProcs represents a command for starting  cartons.
@@ -52,7 +57,7 @@ func (s StartProcess) String() string {
 }
 
 func (s StartProcess) Process(ca *Carton) error {
-	if err := ca.LCoperation(START); err != nil {
+	if err := ca.Start(); err != nil {
 		return err
 	}
 	return nil
@@ -71,7 +76,7 @@ func (s StopProcess) String() string {
 }
 
 func (s StopProcess) Process(ca *Carton) error {
-	if err := ca.LCoperation(STOP); err != nil {
+	if err := ca.Stop(); err != nil {
 		return err
 	}
 	return nil
@@ -90,7 +95,7 @@ func (s RestartProcess) String() string {
 }
 
 func (s RestartProcess) Process(ca *Carton) error {
-	if err := ca.LCoperation(RESTART); err != nil {
+	if err := ca.Restart(); err != nil {
 		return err
 	}
 	return nil
@@ -109,11 +114,9 @@ func (s UpgradeProcess) String() string {
 }
 
 func (s UpgradeProcess) Process(ca *Carton) error {
-	//	for _, c := range ca {
 	if err := ca.Upgrade(); err != nil {
 		return err
 	}
-	//	}
 	return nil
 }
 
@@ -131,44 +134,6 @@ func (s StateupProcess) String() string {
 
 func (s StateupProcess) Process(ca *Carton) error {
 	if err := ca.Stateup(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// StatedownProcess represents a command for restarting  cartons.
-type StatedownProcess struct {
-	Name string
-}
-
-func (s StatedownProcess) String() string {
-	var buf bytes.Buffer
-	_, _ = buf.WriteString("STATEDOWN CARTON ")
-	_, _ = buf.WriteString(s.Name)
-	return buf.String()
-}
-
-func (s StatedownProcess) Process(ca *Carton) error {
-	if err := ca.Statedown(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// CIStateProcess represents a command for continuos integration  cartons.
-type CIStateProcess struct {
-	Name string
-}
-
-func (s CIStateProcess) String() string {
-	var buf bytes.Buffer
-	_, _ = buf.WriteString("CISTATE CARTON ")
-	_, _ = buf.WriteString(s.Name)
-	return buf.String()
-}
-
-func (s CIStateProcess) Process(ca *Carton) error {
-	if err := ca.CIState(); err != nil {
 		return err
 	}
 	return nil

@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,25 +21,19 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/megamsys/gulp/carton/bind"
-	"github.com/megamsys/gulp/loggers"
-	"github.com/megamsys/gulp/repository"
+	"github.com/megamsys/libgo/exec"
 )
 
 const (
-	PROVIDER      = "provider"
-	PROVIDER_CHEF = "chefsolo"
+	PROVIDER = "provider"
+	CHEFSOLO = "chefsolo"
 )
 
 var (
-	ErrInvalidStatus = errors.New("invalid status")
-	ErrEmptyCarton   = errors.New("no boxs for this carton")
-	ErrBoxNotFound   = errors.New("box not found")
+	ErrEmptyCarton    = errors.New("no boxs for this carton")
+	ErrBoxNotFound    = errors.New("box not found")
+	ErrNoOutputsFound = errors.New("no outputs found in the box. Did you set it ?")
 )
-
-var Repository repository.Repository
-
-var Logger loggers.Logger
 
 // Status represents the status of a unit in megamd
 type Status string
@@ -48,26 +42,13 @@ func (s Status) String() string {
 	return string(s)
 }
 
-/*func ParseStatus(status string) (Status, error) {
-	switch status {
-	case "deploying":
-		return StatusDeploying, nil
-	case "creating":
-		return StatusCreating, nil
-	case "error":
-		return StatusError, nil
-	}
-	return Status(""), ErrInvalidStatus
-}*/
-
 const (
-	// StatusRunning
-	StatusRunning = Status("running")
+	// StatusLaunched is the status for box being bootted the first time.
+	StatusLaunched = Status("launched")
 
 	// StatusBootstrapping is the status for box being bootstrapping by the
 	// provisioner, like in the bootstrap.
 	StatusBootstrapping = Status("bootstrapping")
-
 	// StatusBootstrapped is the status for box after being bootstrapped by the
 	// provisioner, updated by gulp
 	StatusBootstrapped = Status("bootstrapped")
@@ -76,24 +57,24 @@ const (
 	// Sent by megamd to gulpd when it received StatusCreated.
 	StatusStateup = Status("stateup")
 
+	// StatusRunning
+	StatusRunning = Status("running")
+
+	StatusStarting = Status("starting")
+	StatusStarted  = Status("started")
+
+	StatusStopping = Status("stopping")
+	StatusStopped  = Status("stopped")
+
+	StatusRestarting = Status("restarting")
+	StatusRestarted  = Status("restarted")
+
+	StatusUpgrading = Status("upgrading")
+	StatusUpgraded  = Status("upgraded")
+
 	// StatusError is the status for units that failed to start, because of
 	// a box error.
 	StatusError = Status("error")
-
-	// StatusIPError is the status for failed retrieve ip address
-	StatusIPError = Status("ip fetching error")
-
-	// StatusSshKeyError is the status for failed append the sshkey
-	StatusSshKeyError = Status("sshkey uploading error")
-
-	// StatusStarted
-	StatusStarted = Status("started")
-
-	// StatusStopped
-	StatusStopped = Status("stopped")
-
-	// StatusRestarted
-	StatusRestarted = Status("restarted")
 )
 
 // Named is something that has a name, providing the GetName method.
@@ -107,48 +88,37 @@ type Named interface {
 type Carton interface {
 	Named
 
-	Bind(*Box) error
-	Unbind(*Box) error
-
-	// Log should be used to log messages in the box.
-	Log(message, source, unit string) error
-
-	Boxes() []*Box
+	Boot() error
+	Stateup() error
+	Start() error
+	Stop() error
+	Upgrade() error
 
 	// Run executes the command in box units. Commands executed with this
 	// method should have access to environment variables defined in the
 	// app.
 	Run(cmd string, w io.Writer, once bool) error
-
-	Envs() map[string]bind.EnvVar
-
-	GetMemory() int64
-	GetSwap() int64
-	GetCpuShare() int
 }
 
 // Deployer is a provisioner that can deploy the box from a
 type Deployer interface {
-	Deploy(b *Box, w io.Writer) error
+	Bootstrap(b *Box, w io.Writer) error
+	Stateup(b *Box, w io.Writer) error
 }
 
 // Provisioner is the basic interface of this package.
 //
-// Any gulpd provisioner must implement this interface in order to provision
-// gulpd cartons.
-// A Provisioner is responsible for provisioning a machine with Chef.
+// A Provisioner is responsible for managing the state of the machine.
 type Provisioner interface {
-	//PrepareFiles() error
 	Command() []string
+	Start(b *Box, w io.Writer) error
+	Stop(b *Box, w io.Writer) error
+	Restart(b *Box, w io.Writer) error
 }
 
 // Provisioner message
 type MessageProvisioner interface {
 	StartupMessage() (string, error)
-}
-
-type ProvisionerRequirements interface {
-	SetupRequirements() error
 }
 
 // InitializableProvisioner is a provisioner that provides an initialization
@@ -198,4 +168,15 @@ func (e *Error) Error() string {
 		err = e.Reason
 	}
 	return err
+}
+
+func ExecuteCommandOnce(commandWords []string, w io.Writer) error {
+	var e exec.OsExecutor
+
+	if len(commandWords) > 0 {
+		if err := e.Execute(commandWords[0], commandWords[1:], nil, w, w); err != nil {
+			return err
+		}
+	}
+	return nil
 }

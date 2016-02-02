@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,23 +19,21 @@ package meta
 import (
 	"bytes"
 	"fmt"
-	"github.com/megamsys/libgo/cmd"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/megamsys/libgo/cmd"
 )
 
 const (
 	// DefaultRiak is the default riak if one is not provided.
 	DefaultRiak = "localhost:8087"
 
-	// DefaultApi is the default megam gateway if one is not provided.
-	DefaultApi = "https://api.megam.io/v2"
-
-	// DefaultAMQP is the default rabbitmq if one is not provided.
-	DefaultAMQP = "amqp://guest:guest@localhost:5672/"
+	// DefaultNSQ is the default nsqd if its not provided.
+	DefaultNSQd = "localhost:4161"
 
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
@@ -45,11 +43,11 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home       string   `toml:"home"`
+	Home       string   `toml:"home"` //figured out from MEGAM_HOME variable
 	Dir        string   `toml:"dir"`
+	User       string   `toml:"user"`
 	Riak       []string `toml:"riak"`
-	Api        string   `toml:"api"`
-	AMQP       string   `toml:"amqp"`
+	NSQd       []string `toml:"nsqd"`
 	DockerPath string   `toml:"docker_path"`
 }
 
@@ -61,9 +59,9 @@ func (c Config) String() string {
 		cmd.Colorfy("Meta", "green", "", "") + "\n"))
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
+	b.Write([]byte("User" + "\t" + c.User + "\n"))
 	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
-	b.Write([]byte("API" + "\t" + c.Api + "\n"))
-	b.Write([]byte("AMQP" + "\t" + c.AMQP + "\n"))
+	b.Write([]byte("NSQd      " + "\t" + strings.Join(c.NSQd, ",") + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
@@ -72,7 +70,6 @@ func (c Config) String() string {
 
 func NewConfig() *Config {
 	var homeDir string
-	// By default, use the current users home directory
 	if os.Getenv("MEGAM_HOME") != "" {
 		homeDir = os.Getenv("MEGAM_HOME")
 	} else if u, err := user.Current(); err == nil {
@@ -81,19 +78,20 @@ func NewConfig() *Config {
 		return nil
 	}
 
-	defaultDir := filepath.Join(homeDir, "gulp/meta")
+	defaultDir := filepath.Join(homeDir, "gulp")
+
+	_ = os.MkdirAll(defaultDir, 0755)
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
 		Home:       homeDir,
 		Dir:        defaultDir,
 		Riak:       []string{DefaultRiak},
-		Api:        DefaultApi,
-		AMQP:       DefaultAMQP,
+		NSQd:       []string{DefaultNSQd},
 		DockerPath: DefaultDockerPath,
 	}
 }
 
-func (c *Config) MC() {
+func (c *Config) MkGlobal() {
 	MC = c
 }

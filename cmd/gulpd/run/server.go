@@ -89,22 +89,17 @@ func (s *Server) Err() <-chan error { return s.err }
 // Open opens the meta and data store and all services.
 func (s *Server) Open() error {
 	if err := func() error {
-		// Start profiling, if set.
 		startProfile(s.CPUProfile, s.MemProfile)
-
 		for _, service := range s.Services {
 			if err := service.Open(); err != nil {
 				return fmt.Errorf("open service: %s", err)
 			}
 		}
-
 		return nil
-
 	}(); err != nil {
 		s.Close()
 		return err
 	}
-
 	return nil
 }
 

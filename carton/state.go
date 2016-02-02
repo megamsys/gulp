@@ -1,5 +1,5 @@
 /*
-** copyright [2013-2015] [Megam Systems]
+** copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,42 +19,50 @@ package carton
 import (
 	"bytes"
 	"io"
+	"time"
 
-	"github.com/megamsys/gulp/loggers/file"
-	"github.com/megamsys/gulp/loggers/queue"
+	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/libgo/cmd"
 )
 
-type DeployOpts struct {
+type StateOpts struct {
 	B     *provision.Box
 	Image string
 }
 
 // Deploy runs a deployment of an application.
-func Deploy(opts *DeployOpts) error {
+func Stateup(opts *StateOpts) error {
 	var outBuffer bytes.Buffer
-	//	start := time.Now()
+	start := time.Now()
 
-	queueWriter := queue.LogWriter{Box: opts.B, Source: opts.B.GetFullName()}
-	queueWriter.Async()
-	defer queueWriter.Close()
-
-	fileWriter := file.LogWriter{Box: opts.B, Source: opts.B.GetFullName()}
-	fileWriter.Async()
-	defer fileWriter.Close()
-
-	writer := io.MultiWriter(&outBuffer, &queueWriter, &fileWriter)
+	logWriter := NewLogWriter(opts.B)
+	defer logWriter.Close()
+	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := deployToProvisioner(opts, writer)
+	elapsed := time.Since(start)
 
+	saveErr := saveDeployData(opts, outBuffer.String(), elapsed)
+	if saveErr != nil {
+		log.Errorf("WARNING: couldn't save deploy data, deploy opts: %#v", opts)
+	}
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func deployToProvisioner(opts *DeployOpts, writer io.Writer) error {
+func deployToProvisioner(opts *StateOpts, writer io.Writer) error {
 	if deployer, ok := Provisioner.(provision.Deployer); ok {
-		return deployer.Deploy(opts.B, writer)
+		return deployer.Stateup(opts.B, writer)
 	}
+	return nil
+}
+
+func saveDeployData(opts *StateOpts, dlog string, duration time.Duration) error {
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(opts.B.GetFullName(), "cyan", "", "bold"),
+		cmd.Colorfy(duration.String(), "green", "", "bold"),
+		cmd.Colorfy(dlog, "yellow", "", ""))
 	return nil
 }

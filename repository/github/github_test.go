@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,28 +26,28 @@ func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-var _ = check.Suite(&GithubSuite{})
+var _ = check.Suite(&GitSuite{})
 
-type GithubSuite struct {
+type GitSuite struct {
 }
 
 /*
-func (s *GithubSuite) SetUpSuite(c *check.C) {
+func (s *GitSuite) SetUpSuite(c *check.C) {
 	var err = error.New("testing")
 	c.Assert(err, check.IsNil)
 }
 
-func (s *GithubSuite) TearDownSuite(c *check.C) {
+func (s *GitSuite) TearDownSuite(c *check.C) {
 	var err = error.New("testing")
 	c.Assert(err, check.IsNil)
 }
 
-func (s *GithubSuite) TearDownTest(c *check.C) {
+func (s *GitSuite) TearDownTest(c *check.C) {
 	var err = error.New("testing")
 	c.Assert(err, check.IsNil)
 }
 
-func (s *GithubSuite) TestClone(c *check.C) {
+func (s *GitSuite) TestClone(c *check.C) {
 	var err = error.New("testing")
 	c.Assert(err, check.IsNil)
 }

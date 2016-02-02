@@ -27,13 +27,13 @@ func (s *S) TestDeploydConfig_Parse(c *check.C) {
 	var cm Config
 	if _, err := toml.Decode(`
 		provider = "chefsolo"
-		repository   = "github"
-		repository_path = "https://github.com/megamsys/chef-repo.git"
+		chefrepo   = "github"
+		chefrepo_tar = "https://github.com/megamsys/chef-repo.git"
 `, &cm); err != nil {
 		c.Fatal(err)
 	}
 
 	c.Assert(cm.Provider, check.Equals, "chefsolo")
-	c.Assert(cm.Repository, check.Equals, "github")
-	c.Assert(cm.RepositoryPath, check.Equals, "https://github.com/megamsys/chef-repo.git")
+	c.Assert(cm.ChefRepoGit, check.Equals, "github")
+	c.Assert(cm.ChefRepoTarball, check.Equals, "https://github.com/megamsys/chef-repo.git")
 }

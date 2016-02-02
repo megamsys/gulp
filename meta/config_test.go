@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,14 +34,11 @@ func (s *S) TestConfig_Parse(c *check.C) {
 			debug = true
 			dir = "/var/lib/megam/gulp/meta"
 			riak = "192.168.1.100:8087"
-			api  = "https://api.megam.io/v2"
-			amqp = "amqp://guest:guest@192.168.1.100:5672/"
+			nsq = "192.168.1.100:4161"
 
 `, &c); err != nil {
 		//t.Fatal(err)
 	}
 
 	c.Assert(conf.Riak, check.Equals, "192.168.1.100:8087")
-	c.Assert(conf.Api, check.Equals, "https://api.megam.io/v2")
-
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -14,22 +14,30 @@
 ** limitations under the License.
  */
 
-package operations
+package upgrade
 
-//import (
-//	"gopkg.in/check.v1"
-//)
+/*import (
+	"gopkg.in/check.v1"
+  "testing"
+)
+type S struct{}
 
-/*func (s *S) TestRegister(c *check.C) {
-	mngr := nopManager{}
-	Register("nope", mngr)
-	defer func() {
-		delete(managers, "nope")
-	}()
-	c.Assert(managers["nope"], check.Equals, mngr)
+func Test(t *testing.T) {
+	check.TestingT(t)
 }
 
-func (s *S) TestRegisterOnNilMap(c *check.C) {
+var _ = check.Suite(&S{})
+
+func (s *S) TestRegister(c *check.C) {
+	mngr := nopManager{}
+	Register("bind", mngr)
+	defer func() {
+		delete(managers, "bind")
+	}()
+	c.Assert(managers["bind"], check.Equals, mngr)
+}
+
+/*func (s *S) TestRegisterOnNilMap(c *check.C) {
 	oldManagers := managers
 	managers = nil
 	defer func() {

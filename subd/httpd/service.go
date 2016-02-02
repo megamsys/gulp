@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,13 +37,11 @@ type Service struct {
 
 // NewService returns a new instance of Service.
 func NewService(c *meta.Config, h *Config) (*Service, error) {
-
 	s := &Service{
 		addr:    h.BindAddress,
 		err:     make(chan error),
 		Handler: NewHandler(c, h),
 	}
-	fmt.Println(s.Handler)
 	return s, nil
 }
 
@@ -77,6 +75,6 @@ func (s *Service) Err() <-chan error { return s.err }
 func (s *Service) serve() {
 	err := http.Serve(s.ln, s.Handler)
 	if err != nil && !strings.Contains(err.Error(), "closed") {
-		s.err <- fmt.Errorf("listener failed: addr=%s, err=%s", s.addr, err)
+		s.err <- fmt.Errorf("HTTP failed: %s, %s", s.addr, err)
 	}
 }

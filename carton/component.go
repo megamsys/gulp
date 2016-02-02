@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,38 +16,53 @@
 package carton
 
 import (
+	"strings"
+	"time"
+
+	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/db"
-	"github.com/megamsys/gulp/operations"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/megamd/carton/bind"
+	"github.com/megamsys/gulp/upgrade"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	DOMAIN          = "domain"
-	COMPONENTBUCKET = "components"
+	DOMAIN        = "domain"
+	PUBLICIPV4    = "publicipv4"
+	PRIVATEIPV4   = "privateipv4"
+	COMPBUCKET    = "components"
+	IMAGE_VERSION = "version"
+	ONECLICK      = "oneclick"
 )
 
-type Artifacts struct {
-	ArtifactType         string    `json:"artifact_type"`
-	Content              string    `json:"content"`
-	ArtifactRequirements JsonPairs `json:"artifact_requirements"`
+type Component struct {
+	Id                string               `json:"id"`
+	Name              string               `json:"name"`
+	Tosca             string               `json:"tosca_type"`
+	Inputs            bind.JsonPairs       `json:"inputs"`
+	Outputs           bind.JsonPairs       `json:"outputs"`
+	Envs              bind.JsonPairs       `json:"envs"`
+	Repo              Repo                 `json:"repo"`
+	Artifacts         *Artifacts           `json:"artifacts"`
+	RelatedComponents []string             `json:"related_components"`
+	Operations        []*upgrade.Operation `json:"operations"`
+	Status            string               `json:"status"`
+	CreatedAt         string               `json:"created_at"`
 }
 
-type Component struct {
-	Id                string                `json:"id"`
-	Name              string                `json:"name"`
-	Tosca             string                `json:"tosca_type"`
-	Inputs            JsonPairs             `json:"inputs"`
-	Outputs           JsonPairs             `json:"outputs"`
-	Envs              JsonPairs             `json:"envs"`
-	Artifacts         *Artifacts            `json:"artifacts"`
-	Repo              *repository.Repo      `json:"repo"`
-	RelatedComponents []string              `json:"related_components"`
-	Operations        []*operations.Operate `json:"operations"`
-	Status            string                `json:"status"`
-	CreatedAt         string                `json:"created_at"`
+type Artifacts struct {
+	Type         string         `json:"artifact_type"`
+	Content      string         `json:"content"`
+	Requirements bind.JsonPairs `json:"requirements"`
+}
+
+/* Repository represents a repository managed by the manager. */
+type Repo struct {
+	Rtype    string `json:"rtype"`
+	Source   string `json:"source"`
+	Oneclick string `json:"oneclick"`
+	Rurl     string `json:"url"`
 }
 
 func (a *Component) String() string {
@@ -63,7 +78,7 @@ func (a *Component) String() string {
 **/
 func NewComponent(id string) (*Component, error) {
 	c := &Component{Id: id}
-	if err := db.Fetch(COMPONENTBUCKET, id, c); err != nil {
+	if err := db.Fetch(COMPBUCKET, id, c); err != nil {
 		return nil, err
 	}
 	return c, nil
@@ -71,39 +86,84 @@ func NewComponent(id string) (*Component, error) {
 
 //make a box with the details for a provisioner.
 func (c *Component) mkBox() (provision.Box, error) {
-
-	return provision.Box{
+	bt := provision.Box{
 		Id:         c.Id,
 		Level:      provision.BoxSome,
 		Name:       c.Name,
-		Tosca:      c.Tosca,
+		DomainName: c.domain(),
 		Envs:       c.envs(),
-		Commit:     "",
-		Repo:       c.Repo,
+		Tosca:      c.Tosca,
 		Operations: c.Operations,
+		Commit:     "",
 		Provider:   c.provider(),
-		Ip:         "",
-	}, nil
+		PublicIp:   c.publicIp(),
+	}
+
+	if &c.Repo != nil {
+		bt.Repo = &repository.Repo{
+			Type:     c.Repo.Rtype,
+			Source:   c.Repo.Source,
+			OneClick: c.withOneClick(),
+			URL:      c.Repo.Rurl,
+		}
+		bt.Repo.Hook = upgrade.BuildHook(c.Operations, repository.CIHOOK) //MEGAMD
+	}
+	return bt, nil
 }
 
 func (c *Component) SetStatus(status provision.Status) error {
+	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
+	m := make(map[string][]string, 2)
+	m["lastsuccessstatusupdate"] = []string{LastStatusUpdate}
+	m["status"] = []string{status.String()}
+	c.Inputs.NukeAndSet(m) //just nuke the matching output key:
 
 	c.Status = status.String()
-	if err := db.Store(COMPONENTBUCKET, c.Id, c); err != nil {
+
+	if err := db.Store(COMPBUCKET, c.Id, c); err != nil {
 		return err
 	}
 	return nil
+}
 
+func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
+	mutatedOps := make([]*upgrade.Operation, 0, len(opsRan))
+
+	for _, o := range opsRan {
+		mutatedOps = append(mutatedOps, o.Raw)
+	}
+	c.Operations = mutatedOps
+
+	if err := db.Store(COMPBUCKET, c.Id, c); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Component) Delete(compid string) {
+	_ = db.Delete(COMPBUCKET, compid)
+}
+
+func (c *Component) domain() string {
+	return c.Inputs.Match(DOMAIN)
 }
 
 func (c *Component) provider() string {
-	return c.Inputs.match(provision.PROVIDER)
+	return c.Inputs.Match(provision.PROVIDER)
+}
+
+func (c *Component) publicIp() string {
+	return c.Outputs.Match(PUBLICIPV4)
+}
+
+func (c *Component) withOneClick() bool {
+	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
 }
 
 //all the variables in the inputs shall be treated as ENV.
 //we can use a filtered approach as well.
-func (c *Component) envs() []bind.EnvVar {
-	envs := make([]bind.EnvVar, 0, len(c.Envs))
+func (c *Component) envs() bind.EnvVars {
+	envs := make(bind.EnvVars, 0, len(c.Envs))
 	for _, i := range c.Envs {
 		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
 	}

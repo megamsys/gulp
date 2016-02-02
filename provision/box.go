@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,21 +18,26 @@ package provision
 import (
 	"fmt"
 	"net/url"
+	"os"
+	"os/user"
+	"path/filepath"
 	"regexp"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/loggers"
-	_ "github.com/megamsys/gulp/loggers/file"
-	_ "github.com/megamsys/gulp/loggers/queue"
-	"github.com/megamsys/gulp/operations"
+	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/megamd/carton/bind"
+	_ "github.com/megamsys/gulp/repository/github"
+	"github.com/megamsys/gulp/upgrade"
 	"gopkg.in/yaml.v2"
 )
 
 const (
+	CPU = "cpu"
+	RAM = "ram"
+	HDD = "hdd"
 
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
@@ -41,31 +46,139 @@ const (
 	BoxNone
 )
 
+var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
+
 // Boxlevel represents the deployment level.
 type BoxLevel int
 
-var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
+// Boxlog represents a log entry.
+type Boxlog struct {
+	Timestamp string
+	Message   string
+	Source    string
+	Name      string
+	Unit      string
+}
+
+type BoxSSH struct {
+	User   string
+	Prefix string
+}
+
+func (bs *BoxSSH) Pub() string {
+	return bs.Prefix + "_pub"
+}
+
+//authorized_keys path is same in all linux i think
+func (bs *BoxSSH) AuthKeysFile() string {
+	dotssh_dir := ""
+	dotssh := ""
+	switch runtime.GOOS {
+	case "linux":
+		dotssh_dir = filepath.Join(home(bs.User), ".ssh")
+		dotssh = filepath.Join(dotssh_dir, "authorized_keys")
+	default:
+		dotssh_dir = filepath.Join(home(bs.User), ".ssh")
+		dotssh = filepath.Join(dotssh_dir, "authorized_keys")
+	}
+
+	if _, err := os.Stat(dotssh_dir); err != nil { //create  authorized_keys file, if it aint there
+		os.Mkdir(dotssh_dir, 755)
+	}
+
+	if _, err := os.Stat(dotssh); err != nil { //create  authorized_keys file, if it aint there
+		w, _ := os.Create(dotssh)
+		defer w.Close()
+	}
+	return dotssh
+}
+
+func home(name string) string {
+	if auth_user, err := user.Lookup(name); err == nil {
+		return auth_user.HomeDir
+	}
+	curr_user, _ := user.Current()
+	return curr_user.HomeDir // hmm no error trap ?
+}
+
+type BoxCompute struct {
+	Cpushare string
+	Memory   string
+	Swap     string
+	HDD      string
+}
+
+func (bc *BoxCompute) numCpushare() int64 {
+	if cs, err := strconv.ParseInt(bc.Cpushare, 10, 64); err != nil {
+		return 0
+	} else {
+		return cs
+	}
+}
+
+func (bc *BoxCompute) numMemory() int64 {
+	if cp, err := strconv.ParseInt(bc.Memory, 10, 64); err != nil {
+		return 0
+	} else {
+		return cp
+	}
+}
+
+func (bc *BoxCompute) numSwap() int64 {
+	if cs, err := strconv.ParseInt(bc.Swap, 10, 64); err != nil {
+		return 0
+	} else {
+		return cs
+	}
+}
+
+func (bc *BoxCompute) numHDD() int64 {
+	if cp, err := strconv.ParseInt(bc.HDD, 10, 64); err != nil {
+		return 10
+	} else {
+		return cp
+	}
+}
+
+func (bc *BoxCompute) String() string {
+	return "(" + strings.Join([]string{
+		CPU + ":" + bc.Cpushare,
+		RAM + ":" + bc.Memory,
+		HDD + ":" + bc.HDD},
+		",") + " )"
+}
+
+// BoxDeploy represents a log entry.
+type BoxDeploy struct {
+	Date    time.Time
+	HookId  string
+	ImageId string
+	Name    string
+	Unit    string
+}
 
 // Box represents a provision unit. Can be a machine, container or anything
 // IP-addressable.
 type Box struct {
-	Id         string
-	CartonsId  string
-	CartonId   string
-	CartonName string
-	Level      BoxLevel
-	Name       string
-	DomainName string
-	Tosca      string
-	Repo       *repository.Repo
-	Operations []*operations.Operate
-	Status     Status
-	Provider   string
-	Commit     string
-	Address    *url.URL
-	Ip         string
-	Cookbook   string
-	Envs       []bind.EnvVar
+	Id           string
+	CartonsId    string
+	CartonId     string
+	CartonName   string
+	Name         string
+	Level        BoxLevel
+	DomainName   string
+	Tosca        string
+	ImageVersion string
+	Compute      BoxCompute
+	SSH          BoxSSH
+	PublicIp     string
+	Repo         *repository.Repo
+	Status       Status
+	Provider     string
+	Commit       string
+	Envs         bind.EnvVars
+	Address      *url.URL
+	Operations   []*upgrade.Operation //MEGAMD
 }
 
 func (b *Box) String() string {
@@ -76,19 +189,50 @@ func (b *Box) String() string {
 	}
 }
 
-// GetName returns the assemblyname.domain(assembly001YeahBoy.megambox.com) of the box.
-func (b *Box) GetFullName() string {
-	return b.CartonName + "." + b.DomainName
+func (b *Box) GetMemory() int64 {
+	return b.Compute.numMemory()
 }
 
-// GetTosca returns the tosca type of the box.
-func (b *Box) GetTosca() string {
-	return b.Tosca
+func (b *Box) GetSwap() int64 {
+	return b.Compute.numSwap()
+}
+
+func (b *Box) GetCpushare() int64 {
+	return b.Compute.numCpushare()
+}
+
+// GetName returns the assemblyname.domain(assembly001YeahBoy.megambox.com) of the box.
+func (b *Box) GetFullName() string {
+	if len(strings.TrimSpace(b.DomainName)) > 0 {
+		return strings.Join([]string{b.CartonName, b.DomainName}, ".")
+	}
+	return b.CartonName
+}
+
+func (b *Box) GetShortTosca() string {
+	return strings.Split(b.Tosca, ".")[2]
 }
 
 // GetIp returns the Unit.IP.
-func (b *Box) GetIp() string {
-	return b.Ip
+func (b *Box) GetPublicIp() string {
+	return b.PublicIp
+}
+
+func (box *Box) GetRouter() (string, error) {
+	return "route53", nil //dns.LoadConfig()
+}
+
+func (b *Box) Clone() error {
+	if b.Repo != nil && b.Repo.Type != repository.IMAGE && !b.Repo.OneClick {
+		scm := repository.Manager(b.Repo.Source)
+		if scm == nil {
+			return fmt.Errorf("couldn't locate the repository manager (%s)", b.Repo.Source)
+		}
+		if err := scm.Clone(b.Repo); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Available returns true if the unit is available. It will return true
@@ -107,39 +251,23 @@ func (b *Box) Available() bool {
 
 // Log adds a log message to the app. Specifying a good source is good so the
 // user can filter where the message come from.
-func (box *Box) Log(message, source, unit string, obj interface{}) error {
-
+func (box *Box) Log(message, source, unit string) error {
 	messages := strings.Split(message, "\n")
-	logs := make([]loggers.Boxlog, 0, len(messages))
+	logs := make([]interface{}, 0, len(messages))
 	for _, msg := range messages {
-		if msg != "" {
-			bl := loggers.Boxlog{
-				Date:    time.Now().In(time.UTC),
-				Message: msg,
-				Name:    box.Name,
-				Unit:    box.Id,
+		if len(strings.TrimSpace(msg)) > 0 {
+			bl := Boxlog{
+				Timestamp: time.Now().Local().Format(time.RFC822),
+				Message:   msg,
+				Source:    source,
+				Name:      box.Name,
+				Unit:      box.Id,
 			}
-			fmt.Println(bl.Message)
 			logs = append(logs, bl)
 		}
 	}
 	if len(logs) > 0 {
-		a, err := loggers.Get(source)
-
-		if err != nil {
-			log.Errorf("fatal error, couldn't located the Logger %s", source)
-			return err
-		}
-
-		Logger = a
-		if initializableLogger, ok := Logger.(loggers.InitializableLogger); ok {
-			err = initializableLogger.Notify(box.GetFullName(), logs, obj)
-			if err != nil {
-				log.Errorf("fatal error, couldn't initialize the Logger %s", source)
-				return err
-			}
-		}
-		//_ = notify(box.Name+"."+box.DomainName, logs)
+		_ = notify(box.GetFullName(), logs)
 	}
 	return nil
 }

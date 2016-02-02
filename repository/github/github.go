@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,74 +17,35 @@
 package github
 
 import (
-	"strings"
+	"path/filepath"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
-	"github.com/megamsys/libgo/action"
+	skia "go.skia.org/infra/go/gitinfo"
 )
 
 func init() {
-	repository.Register("github", githubManager{})
+	repository.Register("github", gitHubManager{})
 }
 
-type githubManager struct{}
+type gitHubManager struct{}
 
-/**
-* clone repository from github.com using url
-**/
-func (m githubManager) Clone(url string) error {
-
-	actions := []*action.Action{
-		&remove_old_file,
-		&clone,
-	}
-	pipeline := action.NewPipeline(actions...)
-
-	s := strings.Split(url, "/")[4]
-
-	args := runActionsArgs{
-		//	Writer:        w,
-		url:      url,
-		dir:      meta.MC.Dir,
-		filename: strings.Split(s, ".")[0],
-	}
-
-	err := pipeline.Execute(args)
+func (m gitHubManager) Clone(r repository.Repository) error {
+	repoName, err := r.GetShortName()
 	if err != nil {
-		log.Errorf("error on execute status pipeline for github %s - %s", url, err)
 		return err
 	}
-	return nil
+	basePath := meta.MC.Dir
 
-}
-func (m githubManager) Initialize(url, tar_url string) error {
-
-	actions := []*action.Action{
-		&clone_tar,
-		&make_dir,
-		&un_tar,
-		&remove_tar_file,
-	}
-	pipeline := action.NewPipeline(actions...)
-
-	s := strings.Split(url, "/")[4]
-	s1 := strings.Split(tar_url, "/")[6]
-	args := runActionsArgs{
-		//	Writer:        w,
-		url:         url,
-		tar_url:     tar_url,
-		dir:         meta.MC.Dir,
-		filename:    strings.Split(s, ".")[0],
-		tarfilename: s1,
-	}
-
-	err := pipeline.Execute(args)
-	if err != nil {
-		log.Errorf("error on execute status pipeline for github %s - %s", tar_url, err)
+	re := repository.NewRepoBackup(basePath, basePath)
+	if err := re.Backup(repoName); err != nil {
 		return err
 	}
-	return nil
 
+	if _, err = skia.Clone(r.Gitr(), filepath.Join(basePath, repoName), false); err != nil {
+		re.Revert(repoName)
+		return err
+	}
+	re.Cleanup(repoName)
+	return err
 }

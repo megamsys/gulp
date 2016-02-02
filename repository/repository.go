@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,42 +18,40 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
-	defaultManager = "github"
-	CI             = "CI"
-	CI_ENABLED     = "enabled"
-	CI_TOKEN       = "token"
-	CI_SOURCE      = "source"
-	CI_USER        = "username"
-	CI_URL         = "url"
-	CI_TYPE        = "type"
+	CIHOOK   = "CI"
+	TYPE     = "type"
+	TOKEN    = "token"
+	USERNAME = "username"
 
 	// IMAGE indicates that the repo is an image
 	IMAGE = "image"
-
 	// Git indicates that the repo is a GIT
 	GIT = "git"
+	// oneclick indicates that an oneclick image exists
+	ONECLICK = "oneclick"
 )
 
-var managers map[string]InitializableRepository
+var managers map[string]RepositoryManager
 
 /* Repository represents a repository managed by the manager. */
 type Repo struct {
-	Enabled  bool   `json:"enabled"`
-	Type     string `json:"rtype"`
-	Token    string `json:"token"`
-	Source   string `json:"source"`
-	Url      string `json:"url"`
-	UserName string `json:"username"`
-	CartonId string `json:"cartonid"`
-	BoxId    string `json:"boxid"`
-	OneClick string `json:"oneclick"`
+	Type     string
+	Source   string
+	OneClick bool
+	URL      string
+	Hook     *Hook
 }
 
-func (r Repo) IsEnabled() bool {
-	return r.Enabled
+type Hook struct {
+	Enabled  bool
+	Token    string
+	UserName string
+	CartonId string
+	BoxId    string
 }
 
 func (r Repo) GetType() string {
@@ -64,36 +62,62 @@ func (r Repo) GetSource() string {
 	return r.Source
 }
 
-func (r Repo) GetToken() string {
-	return r.Token
+func (r Repo) Gitr() string {
+	return r.URL
 }
 
-func (r Repo) GetUrl() string {
-	return r.Url
+func (r Repo) IsEnabled() bool {
+	return r.Hook != nil && r.Hook.Enabled
+}
+
+func (r Repo) GetToken() string {
+	return r.Hook.Token
+}
+
+func (r Repo) GetUserName() string {
+	return r.Hook.UserName
+}
+
+func (r Repo) GetShortName() (string, error) {
+	i := strings.LastIndex(r.Gitr(), "/")
+	if i < 0 {
+		return "", fmt.Errorf("unable to parse output of git")
+	}
+	return strings.TrimRight(r.Gitr()[i+1:], ".git"), nil
+}
+
+func (r Repo) Trigger() string {
+	return "uh! oh.. nothing to trigger."
+}
+
+//This shall be under type Tosca {} and a global method
+func ForImageName(fullTosca string, version string) string {
+	img := fullTosca[strings.LastIndex(fullTosca, ".")+1:]
+	if len(strings.TrimSpace(version)) > 1 {
+		return img + "_" + version
+	}
+	return img
 }
 
 type Repository interface {
+	IsEnabled() bool
+	GetSource() string
+	GetType() string
+	GetToken() string
+	GetUserName() string
+	Gitr() string
+	Trigger() string
+	GetShortName() (string, error)
 }
 
 // RepositoryManager represents a manager of application repositories.
-type InitializableRepository interface {
-	Clone(url string) error
-	Initialize(url, tar_url string) error
-}
-
-//type InitializableRepository interface { Initialize(url,tar_url string) error  }
-// Get gets the named provisioner from the registry.
-func Get(name string) (Repository, error) {
-	p, ok := managers[name]
-	if !ok {
-		return nil, fmt.Errorf("unknown repository: %q", name)
-	}
-	return p, nil
+type RepositoryManager interface {
+	Clone(r Repository) error
 }
 
 // Manager returns the current configured manager, as defined in the
 // configuration file.
-func Manager(managerName string) InitializableRepository {
+func Manager(managerName string) RepositoryManager {
 	if _, ok := managers[managerName]; !ok {
 		managerName = "nop"
 	}
@@ -102,9 +126,9 @@ func Manager(managerName string) InitializableRepository {
 
 // Register registers a new repository manager, that can be later configured
 // and used.
-func Register(name string, manager InitializableRepository) {
+func Register(name string, manager RepositoryManager) {
 	if managers == nil {
-		managers = make(map[string]InitializableRepository)
+		managers = make(map[string]RepositoryManager)
 	}
 	managers[name] = manager
 }

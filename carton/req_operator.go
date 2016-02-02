@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ import (
 )
 
 type ReqOperator struct {
-	Id string
+	Id        string
+	CartonsId string
 }
 
 // NewReqOperator returns a new instance of ReqOperator
@@ -29,35 +30,25 @@ func NewReqOperator(id string) *ReqOperator {
 	return &ReqOperator{Id: id}
 }
 
-func (p *ReqOperator) Accept(r *MegdProcessor, cookbook string) error {
-	c, err := p.Get(p.Id, cookbook)
+func (p *ReqOperator) Accept(r *MegdProcessor) error {
+	c, err := p.Get(p.Id)
 
 	if err != nil {
 		return err
 	}
 
 	md := *r
-
 	log.Debugf(cmd.Colorfy(md.String(), "cyan", "", "bold"))
-
 	return md.Process(c)
 }
 
-func (p *ReqOperator) Get(cat_id string, cookbook string) (*Carton, error) {
-	a, err := Get(cat_id)
-	if err != nil {
-		return nil, err
-	}
+func (p *ReqOperator) Get(carton_id string) (*Carton, error) {
+	ca, err := NewCarton(p.CartonsId, carton_id)
 
-	ca, err := a.MkCarton(cookbook)
 	if err != nil {
 		return nil, err
 	} else {
-		ca.toBox(cookbook) //on success, make a carton2box if BoxLevel is BoxZero
-	}
-
-	if err != nil {
-		return nil, err
+		ca.toBox()
 	}
 	return ca, nil
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright [2013-2015] [Megam Systems]
+** Copyright [2013-2016] [Megam Systems]
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,18 +17,34 @@
 package chefsolo
 
 import (
-	"testing"
-
+	"github.com/megamsys/gulp/meta"
 	"gopkg.in/check.v1"
+	"testing"
 )
 
 func Test(t *testing.T) {
 	check.TestingT(t)
 }
 
-type S struct{}
+type S struct {
+	config *meta.Config
+	M      map[string]string
+}
 
 var _ = check.Suite(&S{})
+
+func (s *S) SetUpSuite(c *check.C) {
+	cfg := meta.NewConfig()
+	cfg.MkGlobal()
+	s.config = cfg
+	m := make(map[string]string)
+	m[CHEFREPO_GIT] = "https://github.com/megamsys/chef-repo.git"
+	m[CHEFREPO_TARBALL] = "https://github.com/megamsys/chef-repo/archive/0.96.tar.gz"
+	s.M = m
+	c.Assert(s.config, check.NotNil)
+	c.Assert(s.M, check.NotNil)
+
+}
 
 /*
 func (s *S) TestPrepareFiles(c *check.C) {

@@ -5,7 +5,7 @@ import (
 	"io"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/loggers/queue"
+	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
 )
@@ -28,14 +28,14 @@ func (p *DockerProvisioner) LogExec() {
 	var outBuffer bytes.Buffer
 	var closeChan chan bool
 
-	box := &provision.Box{Id: p.ContainerId, Name: p.Name}
-	logWriter := queue.LogWriter{Box: box}
+	b := &provision.Box{Id: p.ContainerId, Name: p.Name}
+
+	logWriter := carton.LogWriter{Box: b}
 	logWriter.Async()
-
 	writer := io.MultiWriter(&outBuffer, &logWriter)
-	p.createLogPipeline(writer, closeChan, &logWriter)
+	p.createLogPipeline(writer, closeChan)
 
-	go func(closeChan chan bool, logWriter queue.LogWriter) {
+	go func(closeChan chan bool, logWriter carton.LogWriter) {
 		select {
 		case <-closeChan:
 			logWriter.Close()
@@ -69,7 +69,7 @@ func (p *DockerProvisioner) createNetworkPipeline() error {
 	return nil
 }
 
-func (p *DockerProvisioner) createLogPipeline(writer io.Writer, closeChan chan bool, logWriter *queue.LogWriter) error {
+func (p *DockerProvisioner) createLogPipeline(writer io.Writer, closeChan chan bool) error {
 	actions := []*action.Action{
 		&setLogs,
 	}
@@ -80,7 +80,6 @@ func (p *DockerProvisioner) createLogPipeline(writer io.Writer, closeChan chan b
 		HomeDir:   p.HomeDir,
 		Writer:    writer,
 		CloseChan: closeChan,
-		LogWriter: logWriter,
 	}
 
 	err := pipeline.Execute(args)
