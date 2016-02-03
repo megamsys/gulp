@@ -19,6 +19,7 @@ type Upgradeable struct {
 	ShouldRestart bool
 }
 
+
 func NewUpgradeable(box *provision.Box) *Upgradeable {
 	u := &Upgradeable{
 		B:             box,
@@ -26,6 +27,14 @@ func NewUpgradeable(box *provision.Box) *Upgradeable {
 	}
 	u.register()
 	return u
+}
+
+func (u *Upgradeable) canCycle() bool {
+	return u.B.Status == provision.StatusRunning ||
+		u.B.Status == provision.StatusStarted ||
+		u.B.Status == provision.StatusStopped ||
+		u.B.Status == provision.StatusStarted ||
+		u.B.Status == provision.StatusUpgraded
 }
 
 func (u *Upgradeable) register() {
@@ -46,6 +55,10 @@ func (u *Upgradeable) Upgrade() error {
 	logWriter := NewLogWriter(u.B)
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
+	if !u.canCycle() {
+		fmt.Fprintf(writer, "  skip upgrade for box (%s)\n", u.B.GetFullName())
+		return nil
+	}
 	err := u.operateBox(writer)
 	elapsed := time.Since(start)
 	saveErr := saveUpgradeData(u, outBuffer.String(), elapsed)
@@ -91,7 +104,7 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 
 func (u *Upgradeable) opsBuild() error {
 	fmt.Fprintf(u.w, "  ops ci (%s) is kicking\n", u.B.GetFullName())
-	
+
 	actions := []*action.Action{
 		&cloneBox,
 		&buildBox, //buildpack does everthing
