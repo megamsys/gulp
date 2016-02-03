@@ -98,12 +98,12 @@ func (c *Carton) Stateup() error {
 //upgrade run thru all the ops.
 func (c *Carton) Upgrade() error {
 	for _, box := range *c.Boxes {
-		err := NewUpgradeable(&box).Upgrade()
-		if err != nil {
-			log.Errorf("Unable to upgrade box : %s", err)
-			return err
+			err := NewUpgradeable(&box).Upgrade()
+			if err != nil {
+				log.Errorf("Unable to upgrade box : %s", err)
+				return err
+			}
 		}
-	}
 	return nil
 }
 
