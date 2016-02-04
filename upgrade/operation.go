@@ -51,7 +51,7 @@ type operation struct {
 // OperateFunc represents a operation function, that can be registered with the
 // Register function. Operations are later ran in the registration order, and
 // this package keeps track of which ate have ran already.
-type OperateFunc func() error
+type OperateFunc func(io.Writer) error
 
 var operations []operation
 
@@ -140,7 +140,7 @@ func run(args RunArgs) (OperationsRan, error) {
 		}
 		if !m.Ran || !args.Force {
 			fmt.Fprintf(args.Writer, "Running operation (%q)...\n", m.Raw.Type)
-			err := m.fn()
+			err := m.fn(args.Writer)
 			if err != nil {
 				m.Raw.Status = StatusError
 				return nil, err
