@@ -29,7 +29,7 @@ type Machine struct {
 	PublicIp  string
 	Status    provision.Status
 }
-var IP []byte
+
 func (m *Machine) SetStatus(status provision.Status) error {
 	log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
