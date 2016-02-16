@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"strings"
-
+  
 	"github.com/bmizerany/pat"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision/docker"
@@ -123,6 +123,7 @@ func (h *Handler) logs(w http.ResponseWriter, r *http.Request) {
 	dockr := &docker.DockerProvisioner{}
 	json.Unmarshal(body, dockr)
 	dockr.HomeDir = h.config.Dir
+	dockr.Tosca_type = "docker"
 	dockr.LogExec()
 }
 
