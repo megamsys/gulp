@@ -87,12 +87,12 @@ func (m *Machine) findIps() map[string][]string {
 			for _, address := range ifaddress {
 			   if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
 				if ip4 := ipnet.IP.To4(); ip4 != nil {
-	       			   if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
-									 pubipv4s = append(pubipv4s, ipnet.IP.String())
-					fmt.Println("private ip:  ",ip4)
+	       	if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
+							priipv4s = append(pubipv4s, ipnet.IP.String())
+					    fmt.Println("private ip:  ",ip4)
 				   } else {
-						 priipv4s = append(priipv4s, ipnet.IP.String())
-	        fmt.Println("public ip: ",ip4)
+						 pubipv4s = append(priipv4s, ipnet.IP.String())
+	           fmt.Println("public ip: ",ip4)
 				   }
 
 				}
