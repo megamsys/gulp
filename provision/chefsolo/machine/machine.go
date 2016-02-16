@@ -5,7 +5,6 @@ import (
 	"net"
 	"os"
 	"time"
-	"fmt"
 
 	log "github.com/Sirupsen/logrus"
 	nsqp "github.com/crackcomm/nsqueue/producer"
@@ -77,12 +76,12 @@ func (m *Machine) findIps() map[string][]string {
 
 	ifaces, err := net.Interfaces()
 		if err != nil {
-			fmt.Println(err)
+			return ips
 		}
 		for _, iface := range ifaces {
 			ifaddress, err := iface.Addrs()
 			if err != nil {
-				fmt.Println(err)
+					return ips
 			}
 			for _, address := range ifaddress {
 			   if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
