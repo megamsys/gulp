@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net"
 	"os"
-	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -72,30 +71,31 @@ func (m *Machine) FindAndSetIps() error {
 // if an iface contains a string "pub", then we consider it a public interface
 func (m *Machine) findIps() map[string][]string {
 	var ips = make(map[string][]string)
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return ips
-	}
-
 	pubipv4s := []string{}
-	priipv4s := []string{}
-	for _, iface := range ifaces {
-		ifaddress, err := iface.Addrs()
+  priipv4s := []string{}
+
+	ifaces, err := net.Interfaces()
 		if err != nil {
 			return ips
 		}
-		for _, address := range ifaddress {
-			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-				if ipnet.IP.To4() != nil {
-					if strings.Contains(iface.Name, "eth0") {
-						pubipv4s = append(pubipv4s, ipnet.IP.String())
-					} else {
-						priipv4s = append(priipv4s, ipnet.IP.String())
-					}
-				}
+		for _, iface := range ifaces {
+			ifaddress, err := iface.Addrs()
+			if err != nil {
+					return ips
 			}
+			for _, address := range ifaddress {
+			   if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
+				if ip4 := ipnet.IP.To4(); ip4 != nil {
+	       	if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
+							priipv4s = append(pubipv4s, ipnet.IP.String())
+				   } else {
+						 pubipv4s = append(priipv4s, ipnet.IP.String())
+				   }
+
+				}
+	   		   }
+		       }
 		}
-	}
 	ips[carton.PUBLICIPV4] = pubipv4s
 	ips[carton.PRIVATEIPV4] = priipv4s
 	return ips
