@@ -20,6 +20,7 @@ type Upgradeable struct {
 }
 
 func NewUpgradeable(box *provision.Box) *Upgradeable {
+	fmt.Println(box)
 	u := &Upgradeable{
 		B:             box,
 		ShouldRestart: true,
@@ -100,7 +101,8 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 	return Provisioner.Restart(u.B, u.w)
 }
 
-func (u *Upgradeable) opsBuild() error {
+func (u *Upgradeable) opsBuild(writer io.Writer) error {
+	u.w = writer
 	fmt.Fprintf(u.w, "  ops ci (%s) is kicking\n", u.B.GetFullName())
 
 	actions := []*action.Action{
@@ -119,7 +121,8 @@ func (u *Upgradeable) opsBuild() error {
 	return nil
 }
 
-func (u *Upgradeable) opsBind() error {
+func (u *Upgradeable) opsBind(writer io.Writer) error {
+	u.w = writer
 	fmt.Fprintf(u.w, "  ops bind (%s) is kicking\n", u.B.GetFullName())
 
 	actions := []*action.Action{
