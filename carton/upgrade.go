@@ -19,7 +19,6 @@ type Upgradeable struct {
 	ShouldRestart bool
 }
 
-
 func NewUpgradeable(box *provision.Box) *Upgradeable {
 	u := &Upgradeable{
 		B:             box,
@@ -33,7 +32,6 @@ func (u *Upgradeable) canCycle() bool {
 	return u.B.Status == provision.StatusRunning ||
 		u.B.Status == provision.StatusStarted ||
 		u.B.Status == provision.StatusStopped ||
-		u.B.Status == provision.StatusStarted ||
 		u.B.Status == provision.StatusUpgraded
 }
 
