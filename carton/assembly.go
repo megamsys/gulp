@@ -35,16 +35,17 @@ const (
 
 //An assembly comprises of various components.
 type Ambly struct {
-	Id           string         `json:"id"`
-	Name         string         `json:"name"`
-	JsonClaz     string         `json:"json_claz"`
-	Tosca        string         `json:"tosca_type"`
-	Inputs       bind.JsonPairs `json:"inputs"`
-	Outputs      bind.JsonPairs `json:"outputs"`
-	Policies     []*Policy      `json:"policies"`
-	Status       string         `json:"status"`
-	CreatedAt    string         `json:"created_at"`
-	ComponentIds []string       `json:"components"`
+	Id           string
+	OrgId        string
+	Name         string
+	JsonClaz     string
+	Tosca    string
+	Inputs       bind.JsonPairs
+	Outputs      bind.JsonPairs
+	Policies     []*Policy
+	Status       string
+	CreatedAt    string
+	ComponentIds []string
 }
 
 type Assembly struct {
@@ -135,7 +136,13 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 
 func getBig(id string) (*Ambly, error) {
 	a := &Ambly{}
-	if err := db.Fetch(ASSEMBLYBUCKET, id, a); err != nil {
+	t := db.TableInfo{
+		Name: ASSEMBLYBUCKET,
+		Pks: []string{"org_id","id"},
+		Ccms: []string{},
+		Query: map[string]string{"id": id},
+	}
+	if err := db.ReadWhere(t, a); err != nil {
 		return nil, err
 	}
 	return a, nil

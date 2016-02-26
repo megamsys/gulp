@@ -32,6 +32,8 @@ const (
 	// DefaultRiak is the default riak if one is not provided.
 	DefaultRiak = "localhost:8087"
 
+  DefaultScyllaDB = "103.56.92.24"
+	//9160
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -47,6 +49,7 @@ type Config struct {
 	Dir        string   `toml:"dir"`
 	User       string   `toml:"user"`
 	Riak       []string `toml:"riak"`
+	Scylla     []string `toml:"scylla"`
 	NSQd       []string `toml:"nsqd"`
 	DockerPath string   `toml:"docker_path"`
 }
@@ -88,6 +91,7 @@ func NewConfig() *Config {
 		Dir:        defaultDir,
 		Riak:       []string{DefaultRiak},
 		NSQd:       []string{DefaultNSQd},
+		Scylla:     []string{DefaultScyllaDB},
 		DockerPath: DefaultDockerPath,
 	}
 }
