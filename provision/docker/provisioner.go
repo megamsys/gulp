@@ -3,7 +3,7 @@ package docker
 import (
 	"bytes"
 	"io"
-
+  
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/provision"
@@ -13,11 +13,12 @@ import (
 type DockerProvisioner struct {
 	Id          string
 	ContainerId string
-	Name        string
+	ContainerName string
 	IpAddr      string
 	Gateway     string
 	Bridge      string
 	HomeDir     string
+	Tosca_type   string
 }
 
 func (p *DockerProvisioner) Initialize(m string) error {
@@ -27,11 +28,9 @@ func (p *DockerProvisioner) Initialize(m string) error {
 func (p *DockerProvisioner) LogExec() {
 	var outBuffer bytes.Buffer
 	var closeChan chan bool
+	b := &provision.Box{Id: p.ContainerId, Name: p.ContainerName, Tosca: p.Tosca_type}
+logWriter := carton.NewLogWriter(b)
 
-	b := &provision.Box{Id: p.ContainerId, Name: p.Name}
-
-	logWriter := carton.LogWriter{Box: b}
-	logWriter.Async()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	p.createLogPipeline(writer, closeChan)
 
@@ -76,7 +75,7 @@ func (p *DockerProvisioner) createLogPipeline(writer io.Writer, closeChan chan b
 	pipeline := action.NewPipeline(actions...)
 	args := runLogsActionsArgs{
 		Id:        p.ContainerId,
-		Name:      p.Name,
+		Name:      p.ContainerName,
 		HomeDir:   p.HomeDir,
 		Writer:    writer,
 		CloseChan: closeChan,
