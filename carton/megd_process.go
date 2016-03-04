@@ -39,12 +39,10 @@ func (s BootProcess) Process(ca *Carton) error {
 	return nil
 }
 
-
 // DeleteProcs represents a command for delete cartons.
 type DeleteProcess struct {
 	Name string
 }
-
 
 // StartProcs represents a command for starting  cartons.
 type StartProcess struct {

@@ -30,9 +30,9 @@ import (
 
 // BindFile represents a file with  environment variable
 type BindFile struct {
-	Name         string
-	BoxName      string
-	LogWriter    io.Writer
+	Name      string
+	BoxName   string
+	LogWriter io.Writer
 }
 
 func (bi *BindFile) exists() bool {

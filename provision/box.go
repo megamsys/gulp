@@ -66,7 +66,8 @@ type BoxSSH struct {
 }
 
 func (bs *BoxSSH) Pub() string {
-	return bs.Prefix + "_pub"
+	//return bs.Prefix + "_pub"
+	return bs.Prefix
 }
 
 //authorized_keys path is same in all linux i think
@@ -270,7 +271,7 @@ func (box *Box) Log(message, source, unit string) error {
 		if box.Tosca == "docker" {
 			_ = notify(box.Name, logs)
 		} else {
-    	_ = notify(box.GetFullName(), logs)
+			_ = notify(box.GetFullName(), logs)
 		}
 	}
 	return nil

@@ -17,17 +17,18 @@ package carton
 
 import (
 	"encoding/json"
-
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/db"
+	"github.com/megamsys/gulp/meta"
+	ldb "github.com/megamsys/libgo/db"
 )
 
 type Payload struct {
-	Id        string `json:"id"`
-	CatId     string `json:"cat_id"`   // assemblies_id
-	Action    string `json:"action"`   // start, stop ...
-	Category  string `json:"category"` // state, control, policy
-	CreatedAt string `json:"created_at"`
+	Id        string `json:"id" cql:"id"`
+	Action    string `json:"action" cql:"action"`
+	CatId     string `json:"cat_id" cql:"cat_id"`
+	CatType   string `json:"cattype" cql:"cattype"`
+	Category  string `json:"category" cql:"category"`
+	CreatedAt string `json:"created_at" cql:"created_at"`
 }
 
 type PayloadConvertor interface {
@@ -73,9 +74,20 @@ func (p *Payload) Convert() (*Requests, error) {
 		return r, nil
 	} else {
 		r := &Requests{}
-		if err := db.Fetch("requests", p.Id, r); err != nil {
+
+		ops := ldb.Options{
+			TableName:   "requests",
+			Pks:         []string{"Id"},
+			Ccms:        []string{},
+			Hosts:       meta.MC.Scylla,
+			Keyspace:    meta.MC.ScyllaKeyspace,
+			PksClauses:  map[string]interface{}{"Id": p.Id},
+			CcmsClauses: make(map[string]interface{}),
+		}
+		if err := ldb.Fetchdb(ops, r); err != nil {
 			return nil, err
 		}
+
 		log.Debugf("Requests %v", r)
 		return r, nil
 	}

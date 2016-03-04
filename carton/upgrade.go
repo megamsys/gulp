@@ -1,10 +1,10 @@
 package carton
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"time"
-	"bytes"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
@@ -18,7 +18,6 @@ type Upgradeable struct {
 	w             io.Writer
 	ShouldRestart bool
 }
-
 
 func NewUpgradeable(box *provision.Box) *Upgradeable {
 	fmt.Println(box)
@@ -34,7 +33,6 @@ func (u *Upgradeable) canCycle() bool {
 	return u.B.Status == provision.StatusRunning ||
 		u.B.Status == provision.StatusStarted ||
 		u.B.Status == provision.StatusStopped ||
-		u.B.Status == provision.StatusStarted ||
 		u.B.Status == provision.StatusUpgraded
 }
 

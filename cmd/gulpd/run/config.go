@@ -45,7 +45,6 @@ func NewConfig() *Config {
 	return c
 }
 
-
 // Validate returns an error if the config is invalid.
 func (c *Config) Validate() error {
 	if c.Meta.Dir == "" {
