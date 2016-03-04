@@ -1,6 +1,6 @@
 package db
 
-import (
+/*import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
@@ -88,4 +88,4 @@ func Delete(bkt string, key string) error {
 		return err
 	}
 	return nil
-}
+}*/

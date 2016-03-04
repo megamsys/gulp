@@ -2,22 +2,31 @@ package machine
 
 import (
 	"encoding/json"
-	"net"
-	"os"
-	"time"
-
 	log "github.com/Sirupsen/logrus"
 	nsqp "github.com/crackcomm/nsqueue/producer"
 	"github.com/megamsys/gulp/carton"
-	"github.com/megamsys/gulp/db"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
+	ldb "github.com/megamsys/libgo/db"
+	"net"
+	"os"
+	"time"
 )
 
 const (
-	TOPIC          = "vms"
-	SSHFILESBUCKET = "sshfiles"
+	TOPIC         = "vms"
+	SSHKEYSBUCKET = "sshkeys"
 )
+
+type SshKeys struct {
+	OrgId      string `json:"org_id" cql:"org_id"`
+	Name       string `json:"name" cql:"name"`
+	CreatedAt  string `json:"created_at" cql:"created_at"`
+	Id         string `json:"id" cql:"id"`
+	JsonClaz   string `json:"json_claz" cql:"json_claz"`
+	Privatekey string `json:"privatekey" cql:"privatekey"`
+	Publickey  string `json:"publickey" cql:"publickey"`
+}
 
 type Machine struct {
 	Name      string
@@ -72,30 +81,30 @@ func (m *Machine) FindAndSetIps() error {
 func (m *Machine) findIps() map[string][]string {
 	var ips = make(map[string][]string)
 	pubipv4s := []string{}
-  priipv4s := []string{}
+	priipv4s := []string{}
 
 	ifaces, err := net.Interfaces()
+	if err != nil {
+		return ips
+	}
+	for _, iface := range ifaces {
+		ifaddress, err := iface.Addrs()
 		if err != nil {
 			return ips
 		}
-		for _, iface := range ifaces {
-			ifaddress, err := iface.Addrs()
-			if err != nil {
-					return ips
-			}
-			for _, address := range ifaddress {
-			   if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
+		for _, address := range ifaddress {
+			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
 				if ip4 := ipnet.IP.To4(); ip4 != nil {
-	       	if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
-							priipv4s = append(pubipv4s, ipnet.IP.String())
-				   } else {
-						 pubipv4s = append(priipv4s, ipnet.IP.String())
-				   }
+					if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
+						priipv4s = append(pubipv4s, ipnet.IP.String())
+					} else {
+						pubipv4s = append(priipv4s, ipnet.IP.String())
+					}
 
 				}
-	   		   }
-		       }
+			}
 		}
+	}
 	ips[carton.PUBLICIPV4] = pubipv4s
 	ips[carton.PRIVATEIPV4] = priipv4s
 	return ips
@@ -103,8 +112,17 @@ func (m *Machine) findIps() map[string][]string {
 
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
-	sshkey, err := db.FetchObject(SSHFILESBUCKET, m.SSH.Pub())
-	if err != nil {
+	c := &SshKeys{}
+	ops := ldb.Options{
+		TableName:   SSHKEYSBUCKET,
+		Pks:         []string{"Name"},
+		Ccms:        []string{},
+		Hosts:       meta.MC.Scylla,
+		Keyspace:    meta.MC.ScyllaKeyspace,
+		PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
+		CcmsClauses: make(map[string]interface{}),
+	}
+	if err := ldb.Fetchdb(ops, c); err != nil {
 		return err
 	}
 
@@ -115,7 +133,7 @@ func (m *Machine) AppendAuthKeys() error {
 
 	defer f.Close()
 
-	if _, err = f.WriteString(sshkey); err != nil {
+	if _, err = f.WriteString(c.Publickey); err != nil {
 		return err
 	}
 	return nil

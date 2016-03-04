@@ -44,6 +44,14 @@ type Service struct {
 	Gulpd    *Config
 }
 
+type Sales struct {
+	Id         string
+	CustomerId string
+	SellerId   string
+	Price      string
+	Created    string
+}
+
 // NewService returns a new instance of Service.
 func NewService(c *meta.Config, d *Config) *Service {
 	s := &Service{
