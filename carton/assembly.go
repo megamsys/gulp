@@ -143,15 +143,6 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 
 func getBig(id string) (*Ambly, error) {
 	a := &Ambly{}
-<<<<<<< HEAD
-	t := db.TableInfo{
-		Name: ASSEMBLYBUCKET,
-		Pks: []string{"org_id","id"},
-		Ccms: []string{},
-		Query: map[string]string{"id": id},
-	}
-	if err := db.ReadWhere(t, a); err != nil {
-=======
 	ops := ldb.Options{
 		TableName:   ASSEMBLYBUCKET,
 		Pks:         []string{"Id"},
@@ -162,7 +153,6 @@ func getBig(id string) (*Ambly, error) {
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Fetchdb(ops, a); err != nil {
->>>>>>> origin/master
 		return nil, err
 	}
 	return a, nil
