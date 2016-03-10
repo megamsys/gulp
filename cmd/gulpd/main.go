@@ -44,7 +44,6 @@ func cmdRegistry(name string) *cmd.Manager {
 	return m
 }
 
-
 //Run the commands from cli.
 func main() {
 	name := cmd.ExtractProgramName(os.Args[0])

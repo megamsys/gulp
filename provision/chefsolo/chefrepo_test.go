@@ -3,10 +3,9 @@ package chefsolo
 import (
 	"io/ioutil"
 
- 	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/meta"
 	"gopkg.in/check.v1"
 )
-
 
 func (s *S) TestDownload(c *check.C) {
 	c.Assert(s.config, check.NotNil)

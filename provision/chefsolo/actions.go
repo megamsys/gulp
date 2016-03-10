@@ -42,7 +42,7 @@ var updateStatusInRiak = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())
 		var mach machine.Machine
-		if ctx.Previous != nil && strings.Compare(reflect.TypeOf(ctx.Previous).Name(),"Machine") == 0 {
+		if ctx.Previous != nil && strings.Compare(reflect.TypeOf(ctx.Previous).Name(), "Machine") == 0 {
 			mach = ctx.Previous.(machine.Machine)
 		} else {
 			mach = machine.Machine{
@@ -72,12 +72,12 @@ var createMachine = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  create machine for box (%s)\n", args.box.GetFullName())
 		mach := machine.Machine{
-			Id:       args.box.Id,
-			CartonId: args.box.CartonId,
+			Id:        args.box.Id,
+			CartonId:  args.box.CartonId,
 			CartonsId: args.box.CartonsId,
-			Level:    args.box.Level,
-			Name:     args.box.GetFullName(),
-			SSH: args.box.SSH,
+			Level:     args.box.Level,
+			Name:      args.box.GetFullName(),
+			SSH:       args.box.SSH,
 		}
 		mach.Status = provision.StatusBootstrapping
 		return mach, nil

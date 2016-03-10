@@ -22,7 +22,6 @@ import (
 )
 
 const (
-
 	CIHOOK   = "CI"
 	TYPE     = "type"
 	TOKEN    = "token"

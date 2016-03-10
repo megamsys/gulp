@@ -17,9 +17,9 @@
 package carton
 
 import (
-	"time"
 	"bytes"
 	"io"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"

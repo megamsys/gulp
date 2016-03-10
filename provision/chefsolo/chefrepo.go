@@ -1,8 +1,8 @@
 package chefsolo
 
 import (
-	"io"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"

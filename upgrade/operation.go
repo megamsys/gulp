@@ -32,7 +32,7 @@ var ErrDuplicateOperation = errors.New("there's already a operation with this na
 
 //duplicate flags as they are in provision.StatusUpgraded as well
 const StatusUpgraded = "upgraded"
-const StatusError    = "error"
+const StatusError = "error"
 
 type Operation struct {
 	Type        string         `json:"operation_type"`
@@ -160,7 +160,7 @@ func getOperations(ran []*Operation, ignoreRan bool) ([]OperationsToRun, error) 
 	for _, m := range operations {
 		m.Ran = false
 		for _, r := range ran {
-			if strings.EqualFold(r.Type,m.Name) {
+			if strings.EqualFold(r.Type, m.Name) {
 				if !ignoreRan || !m.Ran {
 					opr := OperationsToRun{
 						Raw:      r,

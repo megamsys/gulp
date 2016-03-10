@@ -30,9 +30,9 @@ const (
 )
 
 var (
-	ErrEmptyCarton = errors.New("no boxs for this carton")
-	ErrBoxNotFound = errors.New("box not found")
-	ErrNoOutputsFound  = errors.New("no outputs found in the box. Did you set it ?")
+	ErrEmptyCarton    = errors.New("no boxs for this carton")
+	ErrBoxNotFound    = errors.New("box not found")
+	ErrNoOutputsFound = errors.New("no outputs found in the box. Did you set it ?")
 )
 
 // Status represents the status of a unit in megamd
@@ -70,7 +70,7 @@ const (
 	StatusRestarted  = Status("restarted")
 
 	StatusUpgrading = Status("upgrading")
-	StatusUpgraded = Status("upgraded")
+	StatusUpgraded  = Status("upgraded")
 
 	// StatusError is the status for units that failed to start, because of
 	// a box error.

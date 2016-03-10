@@ -11,7 +11,6 @@ type Logger interface {
 	Log(string, string, string) error
 }
 
-
 type LogWriter struct {
 	Box    Logger
 	Source string

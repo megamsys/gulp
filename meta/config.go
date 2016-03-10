@@ -32,8 +32,12 @@ const (
 	// DefaultRiak is the default riak if one is not provided.
 	DefaultRiak = "localhost:8087"
 
-  DefaultScyllaDB = "103.56.92.24"
-	//9160
+	// DefaultScylla is the default scylla if one is not provided.
+	DefaultScylla = "localhost"
+
+	// DefaultScyllaKeyspace is the default Scyllakeyspace if one is not provided.
+	DefaultScyllaKeyspace = "vertice"
+
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -45,13 +49,15 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home       string   `toml:"home"` //figured out from MEGAM_HOME variable
-	Dir        string   `toml:"dir"`
-	User       string   `toml:"user"`
-	Riak       []string `toml:"riak"`
-	Scylla     []string `toml:"scylla"`
-	NSQd       []string `toml:"nsqd"`
-	DockerPath string   `toml:"docker_path"`
+
+	Home           string   `toml:"home"` //figured out from MEGAM_HOME variable
+	Dir            string   `toml:"dir"`
+	User           string   `toml:"user"`
+	Riak           []string `toml:"riak"`
+	NSQd           []string `toml:"nsqd"`
+	Scylla         []string `toml:"scylla"`
+	ScyllaKeyspace string   `toml:"scylla_keyspace"`
+	DockerPath     string   `toml:"docker_path"`
 }
 
 func (c Config) String() string {
@@ -65,6 +71,8 @@ func (c Config) String() string {
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
 	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
 	b.Write([]byte("NSQd      " + "\t" + strings.Join(c.NSQd, ",") + "\n"))
+	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
+	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
@@ -87,12 +95,13 @@ func NewConfig() *Config {
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
-		Home:       homeDir,
-		Dir:        defaultDir,
-		Riak:       []string{DefaultRiak},
-		NSQd:       []string{DefaultNSQd},
-		Scylla:     []string{DefaultScyllaDB},
-		DockerPath: DefaultDockerPath,
+		Home:           homeDir,
+		Dir:            defaultDir,
+		Riak:           []string{DefaultRiak},
+		NSQd:           []string{DefaultNSQd},
+		Scylla:         []string{DefaultScylla},
+		ScyllaKeyspace: DefaultScyllaKeyspace,
+		DockerPath:     DefaultDockerPath,
 	}
 }
 

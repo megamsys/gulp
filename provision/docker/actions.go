@@ -2,11 +2,11 @@ package docker
 
 import (
 	"fmt"
-	"io"
-	"strings"
 	"github.com/ActiveState/tail"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
+	"io"
+	"strings"
 )
 
 const (
@@ -32,7 +32,6 @@ type runLogsActionsArgs struct {
 	HomeDir   string
 	Writer    io.Writer
 	CloseChan chan bool
-
 }
 
 var setNetwork = action.Action{
@@ -65,7 +64,7 @@ func networkExecutor(networks *runNetworkActionsArgs) (action.Result, error) {
 	commandWords = strings.Fields(networks.Command)
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
-		
+
 			return nil, err
 		}
 	}

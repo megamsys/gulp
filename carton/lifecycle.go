@@ -46,7 +46,6 @@ func (li *LifecycleOpts) canCycle() bool {
 	return li.B.Status == provision.StatusRunning ||
 		li.B.Status == provision.StatusStarted ||
 		li.B.Status == provision.StatusStopped ||
-		li.B.Status == provision.StatusStarted ||
 		li.B.Status == provision.StatusUpgraded
 }
 
