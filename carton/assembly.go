@@ -202,12 +202,14 @@ func (a *Ambly) SetStatus(status provision.Status) error {
 
 //update outputs in riak, nuke the matching keys available
 func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
+
 	if len(m) > 0 {
 		log.Debugf("nuke and set outputs in riak [%s]", m)
 		js := a.getOutputs()
 		js.NukeAndSet(m) //just nuke the matching output key:
 		update_fields := make(map[string]interface{})
 		update_fields["Inputs"] = js.ToString()
+
 		ops := ldb.Options{
 			TableName:   ASSEMBLYBUCKET,
 			Pks:         []string{"id"},
@@ -217,7 +219,8 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 			PksClauses:  map[string]interface{}{"id": a.Id},
 			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 		}
-		if err := ldb.Storedb(ops, update_fields); err != nil {
+
+		if err := ldb.Updatedb(ops, update_fields); err != nil {
 			return err
 		}
 	} else {
@@ -301,10 +304,13 @@ func (a *Assembly) newCompute() provision.BoxCompute {
 }
 
 func (a *Assembly) newSSH() provision.BoxSSH {
+
 	return provision.BoxSSH{
 		User:   meta.MC.User,
 		Prefix: a.sshkey(),
+
 	}
+
 }
 
 func (a *Assembly) getCpushare() string {
