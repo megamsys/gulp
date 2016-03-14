@@ -49,7 +49,6 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-
 	Home           string   `toml:"home"` //figured out from MEGAM_HOME variable
 	Dir            string   `toml:"dir"`
 	User           string   `toml:"user"`
