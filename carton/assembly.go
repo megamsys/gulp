@@ -208,7 +208,7 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 		js := a.getOutputs()
 		js.NukeAndSet(m) //just nuke the matching output key:
 		update_fields := make(map[string]interface{})
-		update_fields["Inputs"] = js.ToString()
+		update_fields["Outputs"] = js.ToString()
 
 		ops := ldb.Options{
 			TableName:   ASSEMBLYBUCKET,
@@ -308,7 +308,6 @@ func (a *Assembly) newSSH() provision.BoxSSH {
 	return provision.BoxSSH{
 		User:   meta.MC.User,
 		Prefix: a.sshkey(),
-
 	}
 
 }

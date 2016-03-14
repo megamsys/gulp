@@ -95,11 +95,11 @@ func (m *Machine) findIps() map[string][]string {
 		for _, address := range ifaddress {
 			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
 				if ip4 := ipnet.IP.To4(); ip4 != nil {
-	       	if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
-						 priipv4s = append(priipv4s, ipnet.IP.String())
-				   } else {
-						 pubipv4s = append(pubipv4s, ipnet.IP.String())
-				   }
+					if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
+						priipv4s = append(priipv4s, ipnet.IP.String())
+					} else {
+						pubipv4s = append(pubipv4s, ipnet.IP.String())
+					}
 				}
 			}
 		}
