@@ -18,10 +18,14 @@ package carton
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	ldb "github.com/megamsys/libgo/db"
+	"github.com/megamsys/libgo/events"
+	"github.com/megamsys/libgo/events/alerts"
+	"github.com/megamsys/libgo/pairs"
+	"github.com/megamsys/libgo/utils"
+	constants "github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
 	"strings"
 	"time"
@@ -36,6 +40,7 @@ const (
 type Ambly struct {
 	Id         string   `json:"id" cql:"id"`
 	OrgId      string   `json:"org_id" cql:"org_id"`
+	AccountId  string   `json:"account_id" cql:"account_id"`
 	Name       string   `json:"name" cql:"name"`
 	JsonClaz   string   `json:"json_claz" cql:"json_claz"`
 	Tosca      string   `json:"tosca_type" cql:"tosca_type"`
@@ -48,16 +53,17 @@ type Ambly struct {
 }
 
 type Assembly struct {
-	Id         string         `json:"id" cql:"id"`
-	OrgId      string         `json:"org_id" cql:"org_id"`
-	Name       string         `json:"name" cql:"name"`
-	JsonClaz   string         `json:"json_claz" cql:"json_claz"`
-	Tosca      string         `json:"tosca_type" cql:"tosca_type"`
-	Inputs     bind.JsonPairs `json:"inputs" cql:"inputs"`
-	Outputs    bind.JsonPairs `json:"outputs" cql:"outputs"`
-	Policies   []*Policy      `json:"policies" cql:"policies"`
-	Status     string         `json:"status" cql:"status"`
-	CreatedAt  string         `json:"created_at" cql:"created_at"`
+	Id         string          `json:"id" cql:"id"`
+	OrgId      string          `json:"org_id" cql:"org_id"`
+	AccountId  string          `json:"account_id" cql:"account_id"`
+	Name       string          `json:"name" cql:"name"`
+	JsonClaz   string          `json:"json_claz" cql:"json_claz"`
+	Tosca      string          `json:"tosca_type" cql:"tosca_type"`
+	Inputs     pairs.JsonPairs `json:"inputs" cql:"inputs"`
+	Outputs    pairs.JsonPairs `json:"outputs" cql:"outputs"`
+	Policies   []*Policy       `json:"policies" cql:"policies"`
+	Status     string          `json:"status" cql:"status"`
+	CreatedAt  string          `json:"created_at" cql:"created_at"`
 	Components map[string]*Component
 }
 
@@ -100,7 +106,7 @@ func mkCarton(aies string, ay string) (*Carton, error) {
 		Provider:     a.provider(),
 		PublicIp:     a.publicIp(),
 		Boxes:        &b,
-		Status:       provision.Status(a.Status),
+		Status:       utils.Status(a.Status),
 	}
 	log.Debugf("Carton %v", c)
 	return c, nil
@@ -133,7 +139,7 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 				}
 				b.Compute = a.newCompute()
 				b.SSH = a.newSSH()
-				b.Status = provision.Status(a.Status)
+				b.Status = utils.Status(a.Status)
 				newBoxs = append(newBoxs, b)
 			}
 		}
@@ -173,7 +179,7 @@ func NewCarton(aies string, ay string) (*Carton, error) {
 	return mkCarton(aies, ay)
 }
 
-func (a *Ambly) SetStatus(status provision.Status) error {
+func (a *Ambly) SetStatus(status utils.Status) error {
 	js := a.getInputs()
 	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
 	m := make(map[string][]string, 2)
@@ -197,7 +203,34 @@ func (a *Ambly) SetStatus(status provision.Status) error {
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
 		return err
 	}
+	_ = eventNotify(status)
 	return nil
+}
+
+func eventNotify(status utils.Status) error {
+	mi := make(map[string]string)
+
+	js := make(pairs.JsonPairs, 0)
+	m := make(map[string][]string, 2)
+	m["status"] = []string{status.String()}
+	m["description"] = []string{status.Description(meta.MC.Name)}
+	js.NukeAndSet(m) //just nuke the matching output key:
+
+	mi[constants.ASSEMBLY_ID] = meta.MC.CartonId
+	mi[constants.ACCOUNT_ID] = meta.MC.AccountId
+	mi[constants.EVENT_TYPE] = status.Event_type()
+
+	newEvent := events.NewMulti(
+		[]*events.Event{
+			&events.Event{
+				AccountsId:  "",
+				EventAction: alerts.STATUS,
+				EventType:   constants.EventUser,
+				EventData:   alerts.EventData{M: mi, D: js.ToString()},
+				Timestamp:   time.Now().Local(),
+			},
+		})
+	return newEvent.Write()
 }
 
 //update outputs in riak, nuke the matching keys available
@@ -332,20 +365,20 @@ func (a *Assembly) getHDD() string {
 	return a.Inputs.Match(provision.HDD)
 }
 
-func (a *Ambly) getInputs() bind.JsonPairs {
-	keys := make([]*bind.JsonPair, 0)
+func (a *Ambly) getInputs() pairs.JsonPairs {
+	keys := make([]*pairs.JsonPair, 0)
 	for _, in := range a.Inputs {
-		inputs := bind.JsonPair{}
+		inputs := pairs.JsonPair{}
 		parseStringToStruct(in, &inputs)
 		keys = append(keys, &inputs)
 	}
 	return keys
 }
 
-func (a *Ambly) getOutputs() bind.JsonPairs {
-	keys := make([]*bind.JsonPair, 0)
+func (a *Ambly) getOutputs() pairs.JsonPairs {
+	keys := make([]*pairs.JsonPair, 0)
 	for _, in := range a.Outputs {
-		outputs := bind.JsonPair{}
+		outputs := pairs.JsonPair{}
 		parseStringToStruct(in, &outputs)
 		keys = append(keys, &outputs)
 	}

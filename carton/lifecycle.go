@@ -18,12 +18,12 @@ package carton
 
 import (
 	"bytes"
-	"io"
-	"time"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/cmd"
+	constants "github.com/megamsys/libgo/utils"
+	"io"
+	"time"
 )
 
 type LifecycleOpts struct {
@@ -43,10 +43,10 @@ func (li *LifecycleOpts) setLogger() {
 //if the state is in running, started, stopped, restarted then allow it to be lcycled.
 // to-do: allow states that ends with "*ing or *ed" that should fix this generically.
 func (li *LifecycleOpts) canCycle() bool {
-	return li.B.Status == provision.StatusRunning ||
-		li.B.Status == provision.StatusStarted ||
-		li.B.Status == provision.StatusStopped ||
-		li.B.Status == provision.StatusUpgraded
+	return li.B.Status == constants.StatusRunning ||
+		li.B.Status == constants.StatusStarted ||
+		li.B.Status == constants.StatusStopped ||
+		li.B.Status == constants.StatusUpgraded
 }
 
 // Starts  the box.

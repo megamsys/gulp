@@ -25,6 +25,8 @@ import (
 	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/gulp/upgrade"
 	ldb "github.com/megamsys/libgo/db"
+	"github.com/megamsys/libgo/pairs"
+	"github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -41,9 +43,9 @@ type Component struct {
 	Id                string               `json:"id"`
 	Name              string               `json:"name"`
 	Tosca             string               `json:"tosca_type"`
-	Inputs            bind.JsonPairs       `json:"inputs"`
-	Outputs           bind.JsonPairs       `json:"outputs"`
-	Envs              bind.JsonPairs       `json:"envs"`
+	Inputs            pairs.JsonPairs      `json:"inputs"`
+	Outputs           pairs.JsonPairs      `json:"outputs"`
+	Envs              pairs.JsonPairs      `json:"envs"`
 	Repo              Repo                 `json:"repo"`
 	Artifacts         *Artifacts           `json:"artifacts"`
 	RelatedComponents []string             `json:"related_components"`
@@ -68,9 +70,9 @@ type ComponentTable struct {
 }
 
 type Artifacts struct {
-	Type         string         `json:"artifact_type" cql:"type"`
-	Content      string         `json:"content" cql:"content"`
-	Requirements bind.JsonPairs `json:"requirements" cql:"requirements"`
+	Type         string          `json:"artifact_type" cql:"type"`
+	Content      string          `json:"content" cql:"content"`
+	Requirements pairs.JsonPairs `json:"requirements" cql:"requirements"`
 }
 
 /* Repository represents a repository managed by the manager. */
@@ -137,7 +139,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 	return bt, nil
 }
 
-func (c *Component) SetStatus(status provision.Status) error {
+func (c *Component) SetStatus(status utils.Status) error {
 	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
 	m := make(map[string][]string, 2)
 	m["lastsuccessstatusupdate"] = []string{LastStatusUpdate}
@@ -159,6 +161,7 @@ func (c *Component) SetStatus(status provision.Status) error {
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
 		return err
 	}
+	_ = eventNotify(status)
 	return nil
 }
 
@@ -245,30 +248,30 @@ func (c *Component) envs() bind.EnvVars {
 	return envs
 }
 
-func (a *ComponentTable) getInputs() bind.JsonPairs {
-	keys := make([]*bind.JsonPair, 0)
+func (a *ComponentTable) getInputs() pairs.JsonPairs {
+	keys := make([]*pairs.JsonPair, 0)
 	for _, in := range a.Inputs {
-		inputs := bind.JsonPair{}
+		inputs := pairs.JsonPair{}
 		parseStringToStruct(in, &inputs)
 		keys = append(keys, &inputs)
 	}
 	return keys
 }
 
-func (a *ComponentTable) getOutputs() bind.JsonPairs {
-	keys := make([]*bind.JsonPair, 0)
+func (a *ComponentTable) getOutputs() pairs.JsonPairs {
+	keys := make([]*pairs.JsonPair, 0)
 	for _, in := range a.Outputs {
-		outputs := bind.JsonPair{}
+		outputs := pairs.JsonPair{}
 		parseStringToStruct(in, &outputs)
 		keys = append(keys, &outputs)
 	}
 	return keys
 }
 
-func (a *ComponentTable) getEnvs() bind.JsonPairs {
-	keys := make([]*bind.JsonPair, 0)
+func (a *ComponentTable) getEnvs() pairs.JsonPairs {
+	keys := make([]*pairs.JsonPair, 0)
 	for _, in := range a.Envs {
-		outputs := bind.JsonPair{}
+		outputs := pairs.JsonPair{}
 		parseStringToStruct(in, &outputs)
 		keys = append(keys, &outputs)
 	}

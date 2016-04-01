@@ -8,6 +8,7 @@ import (
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	ldb "github.com/megamsys/libgo/db"
+	"github.com/megamsys/libgo/utils"
 	"net"
 	"os"
 	"time"
@@ -36,10 +37,10 @@ type Machine struct {
 	Level     provision.BoxLevel
 	SSH       provision.BoxSSH
 	PublicIp  string
-	Status    provision.Status
+	Status    utils.Status
 }
 
-func (m *Machine) SetStatus(status provision.Status) error {
+func (m *Machine) SetStatus(status utils.Status) error {
 	log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
 	if asm, err := carton.NewAmbly(m.CartonId); err != nil {
@@ -138,7 +139,7 @@ func (m *Machine) AppendAuthKeys() error {
 	return nil
 }
 
-func (m *Machine) ChangeState(status provision.Status) error {
+func (m *Machine) ChangeState(status utils.Status) error {
 	log.Debugf("  change state of machine (%s, %s)", m.Name, status.String())
 
 	pons := nsqp.New()

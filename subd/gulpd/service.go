@@ -27,6 +27,8 @@ import (
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	_ "github.com/megamsys/gulp/provision/chefsolo"
+	"github.com/megamsys/libgo/events"
+	constants "github.com/megamsys/libgo/utils"
 	nsq "github.com/nsqio/go-nsq"
 )
 
@@ -67,9 +69,12 @@ func NewService(c *meta.Config, d *Config) *Service {
 
 // Open starts the service
 func (s *Service) Open() error {
+	if err := s.setEventsWrap(); err != nil {
+		return err
+	}
 	go func() error {
 		log.Info("starting deployd agent service")
-		if err := nsqc.Register(s.Gulpd.Name, "agent", maxInFlight, s.processNSQ); err != nil {
+		if err := nsqc.Register(s.Meta.Name, "agent", maxInFlight, s.processNSQ); err != nil {
 			return err
 		}
 		if err := nsqc.Connect(s.Meta.NSQd...); err != nil {
@@ -85,6 +90,12 @@ func (s *Service) Open() error {
 	}
 	s.boot()
 	return nil
+}
+
+func (s *Service) setEventsWrap() error {
+	mi := make(map[string]map[string]string)
+	mi[constants.META] = meta.MC.ToMap()
+	return events.NewWrap(mi)
 }
 
 func (s *Service) processNSQ(msg *nsqc.Message) {
@@ -104,7 +115,7 @@ func (s *Service) processNSQ(msg *nsqc.Message) {
 
 func (s *Service) boot() {
 	go func() {
-		b, err := (&carton.Payload{}).AsBytes("", s.Gulpd.CartonId,
+		b, err := (&carton.Payload{}).AsBytes("", s.Meta.CartonId,
 			carton.BOOT, carton.STATE, time.Now().Local().Format(time.RFC822))
 		if err != nil {
 			return

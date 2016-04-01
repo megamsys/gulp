@@ -22,14 +22,13 @@ import (
 	"strconv"
 	"text/tabwriter"
 
+	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/provision/chefsolo"
 	"github.com/megamsys/libgo/cmd"
 )
 
 const (
-	// DefaultAssemblyID.
-	DefaultAssemblyID = "ASM00000001"
 
 	// DefaultProvider is the default provisioner used by our engine.
 	DefaultProvider = provision.CHEFSOLO
@@ -48,9 +47,6 @@ var MC *Config
 
 type Config struct {
 	Enabled         bool   `toml:"enabled"`
-	Name            string `toml:"name"`
-	CartonId        string `toml:"assembly_id"`
-	CartonsId       string `toml:"assemblies_id"`
 	Provider        string `toml:"provider"`
 	Cookbook        string `toml:"cookbook"`
 	ChefRepoGit     string `toml:"chefrepo"`
@@ -64,9 +60,6 @@ func (c Config) String() string {
 	b.Write([]byte(cmd.Colorfy("Config:", "white", "", "bold") + "\t" +
 		cmd.Colorfy("Gulpd", "green", "", "") + "\n"))
 	b.Write([]byte("Enabled" + "\t" + strconv.FormatBool(c.Enabled) + "\n"))
-	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
-	b.Write([]byte("CartonId" + "\t" + c.CartonId + "\n"))
-	b.Write([]byte("CartonsId" + "\t" + c.CartonsId + "\n"))
 	b.Write([]byte("Provider" + "\t" + c.Provider + "\n"))
 	b.Write([]byte("Cookbook" + "\t" + c.Cookbook + "\n"))
 	b.Write([]byte("ChefRepoGit" + "\t" + c.ChefRepoGit + "\n"))
@@ -79,9 +72,7 @@ func (c Config) String() string {
 func NewConfig() *Config {
 	return &Config{
 		Enabled:         true,
-		Name:            "",
 		Provider:        DefaultProvider,
-		CartonId:        DefaultAssemblyID,
 		Cookbook:        DefaultCookbook,
 		ChefRepoGit:     DefaultChefRepoGit,
 		ChefRepoTarball: DefaultChefTarball,
@@ -91,7 +82,7 @@ func NewConfig() *Config {
 //convert the config to just a map.
 func (c Config) toMap() map[string]string {
 	m := make(map[string]string)
-	m[chefsolo.NAME] = c.Name
+	m[chefsolo.NAME] = meta.MC.Name
 	m[chefsolo.CHEFREPO_GIT] = c.ChefRepoGit
 	m[chefsolo.CHEFREPO_TARBALL] = c.ChefRepoTarball
 	m[chefsolo.CHEFREPO_COOKBOOK] = c.Cookbook

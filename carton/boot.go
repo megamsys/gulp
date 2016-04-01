@@ -19,12 +19,12 @@ package carton
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"time"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/cmd"
+	constants "github.com/megamsys/libgo/utils"
+	"io"
+	"time"
 )
 
 type BootOpts struct {
@@ -32,7 +32,7 @@ type BootOpts struct {
 }
 
 func (opts *BootOpts) OK() bool {
-	return opts.B.Status == provision.StatusLaunched
+	return opts.B.Status == constants.StatusLaunched
 }
 
 // Boot runs the boot of the vm.
