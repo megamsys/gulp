@@ -19,9 +19,15 @@ package provision
 import (
 	"errors"
 	"fmt"
-	"io"
-
+	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/libgo/events"
+	"github.com/megamsys/libgo/events/alerts"
 	"github.com/megamsys/libgo/exec"
+	"github.com/megamsys/libgo/pairs"
+	"github.com/megamsys/libgo/utils"
+	constants "github.com/megamsys/libgo/utils"
+	"io"
+	"time"
 )
 
 const (
@@ -33,48 +39,6 @@ var (
 	ErrEmptyCarton    = errors.New("no boxs for this carton")
 	ErrBoxNotFound    = errors.New("box not found")
 	ErrNoOutputsFound = errors.New("no outputs found in the box. Did you set it ?")
-)
-
-// Status represents the status of a unit in megamd
-type Status string
-
-func (s Status) String() string {
-	return string(s)
-}
-
-const (
-	// StatusLaunched is the status for box being bootted the first time.
-	StatusLaunched = Status("launched")
-
-	// StatusBootstrapping is the status for box being bootstrapping by the
-	// provisioner, like in the bootstrap.
-	StatusBootstrapping = Status("bootstrapping")
-	// StatusBootstrapped is the status for box after being bootstrapped by the
-	// provisioner, updated by gulp
-	StatusBootstrapped = Status("bootstrapped")
-
-	// Stateup is the status for box being statefully moved to a different state.
-	// Sent by megamd to gulpd when it received StatusCreated.
-	StatusStateup = Status("stateup")
-
-	// StatusRunning
-	StatusRunning = Status("running")
-
-	StatusStarting = Status("starting")
-	StatusStarted  = Status("started")
-
-	StatusStopping = Status("stopping")
-	StatusStopped  = Status("stopped")
-
-	StatusRestarting = Status("restarting")
-	StatusRestarted  = Status("restarted")
-
-	StatusUpgrading = Status("upgrading")
-	StatusUpgraded  = Status("upgraded")
-
-	// StatusError is the status for units that failed to start, because of
-	// a box error.
-	StatusError = Status("error")
 )
 
 // Named is something that has a name, providing the GetName method.
@@ -179,4 +143,30 @@ func ExecuteCommandOnce(commandWords []string, w io.Writer) error {
 		}
 	}
 	return nil
+}
+
+func EventNotify(status utils.Status) error {
+	mi := make(map[string]string)
+
+	js := make(pairs.JsonPairs, 0)
+	m := make(map[string][]string, 2)
+	m["status"] = []string{status.String()}
+	m["description"] = []string{status.Description(meta.MC.Name)}
+	js.NukeAndSet(m) //just nuke the matching output key:
+
+	mi[constants.ASSEMBLY_ID] = meta.MC.CartonId
+	mi[constants.ACCOUNT_ID] = meta.MC.AccountId
+	mi[constants.EVENT_TYPE] = status.Event_type()
+
+	newEvent := events.NewMulti(
+		[]*events.Event{
+			&events.Event{
+				AccountsId:  "",
+				EventAction: alerts.STATUS,
+				EventType:   constants.EventUser,
+				EventData:   alerts.EventData{M: mi, D: js.ToString()},
+				Timestamp:   time.Now().Local(),
+			},
+		})
+	return newEvent.Write()
 }

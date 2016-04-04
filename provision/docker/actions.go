@@ -3,8 +3,10 @@ package docker
 import (
 	"fmt"
 	"github.com/ActiveState/tail"
+	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/exec"
+	constants "github.com/megamsys/libgo/utils"
 	"io"
 	"strings"
 )
@@ -43,7 +45,7 @@ var setNetwork = action.Action{
 		return networkExecutor(&args)
 	},
 	Backward: func(ctx action.BWContext) {
-
+		_ = provision.EventNotify(constants.StatusContainerNetworkFailure)
 	},
 }
 
@@ -64,10 +66,11 @@ func networkExecutor(networks *runNetworkActionsArgs) (action.Result, error) {
 	commandWords = strings.Fields(networks.Command)
 	if len(commandWords) > 0 {
 		if err := e.Execute(commandWords[0], commandWords[1:], nil, nil, nil); err != nil {
-
+			_ = provision.EventNotify(constants.StatusContainerNetworkFailure)
 			return nil, err
 		}
 	}
+	_ = provision.EventNotify(constants.StatusContainerNetworkSuccess)
 	return &networks, nil
 }
 

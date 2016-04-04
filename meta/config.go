@@ -43,6 +43,9 @@ const (
 
 	//DefaultDockerPath is the detault docker path
 	DefaultDockerPath = "/var/lib/docker/containers/"
+
+	// DefaultAssemblyID.
+	DefaultAssemblyID = "ASM00000001"
 )
 
 var MC *Config
@@ -57,6 +60,10 @@ type Config struct {
 	Scylla         []string `toml:"scylla"`
 	ScyllaKeyspace string   `toml:"scylla_keyspace"`
 	DockerPath     string   `toml:"docker_path"`
+	Name           string   `toml:"name"`
+	CartonId       string   `toml:"assembly_id"`
+	AccountId      string   `toml:"account_id"`
+	CartonsId      string   `toml:"assemblies_id"`
 }
 
 func (c Config) String() string {
@@ -73,6 +80,10 @@ func (c Config) String() string {
 	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
 	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
+	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
+	b.Write([]byte("AccountId" + "\t" + c.AccountId + "\n"))
+	b.Write([]byte("CartonId" + "\t" + c.CartonId + "\n"))
+	b.Write([]byte("CartonsId" + "\t" + c.CartonsId + "\n"))
 	fmt.Fprintln(w)
 	w.Flush()
 	return b.String()
@@ -101,7 +112,19 @@ func NewConfig() *Config {
 		Scylla:         []string{DefaultScylla},
 		ScyllaKeyspace: DefaultScyllaKeyspace,
 		DockerPath:     DefaultDockerPath,
+		Name:           "",
+		AccountId:      "",
+		CartonId:       DefaultAssemblyID,
 	}
+}
+
+func (c *Config) ToMap() map[string]string {
+	mp := make(map[string]string)
+	mp["home"] = c.Home
+	mp["dir"] = c.Dir
+	mp["scylla_host"] = strings.Join(c.Scylla, ",")
+	mp["scylla_keyspace"] = c.ScyllaKeyspace
+	return mp
 }
 
 func (c *Config) MkGlobal() {

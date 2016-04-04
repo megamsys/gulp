@@ -28,9 +28,7 @@ type S struct {
 var _ = check.Suite(&S{})
 
 func (s *S) TestCreateService(c *check.C) {
-	srv := NewService(&meta.Config{}, &Config{
-		CartonId: "ASM000",
-	})
+	srv := NewService(&meta.Config{CartonId: "ASM000"}, &Config{})
 	s.service = srv
 	c.Assert(srv, check.NotNil)
 }

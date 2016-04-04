@@ -33,6 +33,7 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/cmd"
+	constants "github.com/megamsys/libgo/utils"
 )
 
 const (
@@ -86,9 +87,11 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 
 	cr := NewChefRepo(m, writer)
 	if err := cr.Download(true); err != nil {
+		err = provision.EventNotify(constants.StatusCookbookFailure)
 		return err
 	}
 	if err := cr.Torr(); err != nil {
+		err = provision.EventNotify(constants.StatusCookbookFailure)
 		return err
 	}
 	elapsed := time.Since(start)
@@ -97,6 +100,7 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 		cmd.Colorfy(m[NAME], "cyan", "", "bold"),
 		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
 		cmd.Colorfy(outBuffer.String(), "yellow", "", ""))
+	_ = provision.EventNotify(constants.StatusCookbookSuccess)
 	return nil
 }
 
@@ -131,7 +135,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	args := runMachineActionsArgs{
 		box:           box,
 		writer:        w,
-		machineStatus: provision.StatusBootstrapping,
+		machineStatus: constants.StatusBootstrapping,
 		provisioner:   p,
 	}
 
@@ -179,7 +183,7 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	args := runMachineActionsArgs{
 		box:           b,
 		writer:        w,
-		machineStatus: provision.StatusRunning,
+		machineStatus: constants.StatusRunning,
 		provisioner:   p,
 	}
 
@@ -202,7 +206,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 	args := runMachineActionsArgs{
 		box:           b,
 		writer:        w,
-		machineStatus: provision.StatusStarting,
+		machineStatus: constants.StatusStarting,
 		provisioner:   p,
 	}
 
@@ -225,7 +229,7 @@ func (p *chefsoloProvisioner) Stop(b *provision.Box, w io.Writer) error {
 	args := runMachineActionsArgs{
 		box:           b,
 		writer:        w,
-		machineStatus: provision.StatusStopping,
+		machineStatus: constants.StatusStopping,
 		provisioner:   p,
 	}
 
@@ -249,7 +253,7 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 	args := runMachineActionsArgs{
 		box:           b,
 		writer:        w,
-		machineStatus: provision.StatusRestarting,
+		machineStatus: constants.StatusRestarting,
 		provisioner:   p,
 	}
 

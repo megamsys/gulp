@@ -3,6 +3,7 @@ package carton
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,7 +19,7 @@ type Carton struct {
 	Provider     string
 	PublicIp     string
 	Boxes        *[]provision.Box
-	Status       provision.Status
+	Status       utils.Status
 }
 
 func (a *Carton) String() string {

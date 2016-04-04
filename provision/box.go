@@ -31,6 +31,8 @@ import (
 	"github.com/megamsys/gulp/repository"
 	_ "github.com/megamsys/gulp/repository/github"
 	"github.com/megamsys/gulp/upgrade"
+	"github.com/megamsys/libgo/utils"
+	constants "github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -174,7 +176,7 @@ type Box struct {
 	SSH          BoxSSH
 	PublicIp     string
 	Repo         *repository.Repo
-	Status       Status
+	Status       utils.Status
 	Provider     string
 	Commit       string
 	Envs         bind.EnvVars
@@ -240,14 +242,14 @@ func (b *Box) Clone() error {
 // whenever the unit itself is available, even when the application process is
 // not.
 func (b *Box) Available() bool {
-	return b.Status == StatusBootstrapping ||
-		b.Status == StatusRunning ||
-		b.Status == StatusBootstrapped ||
-		b.Status == StatusStateup ||
-		b.Status == StatusError ||
-		b.Status == StatusStarted ||
-		b.Status == StatusStopped ||
-		b.Status == StatusRestarted
+	return b.Status == constants.StatusBootstrapping ||
+		b.Status == constants.StatusRunning ||
+		b.Status == constants.StatusBootstrapped ||
+		b.Status == constants.StatusStateup ||
+		b.Status == constants.StatusError ||
+		b.Status == constants.StatusStarted ||
+		b.Status == constants.StatusStopped ||
+		b.Status == constants.StatusRestarted
 }
 
 // Log adds a log message to the app. Specifying a good source is good so the

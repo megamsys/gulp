@@ -18,6 +18,7 @@ package gulpd
 
 import (
 	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/meta"
 )
 
 type Handler struct {
@@ -37,7 +38,7 @@ func (h *Handler) serveNSQ(r *carton.Requests) error {
 	}
 
 	if rp := carton.NewReqOperator(r.CatId); rp != nil {
-		rp.CartonsId = h.d.CartonsId
+		rp.CartonsId = meta.MC.CartonsId
 		return rp.Accept(&p)
 	}
 	return nil

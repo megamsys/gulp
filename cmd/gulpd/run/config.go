@@ -49,7 +49,7 @@ func NewConfig() *Config {
 func (c *Config) Validate() error {
 	if c.Meta.Dir == "" {
 		return errors.New("Meta.Dir must be specified")
-	} else if c.Gulpd.CartonId == "" {
+	} else if c.Meta.CartonId == "" {
 		return errors.New("Gulpd.AssemblyId must be specified")
 	}
 	return nil

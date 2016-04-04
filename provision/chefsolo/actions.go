@@ -17,22 +17,23 @@ package chefsolo
 
 import (
 	"fmt"
+	"github.com/megamsys/gulp/carton"
+	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/provision/chefsolo/machine"
+	"github.com/megamsys/libgo/action"
+	"github.com/megamsys/libgo/utils"
+	constants "github.com/megamsys/libgo/utils"
 	"io"
 	"io/ioutil"
 	"path"
 	"reflect"
 	"strings"
-
-	"github.com/megamsys/gulp/carton"
-	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/provision/chefsolo/machine"
-	"github.com/megamsys/libgo/action"
 )
 
 type runMachineActionsArgs struct {
 	box           *provision.Box
 	writer        io.Writer
-	machineStatus provision.Status
+	machineStatus utils.Status
 	provisioner   *chefsoloProvisioner
 }
 
@@ -62,7 +63,7 @@ var updateStatusInRiak = action.Action{
 	},
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
-		c.SetStatus(provision.StatusError)
+		c.SetStatus(constants.StatusError)
 	},
 }
 
@@ -79,7 +80,7 @@ var createMachine = action.Action{
 			Name:      args.box.GetFullName(),
 			SSH:       args.box.SSH,
 		}
-		mach.Status = provision.StatusBootstrapping
+		mach.Status = constants.StatusBootstrapping
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {},
@@ -98,11 +99,13 @@ var updateIpsInRiak = action.Action{
 			return nil, err
 		}
 		fmt.Fprintf(args.writer, "  update ips for box (%s) OK\n", args.box.GetFullName())
+		err = provision.EventNotify(constants.StatusIpsSuccess)
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
-		c.Status = provision.StatusError
+		c.Status = constants.StatusError
+		_ = provision.EventNotify(constants.StatusIpsFailure)
 	},
 }
 
@@ -118,12 +121,14 @@ var appendAuthKeys = action.Action{
 			return nil, err
 		}
 		fmt.Fprintf(args.writer, "  append authorized keys for box (%s) OK\n", args.box.GetFullName())
-		mach.Status = provision.StatusBootstrapped
+		mach.Status = constants.StatusBootstrapped
+		err = provision.EventNotify(constants.StatusAuthkeysSuccess)
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
-		c.Status = provision.StatusError
+		c.Status = constants.StatusError
+		_ = provision.EventNotify(constants.StatusAuthkeysFailure)
 	},
 }
 
@@ -133,14 +138,14 @@ var changeStateofMachine = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())
-		mach.Status = provision.StatusBootstrapped
+		mach.Status = constants.StatusBootstrapped
 		mach.ChangeState(mach.Status)
 		fmt.Fprintf(args.writer, "  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
-		c.SetStatus(provision.StatusError)
+		c.SetStatus(constants.StatusError)
 	},
 }
 
@@ -236,7 +241,7 @@ var startBox = action.Action{
 			Level:    args.box.Level,
 			Name:     args.box.GetFullName(),
 			SSH:      args.box.SSH,
-			Status:   provision.StatusStarted,
+			Status:   constants.StatusStarted,
 		}
 		fmt.Fprintf(args.writer, "  %s for box (%s) OK", carton.START, args.box.GetFullName())
 		return mach, nil
@@ -266,7 +271,7 @@ var stopBox = action.Action{
 			Level:    args.box.Level,
 			Name:     args.box.GetFullName(),
 			SSH:      args.box.SSH,
-			Status:   provision.StatusStopped,
+			Status:   constants.StatusStopped,
 		}
 		fmt.Fprintf(args.writer, "  %s for box (%s) OK", carton.STOP, args.box.GetFullName())
 		return mach, nil

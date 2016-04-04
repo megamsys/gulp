@@ -2,11 +2,11 @@ package provisiontest
 
 import (
 	"fmt"
-	"sync"
-	"sync/atomic"
-
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
+	constants "github.com/megamsys/libgo/utils"
+	"sync"
+	"sync/atomic"
 )
 
 var uniqueIpCounter int32 = 0
@@ -47,7 +47,7 @@ func NewFakeCarton(name, tosca string, lvl provision.BoxLevel, units int) *FakeC
 			DomainName: "megambox.com",
 			Tosca:      tosca,
 			Repo:       &repository.Repo{},
-			Status:     provision.StatusBootstrapping,
+			Status:     constants.StatusBootstrapping,
 			Provider:   provision.CHEFSOLO,
 		}
 	}

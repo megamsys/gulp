@@ -17,10 +17,11 @@ package provision
 
 import (
 	"errors"
+	"github.com/megamsys/libgo/utils"
+	constants "github.com/megamsys/libgo/utils"
+	"gopkg.in/check.v1"
 	"reflect"
 	"testing"
-
-	"gopkg.in/check.v1"
 )
 
 type ProvisionSuite struct{}
@@ -71,27 +72,27 @@ func (ProvisionSuite) TestErrorImplementsError(c *check.C) {
 }
 
 func (ProvisionSuite) TestStatusString(c *check.C) {
-	var s Status = "pending"
+	var s utils.Status = "pending"
 	c.Assert(s.String(), check.Equals, "pending")
 }
 
 func (ProvisionSuite) TestStatuses(c *check.C) {
-	c.Check(StatusBootstrapped.String(), check.Equals, "bootstrapped")
-	c.Check(StatusError.String(), check.Equals, "error")
-	c.Check(StatusStarted.String(), check.Equals, "started")
-	c.Check(StatusStopped.String(), check.Equals, "stopped")
-	c.Check(StatusRestarted.String(), check.Equals, "restarted")
+	c.Check(constants.StatusBootstrapped.String(), check.Equals, "bootstrapped")
+	c.Check(constants.StatusError.String(), check.Equals, "error")
+	c.Check(constants.StatusStarted.String(), check.Equals, "started")
+	c.Check(constants.StatusStopped.String(), check.Equals, "stopped")
+	c.Check(constants.StatusRestarted.String(), check.Equals, "restarted")
 }
 
 func (ProvisionSuite) TestBoxAvailable(c *check.C) {
 	var tests = []struct {
-		input    Status
+		input    utils.Status
 		expected bool
 	}{
-		{StatusBootstrapped, true},
-		{StatusStarted, true},
-		{StatusStopped, true},
-		{StatusError, true},
+		{constants.StatusBootstrapped, true},
+		{constants.StatusStarted, true},
+		{constants.StatusStopped, true},
+		{constants.StatusError, true},
 	}
 	for _, test := range tests {
 		b := Box{Status: test.input}

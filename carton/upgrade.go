@@ -11,6 +11,7 @@ import (
 	"github.com/megamsys/gulp/upgrade"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/cmd"
+	constants "github.com/megamsys/libgo/utils"
 )
 
 type Upgradeable struct {
@@ -30,10 +31,10 @@ func NewUpgradeable(box *provision.Box) *Upgradeable {
 }
 
 func (u *Upgradeable) canCycle() bool {
-	return u.B.Status == provision.StatusRunning ||
-		u.B.Status == provision.StatusStarted ||
-		u.B.Status == provision.StatusStopped ||
-		u.B.Status == provision.StatusUpgraded
+	return u.B.Status == constants.StatusRunning ||
+		u.B.Status == constants.StatusStarted ||
+		u.B.Status == constants.StatusStopped ||
+		u.B.Status == constants.StatusUpgraded
 }
 
 func (u *Upgradeable) register() {
