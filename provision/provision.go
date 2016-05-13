@@ -147,13 +147,11 @@ func ExecuteCommandOnce(commandWords []string, w io.Writer) error {
 
 func EventNotify(status utils.Status) error {
 	mi := make(map[string]string)
-
 	js := make(pairs.JsonPairs, 0)
 	m := make(map[string][]string, 2)
 	m["status"] = []string{status.String()}
 	m["description"] = []string{status.Description(meta.MC.Name)}
 	js.NukeAndSet(m) //just nuke the matching output key:
-
 	mi[constants.ASSEMBLY_ID] = meta.MC.CartonId
 	mi[constants.ACCOUNT_ID] = meta.MC.AccountId
 	mi[constants.EVENT_TYPE] = status.Event_type()

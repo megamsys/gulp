@@ -19,6 +19,7 @@ type DockerProvisioner struct {
 	Bridge        string
 	HomeDir       string
 	Tosca_type    string
+	CartonId       string
 }
 
 func (p *DockerProvisioner) Initialize(m string) error {
@@ -48,8 +49,10 @@ func (p *DockerProvisioner) NetworkExec() {
 }
 
 func (p *DockerProvisioner) createNetworkPipeline() error {
+
 	actions := []*action.Action{
 		&setNetwork,
+		&updateIpsInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
 	args := runNetworkActionsArgs{
@@ -58,6 +61,7 @@ func (p *DockerProvisioner) createNetworkPipeline() error {
 		Bridge:  p.Bridge,
 		Gateway: p.Gateway,
 		HomeDir: p.HomeDir,
+		CartonId: p.CartonId,
 	}
 
 	err := pipeline.Execute(args)
