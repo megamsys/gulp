@@ -2,7 +2,7 @@ package docker
 
 import (
 	"fmt"
-	"github.com/ActiveState/tail"
+	"github.com/hpcloud/tail"
 	"github.com/megamsys/gulp/carton"
 	//"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
