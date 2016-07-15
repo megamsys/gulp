@@ -213,6 +213,7 @@ func (b *Box) GetFullName() string {
 }
 
 func (b *Box) GetShortTosca() string {
+	
 	return strings.Split(b.Tosca, ".")[2]
 }
 

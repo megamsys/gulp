@@ -1,9 +1,24 @@
 package machine
-
+/*
 import (
 
-//"gopkg.in/check.v1"
+"gopkg.in/check.v1"
 )
+
+func (s *S) TestAppendAuthKeys(c *check.C) {
+		m := &Machine{
+			Name: "",
+			Id: "",
+			CartonId: "",
+			CartonsId: "",
+			Level     provision.BoxLevel
+			SSH       provision.BoxSSH
+			PublicIp: "",
+			Status: "",
+		}
+		err := m.AppendAuthKeys()
+		c.Assert(err, check.NotNil)
+}
 
 /*
 func (s *S) TestContainerShortID(c *check.C) {

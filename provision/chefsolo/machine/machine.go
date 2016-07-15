@@ -112,17 +112,21 @@ func (m *Machine) findIps() map[string][]string {
 
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
+	asm, err := carton.NewAmbly(m.CartonId)
+	if  err != nil {
+		return err
+	}
 	c := &SshKeys{}
 	ops := ldb.Options{
 		TableName:   SSHKEYSBUCKET,
 		Pks:         []string{"Name"},
-		Ccms:        []string{},
+		Ccms:        []string{"Org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
-		CcmsClauses: make(map[string]interface{}),
+		CcmsClauses: map[string]interface{}{"Org_id": asm.OrgId},
 	}
-	if err := ldb.Fetchdb(ops, c); err != nil {
+	if err = ldb.Fetchdb(ops, c); err != nil {
 		return err
 	}
 
