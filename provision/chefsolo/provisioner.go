@@ -57,7 +57,8 @@ var mainChefSoloProvisioner *chefsoloProvisioner
 type Attributes struct {
 	RunList   []string `json:"run_list"`
 	ToscaType string   `json:"tosca_type"`
-	Scm       string   `json:"scm"`
+	RepoURL    string   `json:"scm"`
+	RepoSource string   `json:"provider"`
 	Version   string   `json:"version"`
 }
 
@@ -127,7 +128,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&createMachine,
 		&updateStatusInRiak,
 		&updateIpsInRiak,
-		&appendAuthKeys,
+	//	&appendAuthKeys,
 		&updateStatusInRiak,
 		&changeStateofMachine,
 	}
@@ -144,21 +145,24 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
+	p.Stateup(box,w)
 fmt.Fprintf(w, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf( "--- bootstrap box (%s) OK\n", box.GetFullName())))
 	return nil
 }
 
 func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("\n--- stateup box (%s)\n", b.GetFullName())))
-	var repo string
+	var repo, src string
 	if b.Repo != nil {
 		repo = b.Repo.Gitr()
+		src =  b.Repo.RepoProvider()
 	}
 
 	DefaultAttributes, _ := json.Marshal(&Attributes{
 		RunList:   []string{"recipe[" + p.Cookbook + "]"},
 		ToscaType: b.GetShortTosca(),
-		Scm:       repo,
+		RepoURL:     repo,
+		RepoSource:  src,
 		Version: b.ImageVersion,
 	})
 

@@ -213,8 +213,12 @@ func (b *Box) GetFullName() string {
 }
 
 func (b *Box) GetShortTosca() string {
-	
-	return strings.Split(b.Tosca, ".")[2]
+	a := strings.Split(b.Tosca, ".")
+	if a[1] == "bitnami" {
+		return a[1]
+	} else {
+		return a[2]
+	}
 }
 
 // GetIp returns the Unit.IP.
