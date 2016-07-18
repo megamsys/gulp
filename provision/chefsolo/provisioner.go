@@ -128,7 +128,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&createMachine,
 		&updateStatusInRiak,
 		&updateIpsInRiak,
-	//	&appendAuthKeys,
+		&appendAuthKeys,
 		&updateStatusInRiak,
 		&changeStateofMachine,
 	}
