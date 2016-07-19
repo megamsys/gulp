@@ -42,7 +42,7 @@ var setNetwork = action.Action{
 	Name: "attach-network-docker",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runNetworkActionsArgs)
-	network_command := args.HomeDir + "/" + PIPEWORK + " " + args.Bridge + " " + parseID(args.Id) + " " + args.IpAddr + "/24@" + args.Gateway
+	network_command := args.HomeDir + "/" + PIPEWORK + " " + args.Bridge + " " + parseID(args.Id) + " " + args.IpAddr + "/27@" + args.Gateway
 		args.Command = network_command
 		return networkExecutor(&args)
 	},
