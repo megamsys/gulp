@@ -209,7 +209,6 @@ func (a *Ambly) SetStatus(status utils.Status) error {
 
 func eventNotify(status utils.Status) error {
 	mi := make(map[string]string)
-
 	js := make(pairs.JsonPairs, 0)
 	m := make(map[string][]string, 2)
 	m["status"] = []string{status.String()}
@@ -219,11 +218,10 @@ func eventNotify(status utils.Status) error {
 	mi[constants.ASSEMBLY_ID] = meta.MC.CartonId
 	mi[constants.ACCOUNT_ID] = meta.MC.AccountId
 	mi[constants.EVENT_TYPE] = status.Event_type()
-
 	newEvent := events.NewMulti(
 		[]*events.Event{
 			&events.Event{
-				AccountsId:  "",
+				AccountsId:  meta.MC.AccountId,
 				EventAction: alerts.STATUS,
 				EventType:   constants.EventUser,
 				EventData:   alerts.EventData{M: mi, D: js.ToString()},
