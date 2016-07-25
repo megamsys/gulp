@@ -18,11 +18,11 @@ package chefsolo
 import (
 	"fmt"
 	"github.com/megamsys/gulp/carton"
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/provision/chefsolo/machine"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/utils"
-	lb "github.com/megamsys/gulp/logbox"
 	constants "github.com/megamsys/libgo/utils"
 	"io"
 	"io/ioutil"
@@ -38,8 +38,8 @@ type runMachineActionsArgs struct {
 	provisioner   *chefsoloProvisioner
 }
 
-var updateStatusInRiak = action.Action{
-	Name: "update-status-riak",
+var updateStatusInScylla = action.Action{
+	Name: "update-status-scylla",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, "  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())
@@ -72,7 +72,7 @@ var createMachine = action.Action{
 	Name: "create-machine",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  create machine for box (%s)\n", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create machine for box (%s)\n", args.box.GetFullName())))
 		mach := machine.Machine{
 			Id:        args.box.Id,
 			CartonId:  args.box.CartonId,
@@ -81,26 +81,27 @@ var createMachine = action.Action{
 			Name:      args.box.GetFullName(),
 			SSH:       args.box.SSH,
 		}
-		mach.Status = constants.StatusBootstrapping
+		mach.Status = constants.StatusIpsUpdating
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {},
 }
 
-var updateIpsInRiak = action.Action{
-	Name: "update-ips-riak",
+var updateIpsInSyclla = action.Action{
+	Name: "update-ips-scylla",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
+		err := provision.EventNotify(constants.StatusIpsUpdating)
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  update ips for box (%s)\n", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  update ips for box (%s)\n", args.box.GetFullName())))
 
-		err := mach.FindAndSetIps()
+		err = mach.FindAndSetIps()
 		if err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.ERROR,fmt.Sprintf("  update ips for box failed\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  update ips for box failed\n%s\n", err.Error())))
 			return nil, err
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  update ips for box (%s) OK\n", args.box.GetFullName())))
-		err = provision.EventNotify(constants.StatusIpsSuccess)
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  update ips for box (%s) OK\n", args.box.GetFullName())))
+		err = provision.EventNotify(constants.StatusIpsUpdated)
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -115,15 +116,15 @@ var appendAuthKeys = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  append authorized keys for box (%s)\n", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  append authorized keys for box (%s)\n", args.box.GetFullName())))
 		err := mach.AppendAuthKeys()
 		if err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.ERROR,fmt.Sprintf("  append authorized keys for box failed\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  append authorized keys for box failed\n%s\n", err.Error())))
 			return nil, err
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  append authorized keys for box (%s) OK\n", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  append authorized keys for box (%s) OK\n", args.box.GetFullName())))
 		mach.Status = constants.StatusBootstrapped
-		err = provision.EventNotify(constants.StatusAuthkeysSuccess)
+		err = provision.EventNotify(constants.StatusAuthkeysUpdated)
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -138,10 +139,10 @@ var changeStateofMachine = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
 		mach.Status = constants.StatusBootstrapped
 		mach.ChangeState(mach.Status)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -153,17 +154,20 @@ var changeStateofMachine = action.Action{
 var generateSoloJson = action.Action{
 	Name: "generate-solo-json",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  generate solo json for box (%s)", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo json for box (%s)", args.box.GetFullName())))
 		data := "{}\n"
 		if args.provisioner.Attributes != "" {
 			data = args.provisioner.Attributes
 		}
 		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "solo.json"), []byte(data), 0644); err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.ERROR,fmt.Sprintf("  generate solo json for box failed.\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo json for box failed.\n%s\n", err.Error())))
 			return err, nil
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  generate solo json for box (%s) OK\n", args.box.GetFullName())))
+	//	mach.Status = constants.StatusChefConfigSetupped
+		_ := provision.EventNotify(constants.StatusChefConfigSetupped)
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo json for box (%s) OK\n", args.box.GetFullName())))
 		return nil, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -173,15 +177,18 @@ var generateSoloJson = action.Action{
 var generateSoloConfig = action.Action{
 	Name: "generate-solo-config",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  generate solo config for box (%s)\n", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo config for box (%s)\n", args.box.GetFullName())))
 		data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "/chef-repo/cookbooks"))
 		data += "ssl_verify_mode :verify_peer\n"
 		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "solo.rb"), []byte(data), 0644); err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.ERROR,fmt.Sprintf("  generate solo config for box failed.\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo config for box failed.\n%s\n", err.Error())))
 			return err, nil
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  generate solo config for box (%s) OK\n", args.box.GetFullName())))
+		_ = provision.EventNotify(constants.StatusCloning)
+//		mach.Status = constants.StatusCloning
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo config for box (%s) OK\n", args.box.GetFullName())))
 		return nil, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -192,15 +199,17 @@ var chefSoloRun = action.Action{
 	Name: "chef-solo-run",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  chefsolo run started.\n")))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run started.\n")))
 		err := provision.ExecuteCommandOnce(args.provisioner.Command(), args.writer)
 		if err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.ERROR,fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
 			return nil, err
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  chefsolo run OK.\n")))
+		_ = provision.EventNotify(constants.StatusChefsoloDownloading)
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run OK.\n")))
 		return &args, err
 	},
+
 	Backward: func(ctx action.BWContext) {
 	},
 }
@@ -208,13 +217,16 @@ var chefSoloRun = action.Action{
 var cloneBox = action.Action{
 	Name: "clone-box",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  clone repository for box (%s)", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box (%s)", args.box.GetFullName())))
 		if err := args.box.Clone(); err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf("  clone repository for box failed.\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box failed.\n%s\n", err.Error())))
 			return nil, err
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_DEPLOY, lb.INFO,fmt.Sprintf( "  clone repository for box (%s) OK", args.box.GetFullName())))
+	//	mach.Status = constants.StatusCloned
+		_ = provision.EventNotify(constants.StatusCloned)
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box (%s) OK", args.box.GetFullName())))
 		return nil, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -226,14 +238,14 @@ var startBox = action.Action{
 	Name: "start-box",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_STARTING, lb.INFO,fmt.Sprintf("  %s for box (%s)", carton.START, args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_STARTING, lb.INFO, fmt.Sprintf("  %s for box (%s)", carton.START, args.box.GetFullName())))
 
 		scriptd := machine.NewServiceScripter(args.box.GetShortTosca(), carton.START)
 		fmt.Fprintf(args.writer, "  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())
 
 		err := provision.ExecuteCommandOnce(scriptd.Cmd(), args.writer)
 		if err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_STARTING, lb.ERROR,fmt.Sprintf("  %s for box (%s) failed.\n%s\n", carton.START, args.box.GetFullName(), err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_STARTING, lb.ERROR, fmt.Sprintf("  %s for box (%s) failed.\n%s\n", carton.START, args.box.GetFullName(), err.Error())))
 			return nil, err
 		}
 		mach := machine.Machine{
@@ -244,7 +256,7 @@ var startBox = action.Action{
 			SSH:      args.box.SSH,
 			Status:   constants.StatusStarted,
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_STARTING, lb.INFO,fmt.Sprintf("  %s for box (%s) OK", carton.START, args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_STARTING, lb.INFO, fmt.Sprintf("  %s for box (%s) OK", carton.START, args.box.GetFullName())))
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -256,14 +268,14 @@ var stopBox = action.Action{
 	Name: "stop-box",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_STOPPING, lb.INFO,fmt.Sprintf("  %s for box (%s)", carton.STOP, args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_STOPPING, lb.INFO, fmt.Sprintf("  %s for box (%s)", carton.STOP, args.box.GetFullName())))
 
 		scriptd := machine.NewServiceScripter(args.box.GetShortTosca(), carton.STOP)
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_STOPPING, lb.INFO,fmt.Sprintf("  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_STOPPING, lb.INFO, fmt.Sprintf("  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())))
 
 		err := provision.ExecuteCommandOnce(scriptd.Cmd(), args.writer)
 		if err != nil {
-			fmt.Fprintf(args.writer, 	lb.W(lb.VM_STOPPING, lb.ERROR,fmt.Sprintf("  %s for box (%s) failed.\n%s\n", carton.STOP, args.box.GetFullName(), err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_STOPPING, lb.ERROR, fmt.Sprintf("  %s for box (%s) failed.\n%s\n", carton.STOP, args.box.GetFullName(), err.Error())))
 			return nil, err
 		}
 		mach := machine.Machine{
@@ -274,10 +286,26 @@ var stopBox = action.Action{
 			SSH:      args.box.SSH,
 			Status:   constants.StatusStopped,
 		}
-		fmt.Fprintf(args.writer, 	lb.W(lb.VM_STOPPING, lb.INFO,fmt.Sprintf("  %s for box (%s) OK", carton.STOP, args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_STOPPING, lb.INFO, fmt.Sprintf("  %s for box (%s) OK", carton.STOP, args.box.GetFullName())))
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		//this is tricky..
+	},
+}
+var setFinalState = action.Action{
+	Name: "set-final-state",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		mach.Status = constants.StatusRunning
+		return mach, nil
+	},
+}
+var setChefsoloStatus = action.Action{
+	Name: "set chefsolo state",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		mach.Status = constants.StatusChefsoloDownloaded
+		return mach, nil
 	},
 }

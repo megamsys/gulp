@@ -1,12 +1,11 @@
 package chefsolo
-
+/*
 import (
 	"io/ioutil"
 
 	"github.com/megamsys/gulp/meta"
 	"gopkg.in/check.v1"
 )
-
 func (s *S) TestDownload(c *check.C) {
 	c.Assert(s.config, check.NotNil)
 	c.Assert(s.M, check.NotNil)
@@ -18,7 +17,7 @@ func (s *S) TestDownload(c *check.C) {
 	c.Assert(err, check.IsNil)
 }
 
-func (s *S) TestTorr(c *check.C) {
+func (s *S) TestTorr (c *check.C) {
 	c.Assert(s.config, check.NotNil)
 	c.Assert(s.M, check.NotNil)
 	cr := NewChefRepo(s.M, ioutil.Discard)
@@ -28,3 +27,4 @@ func (s *S) TestTorr(c *check.C) {
 	err = cr.Torr()
 	c.Assert(err, check.IsNil)
 }
+*/

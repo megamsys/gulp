@@ -113,7 +113,7 @@ func (m *Machine) findIps() map[string][]string {
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
 	asm, err := carton.NewAmbly(m.CartonId)
-	if  err != nil {
+	if err != nil {
 		return err
 	}
 	c := &SshKeys{}

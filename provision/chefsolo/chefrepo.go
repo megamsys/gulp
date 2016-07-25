@@ -12,6 +12,8 @@ import (
 	"github.com/megamsys/gulp/repository"
 	_ "github.com/megamsys/gulp/repository/github"
 	"github.com/mitchellh/ioprogress"
+	"github.com/megamsys/gulp/provision"
+	constants "github.com/megamsys/libgo/utils"
 )
 
 type ChefRepo struct {
@@ -33,6 +35,7 @@ func NewChefRepo(m map[string]string, w io.Writer) *ChefRepo {
 
 //try downloading tar first, if not, do a clone of the chef-repo
 func (ch *ChefRepo) Download(force bool) error {
+ 	_ = provision.EventNotify(constants.StatusCookbookDownloaded)
 	fmt.Fprintf(ch.writer, "--- download (%s)\n", ch.repodir())
 	if !ch.exists() || !ch.isUptodate() {
 		if err := ch.download(force); err != nil {
