@@ -250,7 +250,7 @@ func (b *Box) Available() bool {
 	return b.Status == constants.StatusBootstrapping ||
 		b.Status == constants.StatusRunning ||
 		b.Status == constants.StatusBootstrapped ||
-		b.Status == constants.StatusStateup ||
+		b.Status == constants.StatusStateupped ||
 		b.Status == constants.StatusError ||
 		b.Status == constants.StatusStarted ||
 		b.Status == constants.StatusStopped ||
