@@ -90,18 +90,17 @@ var createMachine = action.Action{
 var updateIpsInSyclla = action.Action{
 	Name: "update-ips-scylla",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
-		err := provision.EventNotify(constants.StatusIpsUpdating)
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  update ips for box (%s)\n", args.box.GetFullName())))
-
-		err = mach.FindAndSetIps()
+		err := mach.FindAndSetIps()
 		if err != nil {
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  update ips for box failed\n%s\n", err.Error())))
 			return nil, err
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  update ips for box (%s) OK\n", args.box.GetFullName())))
 		err = provision.EventNotify(constants.StatusIpsUpdated)
+		mach.Status = constants.StatusAuthkeysUpdating
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -123,8 +122,8 @@ var appendAuthKeys = action.Action{
 			return nil, err
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  append authorized keys for box (%s) OK\n", args.box.GetFullName())))
-		mach.Status = constants.StatusBootstrapped
-		err = provision.EventNotify(constants.StatusAuthkeysUpdated)
+
+		_	= provision.EventNotify(constants.StatusAuthkeysUpdated)
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -165,10 +164,9 @@ var generateSoloJson = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo json for box failed.\n%s\n", err.Error())))
 			return err, nil
 		}
-	//	mach.Status = constants.StatusChefConfigSetupped
-		_ := provision.EventNotify(constants.StatusChefConfigSetupped)
+		//	mach.Status = constants.StatusChefConfigSetupped
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo json for box (%s) OK\n", args.box.GetFullName())))
-		return nil, nil
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 	},
@@ -186,10 +184,10 @@ var generateSoloConfig = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo config for box failed.\n%s\n", err.Error())))
 			return err, nil
 		}
-		_ = provision.EventNotify(constants.StatusCloning)
-//		mach.Status = constants.StatusCloning
+		_ = provision.EventNotify(constants.StatusChefConfigSetupped)
+		mach.Status = constants.StatusCloning
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo config for box (%s) OK\n", args.box.GetFullName())))
-		return nil, nil
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 	},
@@ -205,7 +203,7 @@ var chefSoloRun = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
 			return nil, err
 		}
-		_ = provision.EventNotify(constants.StatusChefsoloDownloading)
+		_ = provision.EventNotify(constants.StatusChefsoloFinished)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run OK.\n")))
 		return &args, err
 	},
@@ -224,10 +222,10 @@ var cloneBox = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box failed.\n%s\n", err.Error())))
 			return nil, err
 		}
-	//	mach.Status = constants.StatusCloned
-		_ = provision.EventNotify(constants.StatusCloned)
+		mach.Status = constants.StatusCloned
+
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box (%s) OK", args.box.GetFullName())))
-		return nil, nil
+		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 		//delete the repository directory
@@ -305,7 +303,7 @@ var setChefsoloStatus = action.Action{
 	Name: "set chefsolo state",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
-		mach.Status = constants.StatusChefsoloDownloaded
+		mach.Status = constants.StatusChefsoloStarting
 		return mach, nil
 	},
 }

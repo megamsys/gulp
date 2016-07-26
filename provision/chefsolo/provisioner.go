@@ -129,9 +129,11 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&createMachine,
 		&updateStatusInScylla,
 		&updateIpsInSyclla,
+		&updateStatusInScylla,
 		&appendAuthKeys,
 		&updateStatusInScylla,
 		&changeStateofMachine,
+		&updateStatusInScylla,
 	}
 
 	pipeline := action.NewPipeline(actions...)
@@ -183,7 +185,7 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	soloAction := make([]*action.Action, 0, 4)
 	soloAction = append(soloAction, &updateStatusInScylla, &generateSoloJson, &generateSoloConfig, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
 	if b.Level != provision.BoxNone {
-		soloAction = append(soloAction, &chefSoloRun, &updateStatusInScylla, &setChefsoloStatus, &updateStatusInScylla)
+		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
 	}
 	soloAction = append(soloAction, &setFinalState, &updateStatusInScylla)
 	actions := soloAction
