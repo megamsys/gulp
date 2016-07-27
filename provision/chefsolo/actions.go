@@ -164,7 +164,6 @@ var generateSoloJson = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo json for box failed.\n%s\n", err.Error())))
 			return err, nil
 		}
-		//	mach.Status = constants.StatusChefConfigSetupped
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo json for box (%s) OK\n", args.box.GetFullName())))
 		return mach, nil
 	},
