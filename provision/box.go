@@ -218,27 +218,6 @@ func (b *Box) GetFullName() string {
 
 func (b *Box) GetShortTosca() string {
 	a := strings.Split(b.Tosca, ".")
-	fmt.Println(a[0] == "bitnami")
-	if a[0] == "bitnami" {
-		return a[0]
-	} else {
-		return a[2]
-	}
-}
-
-func (b *Box) GetBitnamiUsername() string {
-	a := strings.Split(b.Tosca, ".")
-	fmt.Println(a[0] == "bitnami")
-	if a[0] == "bitnami" {
-		return a[0]
-	} else {
-		return a[2]
-	}
-}
-
-func (b *Box) GetBitnamiPassword() string {
-	a := strings.Split(b.Tosca, ".")
-	fmt.Println(a[0] == "bitnami")
 	if a[0] == "bitnami" {
 		return a[0]
 	} else {

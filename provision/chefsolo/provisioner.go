@@ -176,10 +176,10 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 		repo = b.Repo.Gitr()
 		src = b.Repo.RepoProvider()
 	}
-	a := b.GetShortTosca()
+
 	DefaultAttributes, _ := json.Marshal(&Attributes{
 		RunList:    []string{"recipe[" + p.Cookbook + "]"},
-		ToscaType:  a,
+		ToscaType:  b.GetShortTosca(),
 		RepoURL:    repo,
 		RepoSource: src,
 		Version:    b.ImageVersion,
@@ -200,17 +200,15 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 		repo = b.Repo.Gitr()
 		src = b.Repo.RepoProvider()
 	}
-	fmt.Println("*********Inputs *****",b.Inputs)
+
 	if len(b.Inputs) > 0  {
 		username = b.Inputs[provision.BITUSERNAME]
 		pswd = b.Inputs[provision.BITPASSWORD]
 	}
 
-	a := b.GetShortTosca()
-	fmt.Println("*********tosca type***bitnami***",a)
 	DefaultAttributes, _ := json.Marshal(&ReposBitnami{
 		RunList:    []string{"recipe[" + p.Cookbook + "]"},
-		ToscaType:  a,
+		ToscaType:  b.GetShortTosca(),
 		BitnamiURL:    repo,
 		BitnamiUserName: username,
 		BitnamiPassword: pswd,
