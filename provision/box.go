@@ -214,8 +214,9 @@ func (b *Box) GetFullName() string {
 
 func (b *Box) GetShortTosca() string {
 	a := strings.Split(b.Tosca, ".")
-	if a[1] == "bitnami" {
-		return a[1]
+	fmt.Println(a[0] == "bitnami")
+	if a[0] == "bitnami" {
+		return a[0]
 	} else {
 		return a[2]
 	}

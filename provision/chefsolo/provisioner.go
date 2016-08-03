@@ -160,10 +160,10 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 		repo = b.Repo.Gitr()
 		src = b.Repo.RepoProvider()
 	}
-
+  a := b.GetShortTosca()
 	DefaultAttributes, _ := json.Marshal(&Attributes{
 		RunList:    []string{"recipe[" + p.Cookbook + "]"},
-		ToscaType:  b.GetShortTosca(),
+		ToscaType:  a,
 		RepoURL:    repo,
 		RepoSource: src,
 		Version:    b.ImageVersion,
