@@ -125,6 +125,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Commit:     "",
 		Provider:   c.provider(),
 		PublicIp:   c.publicIp(),
+		Inputs: c.getInputsMap(),
 	}
 
 	if &c.Repo != nil {
@@ -230,6 +231,10 @@ func (c *Component) provider() string {
 	return c.Inputs.Match(provision.PROVIDER)
 }
 
+func (c *Component) getInputsMap() map[string]string {
+	return c.Inputs.ToMap()
+}
+
 func (c *Component) publicIp() string {
 	return c.Outputs.Match(PUBLICIPV4)
 }
@@ -237,6 +242,7 @@ func (c *Component) publicIp() string {
 func (c *Component) withOneClick() bool {
 	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
 }
+
 
 //all the variables in the inputs shall be treated as ENV.
 //we can use a filtered approach as well.

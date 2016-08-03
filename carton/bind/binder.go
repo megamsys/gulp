@@ -90,6 +90,14 @@ func (p *JsonPairs) ToString() []string {
 	return swap
 }
 
+func (p *JsonPairs) ToMap() map[string]string {
+	m := make(map[string]string, 0)
+	for _, v := range *p {
+    m[v.K] = v.V
+	}
+	return m
+}
+
 //Delete old keys and update them with the new values
 func (p *JsonPairs) NukeAndSet(m map[string][]string) {
 	swap := make(JsonPairs, 0)

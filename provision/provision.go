@@ -70,6 +70,10 @@ type Deployer interface {
 	Stateup(b *Box, w io.Writer) error
 }
 
+type BitnamiDeployer interface {
+	StateupBitnami(b *Box, w io.Writer) error
+}
+
 // Provisioner is the basic interface of this package.
 //
 // A Provisioner is responsible for managing the state of the machine.

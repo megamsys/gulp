@@ -62,6 +62,16 @@ type Attributes struct {
 	Version    string   `json:"version"`
 }
 
+// Repos for Bitnami
+type ReposBitnami struct {
+	RunList         []string `json:"run_list"`
+	ToscaType       string   `json:"tosca_type"`
+	BitnamiURL      string   `json:"bitnami_url"`
+	BitnamiUserName string   `json:"bitnami_username"`
+	BitnamiPassword string   `json:"bitnami_password"`
+	RepoSource      string   `json:"provider"`
+}
+
 // Provisioner is a provisioner based on Chef Solo.
 type chefsoloProvisioner struct {
 	RunList    []string
@@ -148,7 +158,13 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
-	p.Stateup(box, w)
+   switch box.GetShortTosca() {
+   case "vertice":
+   	 p.Stateup(box, w)
+	 case "bitnami":
+		 p.StateupBitnami(box,w)
+   }
+
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- bootstrap box (%s) OK\n", box.GetFullName())))
 	return nil
 }
@@ -160,13 +176,45 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 		repo = b.Repo.Gitr()
 		src = b.Repo.RepoProvider()
 	}
-  a := b.GetShortTosca()
+	a := b.GetShortTosca()
 	DefaultAttributes, _ := json.Marshal(&Attributes{
 		RunList:    []string{"recipe[" + p.Cookbook + "]"},
 		ToscaType:  a,
 		RepoURL:    repo,
 		RepoSource: src,
 		Version:    b.ImageVersion,
+	})
+
+	p.Attributes = string(DefaultAttributes)
+	p.Format = DefaultFormat
+	p.LogLevel = DefaultLogLevel
+	p.RootPath = meta.MC.Dir
+	p.Sudo = DefaultSudo
+	return p.kickOffSolo(b, w)
+}
+
+func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- stateup box (%s)\n", b.GetFullName())))
+	var repo, src, username,pswd string
+	if b.Repo != nil {
+		repo = b.Repo.Gitr()
+		src = b.Repo.RepoProvider()
+	}
+	fmt.Println("*********Inputs *****",b.Inputs)
+	if len(b.Inputs) > 0  {
+		username = b.Inputs[provision.BITUSERNAME]
+		pswd = b.Inputs[provision.BITPASSWORD]
+	}
+
+	a := b.GetShortTosca()
+	fmt.Println("*********tosca type***bitnami***",a)
+	DefaultAttributes, _ := json.Marshal(&ReposBitnami{
+		RunList:    []string{"recipe[" + p.Cookbook + "]"},
+		ToscaType:  a,
+		BitnamiURL:    repo,
+		BitnamiUserName: username,
+		BitnamiPassword: pswd,
+		RepoSource: src,
 	})
 
 	p.Attributes = string(DefaultAttributes)

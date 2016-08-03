@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"io"
 	"time"
-
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/cmd"
@@ -53,9 +53,19 @@ func Stateup(opts *StateOpts) error {
 }
 
 func deployToProvisioner(opts *StateOpts, writer io.Writer) error {
-	if deployer, ok := Provisioner.(provision.Deployer); ok {
-		return deployer.Stateup(opts.B, writer)
-	}
+ fmt.Println("_____________  deploy Provisioner  :",opts.B.GetShortTosca())
+
+   switch opts.B.GetShortTosca() {
+   case "vertice":
+   	if deployer, ok := Provisioner.(provision.Deployer); ok {
+   		deployer.Stateup(opts.B, writer)
+   	}
+   case "bitnami":
+   	if deployer, ok := Provisioner.(provision.BitnamiDeployer); ok {
+           deployer.StateupBitnami(opts.B, writer)
+     }
+   }
+
 	return nil
 }
 
