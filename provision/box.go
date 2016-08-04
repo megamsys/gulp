@@ -41,6 +41,9 @@ const (
 	RAM = "ram"
 	HDD = "hdd"
 
+	BITUSERNAME = "bitnami_name"
+
+	BITPASSWORD = "bitname_password"
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
 
@@ -170,6 +173,7 @@ type Box struct {
 	Name         string
 	Level        BoxLevel
 	DomainName   string
+	Inputs       map[string]string
 	Tosca        string
 	ImageVersion string
 	Compute      BoxCompute
@@ -214,8 +218,8 @@ func (b *Box) GetFullName() string {
 
 func (b *Box) GetShortTosca() string {
 	a := strings.Split(b.Tosca, ".")
-	if a[1] == "bitnami" {
-		return a[1]
+	if a[0] == "bitnami" {
+		return a[0]
 	} else {
 		return a[2]
 	}

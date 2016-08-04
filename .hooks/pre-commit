@@ -6,6 +6,12 @@ if [ $fmtcount -gt 0 ]; then
     exit 1
 fi
 
+fmtcount=`grep --exclude-dir={config,.git,bin,log,spec,tmp,.hooks,public,*.md} -rnw './' -e "fmt.Println" | wc -l`
+if [ $fmtcount -gt 0 ]; then
+  echo "Some files have fmt.Println, please run 'grep --exclude-dir={config,.hooks,log,bin,spec,tmp,public,.git} -rnw './' -e "puts"'"
+  exit 1
+fi
+
 # Due to the way composites work, vet will fail for some of our tests so we ignore it
 vetcount=`go  vet ./... 2>&1  | wc -l`
 if [ $vetcount -gt 0 ]; then
