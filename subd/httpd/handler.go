@@ -17,15 +17,12 @@
 package httpd
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
 	"strings"
-   
+
 	"github.com/bmizerany/pat"
 	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/provision/docker"
 )
 
 type route struct {
@@ -91,13 +88,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			pprof.Index(w, r)
 		}
 	} else {
-		switch r.URL.Path {
-		case "/docker/logs":
-			h.logs(w, r)
-		case "/docker/networks":
-			h.networks(w, r)
-		}
+		
 	}
+
 	return
 }
 
@@ -116,21 +109,4 @@ func versionHeader(inner http.Handler, h *Handler) http.Handler {
 		w.Header().Add("X-GULP-Version", h.Version)
 		inner.ServeHTTP(w, r)
 	})
-}
-
-func (h *Handler) logs(w http.ResponseWriter, r *http.Request) {
-	body, _ := ioutil.ReadAll(r.Body)
-	dockr := &docker.DockerProvisioner{}
-	json.Unmarshal(body, dockr)
-	dockr.HomeDir = h.config.Dir
-	dockr.Tosca_type = "docker"
-	dockr.LogExec()
-}
-
-func (h *Handler) networks(w http.ResponseWriter, r *http.Request) {
-	body, _ := ioutil.ReadAll(r.Body)
-	dockr := &docker.DockerProvisioner{}
-	json.Unmarshal(body, dockr)
-	dockr.HomeDir = h.config.Dir
-	dockr.NetworkExec()
 }
