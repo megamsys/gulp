@@ -159,10 +159,10 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		return err
 	}
    switch box.GetShortTosca() {
-   case "vertice":
-   	 p.Stateup(box, w)
 	 case "bitnami":
 		 p.StateupBitnami(box,w)
+	 default:
+		 p.Stateup(box, w)
    }
 
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- bootstrap box (%s) OK\n", box.GetFullName())))
