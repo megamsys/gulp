@@ -17,8 +17,8 @@
 		},
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.10.0-28-ga283a10",
-			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
+			"Comment": "v0.10.0-36-g08a8a7c",
+			"Rev": "08a8a7c27e3d058a8989316a850daad1c10bf4ab"
 		},
 		{
 			"ImportPath": "github.com/bmizerany/pat",
@@ -41,11 +41,12 @@
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
-			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+			"Comment": "v1.0.0",
+			"Rev": "6cf5744a041a0022271cefed95ba843f6d87fd51"
 		},
 		{
 			"ImportPath": "github.com/golang/groupcache/lru",
-			"Rev": "02826c3e79038b59d737d3b1c0a1d937f71a4433"
+			"Rev": "a6b377e3400b08991b80d6805d627f347f983866"
 		},
 		{
 			"ImportPath": "github.com/golang/snappy",
@@ -60,33 +61,9 @@
 			"Rev": "e80d13ce29ede4452c43dea11e79b9bc8a15b478"
 		},
 		{
-			"ImportPath": "github.com/hpcloud/tail",
-			"Comment": "v1.0.0",
-			"Rev": "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/ratelimiter",
-			"Comment": "v1.0.0",
-			"Rev": "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/util",
-			"Comment": "v1.0.0",
-			"Rev": "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/watch",
-			"Comment": "v1.0.0",
-			"Rev": "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
-		},
-		{
-			"ImportPath": "github.com/hpcloud/tail/winfile",
-			"Comment": "v1.0.0",
-			"Rev": "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
-		},
-		{
 			"ImportPath": "github.com/mailgun/mailgun-go",
-			"Rev": "67a92e0e64b5c12e83c03555fc8f5762f2aaa0c6"
+			"Comment": "v1.0.2",
+			"Rev": "369a1fa57ce6fb314e627087b9fff0db5c266c0f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/gocassa",
@@ -120,51 +97,51 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/addons",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/alerts",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/bills",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/os",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/pairs",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/utils",
-			"Rev": "d8c48d2cb3ff3df5ee0e7573f32453ac2156fe9a"
+			"Rev": "a939117a354aee1753b14ea90e652fc8234af5d2"
 		},
 		{
 			"ImportPath": "github.com/megamsys/whmcs_go/whmcs",
@@ -176,7 +153,7 @@
 		},
 		{
 			"ImportPath": "github.com/mitchellh/mapstructure",
-			"Rev": "21a35fb16463dfb7c8eee579c65d995d95e64d1e"
+			"Rev": "ca63d7c062ee3c9f34db231e352b60012b4fd0c1"
 		},
 		{
 			"ImportPath": "github.com/mreiferson/go-snappystream",
@@ -195,6 +172,7 @@
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Comment": "v1.0.0",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
@@ -221,31 +199,31 @@
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/exec",
-			"Rev": "de59ef306c38c8ffce05c44ef81171d02d6d72aa"
+			"Rev": "dc254e508a3b9aaaaca65d7b2dceb0aa4129f79d"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/gitinfo",
-			"Rev": "de59ef306c38c8ffce05c44ef81171d02d6d72aa"
+			"Rev": "dc254e508a3b9aaaaca65d7b2dceb0aa4129f79d"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/tiling",
-			"Rev": "de59ef306c38c8ffce05c44ef81171d02d6d72aa"
+			"Rev": "dc254e508a3b9aaaaca65d7b2dceb0aa4129f79d"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/util",
-			"Rev": "de59ef306c38c8ffce05c44ef81171d02d6d72aa"
+			"Rev": "dc254e508a3b9aaaaca65d7b2dceb0aa4129f79d"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/vcsinfo",
-			"Rev": "de59ef306c38c8ffce05c44ef81171d02d6d72aa"
+			"Rev": "dc254e508a3b9aaaaca65d7b2dceb0aa4129f79d"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
-			"Rev": "bc89c496413265e715159bdc8478ee9a92fdc265"
+			"Rev": "351dc6a5bf92a5f2ae22fadeee08eb6a45aa2d93"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "6a513affb38dc9788b449d59ffed099b8de18fa0"
+			"Rev": "6250b412798208e6c90b03b7c4f226de5aa299e2"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
@@ -256,18 +234,9 @@
 			"Rev": "4f90aeace3a26ad7021961c297b22c42160c7b25"
 		},
 		{
-			"ImportPath": "gopkg.in/fsnotify.v1",
-			"Comment": "v1.3.1",
-			"Rev": "a8a77c9133d2d6fd8334f3260d06f60e8d80a5fb"
-		},
-		{
 			"ImportPath": "gopkg.in/inf.v0",
 			"Comment": "v0.9.0",
 			"Rev": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
-		},
-		{
-			"ImportPath": "gopkg.in/tomb.v1",
-			"Rev": "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
