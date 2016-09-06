@@ -97,51 +97,51 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/addons",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/alerts",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/bills",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/os",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/pairs",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/utils",
-			"Rev": "ebf6ef13a8d8e73062bc0074d64d23dbe153de0a"
+			"Rev": "e0d3e42e4f444549688b39e6806b32433654a80f"
 		},
 		{
 			"ImportPath": "github.com/megamsys/whmcs_go/whmcs",
@@ -169,6 +169,11 @@
 			"ImportPath": "github.com/nsqio/go-nsq",
 			"Comment": "v1.0.6",
 			"Rev": "d71fb89c9e0263aaed89645b0b168e11ccf597b1"
+		},
+		{
+			"ImportPath": "github.com/pborman/uuid",
+			"Comment": "v1.0-15-gb984ec7",
+			"Rev": "b984ec7fa9ff9e428bd0cf0abf429384dfbe3e37"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
@@ -199,23 +204,23 @@
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/exec",
-			"Rev": "bec6d7f1a08f7f7659fc3fe90ed4374766a4d1ca"
+			"Rev": "60258589ef2fc08790a6533a3d60f427c6a61dc5"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/gitinfo",
-			"Rev": "bec6d7f1a08f7f7659fc3fe90ed4374766a4d1ca"
+			"Rev": "60258589ef2fc08790a6533a3d60f427c6a61dc5"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/tiling",
-			"Rev": "bec6d7f1a08f7f7659fc3fe90ed4374766a4d1ca"
+			"Rev": "60258589ef2fc08790a6533a3d60f427c6a61dc5"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/util",
-			"Rev": "bec6d7f1a08f7f7659fc3fe90ed4374766a4d1ca"
+			"Rev": "60258589ef2fc08790a6533a3d60f427c6a61dc5"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/vcsinfo",
-			"Rev": "bec6d7f1a08f7f7659fc3fe90ed4374766a4d1ca"
+			"Rev": "60258589ef2fc08790a6533a3d60f427c6a61dc5"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
