@@ -41,9 +41,8 @@ const (
 	RAM = "ram"
 	HDD = "hdd"
 
-	BITUSERNAME = "bitnami_name"
-
-	BITPASSWORD = "bitname_password"
+	BITUSERNAME = "bitnami_username"
+	BITPASSWORD = "bitnami_password"
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
 
