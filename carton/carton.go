@@ -20,6 +20,7 @@ type Carton struct {
 	PublicIp     string
 	Boxes        *[]provision.Box
 	Status       utils.Status
+	State        utils.State
 }
 
 func (a *Carton) String() string {
@@ -58,6 +59,7 @@ func (c *Carton) toBox() error { //assemblies id.
 			PublicIp:     c.PublicIp,
 			Tosca:        c.Tosca,
 			Status:       c.Status,
+			State:        c.State,
 		},
 		}
 	}

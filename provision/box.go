@@ -180,6 +180,7 @@ type Box struct {
 	PublicIp     string
 	Repo         *repository.Repo
 	Status       utils.Status
+	State        utils.State
 	Provider     string
 	Commit       string
 	Envs         bind.EnvVars

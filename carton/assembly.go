@@ -48,6 +48,7 @@ type Ambly struct {
 	Outputs    []string `json:"outputs" cql:"outputs"`
 	Policies   []string `json:"policies" cql:"policies"`
 	Status     string   `json:"status" cql:"status"`
+	State      string   `json:"state" cql:"state"`
 	CreatedAt  string   `json:"created_at" cql:"created_at"`
 	Components []string `json:"components" cql:"components"`
 }
@@ -63,6 +64,7 @@ type Assembly struct {
 	Outputs    pairs.JsonPairs `json:"outputs" cql:"outputs"`
 	Policies   []*Policy       `json:"policies" cql:"policies"`
 	Status     string          `json:"status" cql:"status"`
+	State      string          `json:"state" cql:"state"`
 	CreatedAt  string          `json:"created_at" cql:"created_at"`
 	Components map[string]*Component
 }
@@ -88,7 +90,6 @@ func mkCarton(aies string, ay string) (*Carton, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	b, err := a.mkBoxes(aies)
 	if err != nil {
 		return nil, err
@@ -107,6 +108,7 @@ func mkCarton(aies string, ay string) (*Carton, error) {
 		PublicIp:     a.publicIp(),
 		Boxes:        &b,
 		Status:       utils.Status(a.Status),
+		State:        utils.State(a.State),
 	}
 	log.Debugf("Carton %v", c)
 	return c, nil
@@ -140,10 +142,12 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 				b.Compute = a.newCompute()
 				b.SSH = a.newSSH()
 				b.Status = utils.Status(a.Status)
+				b.State = utils.State(a.State)
 				newBoxs = append(newBoxs, b)
 			}
 		}
 	}
+
 	return newBoxs, nil
 }
 
@@ -206,6 +210,25 @@ func (a *Ambly) SetStatus(status utils.Status) error {
 	_ = eventNotify(status)
 	return nil
 }
+
+func (a *Ambly) SetState(state utils.State) error {
+	update_fields := make(map[string]interface{})
+	update_fields["State"] = state.String()
+	ops := ldb.Options{
+		TableName:   ASSEMBLYBUCKET,
+		Pks:         []string{"id"},
+		Ccms:        []string{"org_id"},
+		Hosts:       meta.MC.Scylla,
+		Keyspace:    meta.MC.ScyllaKeyspace,
+		PksClauses:  map[string]interface{}{"id": a.Id},
+		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
+	}
+	if err := ldb.Updatedb(ops, update_fields); err != nil {
+		return err
+	}
+	return nil
+}
+
 
 func eventNotify(status utils.Status) error {
 	mi := make(map[string]string)
@@ -290,6 +313,7 @@ func (a *Ambly) dig() (Assembly, error) {
 	asm.Outputs = a.getOutputs()
 	asm.Policies = a.getPolicies()
 	asm.Status = a.Status
+	asm.State = a.State
 	asm.CreatedAt = a.CreatedAt
 	asm.Components = make(map[string]*Component)
 	for _, cid := range a.Components {

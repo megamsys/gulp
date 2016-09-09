@@ -143,6 +143,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&appendAuthKeys,
 		&updateStatusInScylla,
 		&changeStateofMachine,
+		&MileStoneUpdate,
 		&updateStatusInScylla,
 	}
 
@@ -152,6 +153,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		box:           box,
 		writer:        w,
 		machineStatus: constants.StatusBootstrapping,
+		machineState: constants.StateBootstrapped,
 		provisioner:   p,
 	}
 
@@ -233,13 +235,14 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	if b.Level != provision.BoxNone {
 		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
 	}
-	soloAction = append(soloAction, &setFinalState, &updateStatusInScylla)
+	soloAction = append(soloAction, &setFinalState, &MileStoneUpdate, &updateStatusInScylla)
 	actions := soloAction
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
 		box:           b,
 		writer:        w,
 		machineStatus: constants.StatusChefConfigSetupping,
+		machineState:  constants.StateRunning,
 		provisioner:   p,
 	}
 
@@ -256,6 +259,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&startBox,
+		&MileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -263,6 +267,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 		box:           b,
 		writer:        w,
 		machineStatus: constants.StatusStarting,
+		machineState:  constants.StateRunning,
 		provisioner:   p,
 	}
 
@@ -302,7 +307,9 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&stopBox,
+		&MileStoneUpdate,
 		&startBox,
+		&MileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -310,6 +317,7 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 		box:           b,
 		writer:        w,
 		machineStatus: constants.StatusRestarting,
+		machineState:  constants.StateStopped,
 		provisioner:   p,
 	}
 
