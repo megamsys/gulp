@@ -20,6 +20,7 @@ type Carton struct {
 	PublicIp     string
 	Boxes        *[]provision.Box
 	Status       utils.Status
+	State        utils.State
 }
 
 func (a *Carton) String() string {

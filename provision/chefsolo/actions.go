@@ -35,6 +35,7 @@ type runMachineActionsArgs struct {
 	box           *provision.Box
 	writer        io.Writer
 	machineStatus utils.Status
+	machineState  utils.State
 	provisioner   *chefsoloProvisioner
 }
 
@@ -54,6 +55,7 @@ var updateStatusInScylla = action.Action{
 				Name:     args.box.GetFullName(),
 				SSH:      args.box.SSH,
 				Status:   args.machineStatus,
+				State:    args.machineState,
 			}
 		}
 		if err := mach.SetStatus(mach.Status); err != nil {
@@ -106,6 +108,7 @@ var updateIpsInSyclla = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.Status = constants.StatusError
+    c.State = constants.StatePreError
 		_ = provision.EventNotify(constants.StatusIpsFailure)
 	},
 }
@@ -129,6 +132,7 @@ var appendAuthKeys = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.Status = constants.StatusError
+		c.State = constants.StatePreError
 		_ = provision.EventNotify(constants.StatusAuthkeysFailure)
 	},
 }
@@ -140,6 +144,7 @@ var changeStateofMachine = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
 		mach.Status = constants.StatusBootstrapped
+		mach.State  = constants.StateBootstrapped
 		mach.ChangeState(mach.Status)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
 		return mach, nil
@@ -147,6 +152,7 @@ var changeStateofMachine = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.SetStatus(constants.StatusError)
+		c.SetState(constants.StatePreError)
 	},
 }
 
@@ -290,6 +296,24 @@ var stopBox = action.Action{
 		//this is tricky..
 	},
 }
+
+var MileStoneUpdate = action.Action{
+	Name: "set-final-state",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		args := ctx.Params[0].(runMachineActionsArgs)
+		writer := args.writer
+		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(),constants.LAUNCHED )))
+		if err := mach.SetMileStone(mach.State); err != nil {
+			return err, nil
+		}
+		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)OK", args.box.GetFullName(), constants.LAUNCHED)))
+
+		return mach, nil
+	},
+}
+
+
 var setFinalState = action.Action{
 	Name: "set-final-state",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
