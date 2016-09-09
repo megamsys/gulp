@@ -258,6 +258,7 @@ var startBox = action.Action{
 			Name:     args.box.GetFullName(),
 			SSH:      args.box.SSH,
 			Status:   constants.StatusStarted,
+			State:    constants.StateRunning,
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_STARTING, lb.INFO, fmt.Sprintf("  %s for box (%s) OK", carton.START, args.box.GetFullName())))
 		return mach, nil

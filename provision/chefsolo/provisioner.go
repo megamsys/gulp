@@ -259,6 +259,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&startBox,
+		&MileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -266,6 +267,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 		box:           b,
 		writer:        w,
 		machineStatus: constants.StatusStarting,
+		machineState:  constants.StateRunning,
 		provisioner:   p,
 	}
 
@@ -305,7 +307,9 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&stopBox,
+		&MileStoneUpdate,
 		&startBox,
+		&MileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -313,6 +317,7 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 		box:           b,
 		writer:        w,
 		machineStatus: constants.StatusRestarting,
+		machineState:  constants.StateStopped,
 		provisioner:   p,
 	}
 

@@ -21,7 +21,6 @@ type Upgradeable struct {
 }
 
 func NewUpgradeable(box *provision.Box) *Upgradeable {
-	fmt.Println(box)
 	u := &Upgradeable{
 		B:             box,
 		ShouldRestart: true,

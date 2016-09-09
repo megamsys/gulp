@@ -128,6 +128,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Provider:   c.provider(),
 		PublicIp:   c.publicIp(),
 		Inputs:     c.getInputsMap(),
+		State:    utils.State(c.State),
 	}
 
 	if &c.Repo != nil {

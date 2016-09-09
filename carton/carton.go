@@ -59,6 +59,7 @@ func (c *Carton) toBox() error { //assemblies id.
 			PublicIp:     c.PublicIp,
 			Tosca:        c.Tosca,
 			Status:       c.Status,
+			State:        c.State,
 		},
 		}
 	}
