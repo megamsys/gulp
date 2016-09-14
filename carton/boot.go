@@ -32,7 +32,7 @@ type BootOpts struct {
 }
 
 func (opts *BootOpts) OK() bool {
-	return opts.B.State == constants.StateLaunched
+	return opts.B.State == constants.StateInitialized
 }
 
 // Boot runs the boot of the vm.
