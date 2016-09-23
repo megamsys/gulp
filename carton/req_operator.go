@@ -21,8 +21,8 @@ import (
 )
 
 type ReqOperator struct {
-	Id        string
-	CartonsId string
+	Id        string   // assembly id
+	CartonsId string  // assemblies id
 }
 
 // NewReqOperator returns a new instance of ReqOperator
@@ -31,7 +31,7 @@ func NewReqOperator(id string) *ReqOperator {
 }
 
 func (p *ReqOperator) Accept(r *MegdProcessor) error {
-	c, err := p.Get(p.Id)
+	c, err := p.Get()
 
 	if err != nil {
 		return err
@@ -42,9 +42,8 @@ func (p *ReqOperator) Accept(r *MegdProcessor) error {
 	return md.Process(c)
 }
 
-func (p *ReqOperator) Get(carton_id string) (*Carton, error) {
-	ca, err := NewCarton(p.CartonsId, carton_id)
-
+func (p *ReqOperator) Get() (*Carton, error) {
+	ca, err := NewCarton(p.CartonsId, p.Id)
 	if err != nil {
 		return nil, err
 	} else {
