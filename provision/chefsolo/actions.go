@@ -174,6 +174,8 @@ var generateSoloJson = action.Action{
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.SetState(constants.StatePostError)
 	},
 }
 
@@ -208,12 +210,14 @@ var chefSoloRun = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
 			return nil, err
 		}
-		_ = provision.EventNotify(constants.StatusChefsoloFinished)
+		_ = provision.EventNotify(constants.StatusAppDeployed)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run OK.\n")))
 		return &args, err
 	},
 
 	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.SetState(constants.StatePostError)
 	},
 }
 
@@ -312,6 +316,9 @@ var MileStoneUpdate = action.Action{
 
 		return mach, nil
 	},
+	Backward: func(ctx action.BWContext) {
+		//this is tricky..
+	},
 }
 
 
@@ -327,7 +334,7 @@ var setChefsoloStatus = action.Action{
 	Name: "set chefsolo state",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
-		mach.Status = constants.StatusChefsoloStarting
+		mach.Status = constants.StatusAppDeploying
 		return mach, nil
 	},
 }
