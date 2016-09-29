@@ -22,6 +22,7 @@ const (
 	TOPIC         = "vms"
 	SSHKEYSBUCKET = "sshkeys"
 	cmd           = `#!/bin/sh
+id -u %s &>/dev/null || useradd %s
 /usr/bin/passwd %s <<EOF
 %s
 %s
@@ -175,7 +176,7 @@ func (m *Machine) AppendAuthKeys() error {
 			return err
 		}
 	} else {
-		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User, m.SSH.Password, m.SSH.Password))
+		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User,m.SSH.User,m.SSH.User, m.SSH.Password, m.SSH.Password))
 		err := ioutil.WriteFile("dat1", d1, 0755)
 		_, err = exec.Command("./dat1").Output()
 		if err != nil {
