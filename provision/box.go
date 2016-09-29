@@ -67,6 +67,7 @@ type Boxlog struct {
 type BoxSSH struct {
 	User   string
 	Prefix string
+	Password string 
 }
 
 func (bs *BoxSSH) Pub() string {

@@ -34,6 +34,8 @@ import (
 const (
 	ASSEMBLYBUCKET = "assembly"
 	SSHKEY         = "sshkey"
+	PASSWORD       = "linux_password"
+	USERNAME       = "linux_user"
 )
 
 //An assembly comprises of various components.
@@ -333,6 +335,14 @@ func (a *Assembly) sshkey() string {
 	return a.Inputs.Match(SSHKEY)
 }
 
+func (a *Assembly) password() string {
+	return a.Inputs.Match(PASSWORD)
+}
+
+func (a *Assembly) user() string {
+	return a.Inputs.Match(USERNAME)
+}
+
 func (a *Assembly) domain() string {
 	return a.Inputs.Match(DOMAIN)
 }
@@ -359,10 +369,16 @@ func (a *Assembly) newCompute() provision.BoxCompute {
 }
 
 func (a *Assembly) newSSH() provision.BoxSSH {
+   user := a.user()
+	
+	 if strings.TrimSpace(user) == "" {
+		 user = meta.MC.User
+	 }
 
-	return provision.BoxSSH{
-		User:   meta.MC.User,
+	return provision.BoxSSH {
+		User: user,
 		Prefix: a.sshkey(),
+		Password: a.password(),
 	}
 
 }
