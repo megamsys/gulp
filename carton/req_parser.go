@@ -130,7 +130,7 @@ func (e *ParseError) Error() string {
 }
 
 type Requests struct {
-	Id        string `json:"id"`
+	Id        string `json:"id"`       //assembly id
 	CatId     string `json:"cat_id"`   // assemblies_id
 	Action    string `json:"action"`   // start, stop ...
 	Category  string `json:"category"` // state, control, policy

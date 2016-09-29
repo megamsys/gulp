@@ -153,7 +153,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		box:           box,
 		writer:        w,
 		machineStatus: constants.StatusBootstrapping,
-		machineState: constants.StateBootstrapped,
+		machineState:  constants.StateBootstrapped,
 		provisioner:   p,
 	}
 

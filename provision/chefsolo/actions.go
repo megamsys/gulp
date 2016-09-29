@@ -174,6 +174,8 @@ var generateSoloJson = action.Action{
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.SetState(constants.StatePostError)
 	},
 }
 
@@ -214,6 +216,8 @@ var chefSoloRun = action.Action{
 	},
 
 	Backward: func(ctx action.BWContext) {
+		c := ctx.FWResult.(machine.Machine)
+		c.SetState(constants.StatePostError)
 	},
 }
 
@@ -312,6 +316,9 @@ var MileStoneUpdate = action.Action{
 		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)OK", args.box.GetFullName(), constants.LAUNCHED)))
 
 		return mach, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		//this is tricky..
 	},
 }
 
