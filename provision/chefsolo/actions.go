@@ -208,7 +208,7 @@ var chefSoloRun = action.Action{
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
 			return nil, err
 		}
-		_ = provision.EventNotify(constants.StatusChefsoloFinished)
+		_ = provision.EventNotify(constants.StatusAppDeployed)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run OK.\n")))
 		return &args, err
 	},
@@ -289,6 +289,7 @@ var stopBox = action.Action{
 			Name:     args.box.GetFullName(),
 			SSH:      args.box.SSH,
 			Status:   constants.StatusStopped,
+			State:    constants.StateStopped,
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_STOPPING, lb.INFO, fmt.Sprintf("  %s for box (%s) OK", carton.STOP, args.box.GetFullName())))
 		return mach, nil
@@ -327,7 +328,7 @@ var setChefsoloStatus = action.Action{
 	Name: "set chefsolo state",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
-		mach.Status = constants.StatusChefsoloStarting
+		mach.Status = constants.StatusAppDeploying
 		return mach, nil
 	},
 }
