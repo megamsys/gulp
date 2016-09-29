@@ -27,6 +27,7 @@ var (
 	STATE   = "state"
 	BOOT    = "boot"
 	STATEUP = "stateup"
+	DONE    = "done"
 
 	//the control actions available are.
 	CONTROL = "control"
