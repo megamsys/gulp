@@ -85,27 +85,6 @@ func (m *Machine) SetState(state utils.State) error {
 	return nil
 }
 
-func (m *Machine) SetMileStone(state utils.State) error {
-	log.Debugf("  set state[%s] of machine (%s, %s)", m.Id, m.Name, state.String())
-
-	if asm, err := carton.NewAmbly(m.CartonId); err != nil {
-		return err
-	} else if err = asm.SetState(state); err != nil {
-		return err
-	}
-
-	if m.Level == provision.BoxSome {
-		log.Debugf("  set state[%s] of machine (%s, %s)", m.Id, m.Name, state.String())
-
-		if comp, err := carton.NewComponent(m.Id); err != nil {
-			return err
-		} else if err = comp.SetState(state); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 
 // FindAndSetIps returns the non loopback local IP4 (can be public or private)
 // we also have to add it in for ipv6
@@ -188,7 +167,7 @@ func (m *Machine) AppendAuthKeys() error {
 	return nil
 }
 
-func (m *Machine) ChangeState(status utils.Status) error {
+func (m *Machine) ChangeState(status utils.Status,state string) error {
 	log.Debugf("  change state of machine (%s, %s)", m.Name, status.String())
 
 	pons := nsqp.New()
@@ -200,7 +179,7 @@ func (m *Machine) ChangeState(status utils.Status) error {
 		carton.Requests{
 			CatId:     m.CartonsId,
 			Action:    status.String(),
-			Category:  carton.STATE,
+			Category:  state,
 			CreatedAt: time.Now().Local().Format(time.RFC822),
 		})
 

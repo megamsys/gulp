@@ -143,7 +143,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&appendAuthKeys,
 		&updateStatusInScylla,
 		&changeStateofMachine,
-		&MileStoneUpdate,
+		&mileStoneUpdate,
 		&updateStatusInScylla,
 	}
 
@@ -155,6 +155,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		machineStatus: constants.StatusBootstrapping,
 		machineState:  constants.StateBootstrapped,
 		provisioner:   p,
+		state:         carton.STATE,
 	}
 
 	if err := pipeline.Execute(args); err != nil {
@@ -235,7 +236,7 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	if b.Level != provision.BoxNone {
 		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
 	}
-	soloAction = append(soloAction, &setFinalState, &MileStoneUpdate, &updateStatusInScylla)
+	soloAction = append(soloAction, &setFinalState, &changeStateofMachine, &mileStoneUpdate, &updateStatusInScylla)
 	actions := soloAction
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
@@ -244,6 +245,7 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 		machineStatus: constants.StatusChefConfigSetupping,
 		machineState:  constants.StateRunning,
 		provisioner:   p,
+		state:         carton.DONE,
 	}
 
 	if err := pipeline.Execute(args); err != nil {
@@ -259,7 +261,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&startBox,
-		&MileStoneUpdate,
+		&mileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -307,9 +309,9 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&stopBox,
-		&MileStoneUpdate,
+		&mileStoneUpdate,
 		&startBox,
-		&MileStoneUpdate,
+		&mileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
