@@ -2,6 +2,7 @@ package machine
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	nsqp "github.com/crackcomm/nsqueue/producer"
 	"github.com/megamsys/gulp/carton"
@@ -9,14 +10,24 @@ import (
 	"github.com/megamsys/gulp/provision"
 	ldb "github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/utils"
+	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
+	"strings"
 	"time"
 )
 
 const (
 	TOPIC         = "vms"
 	SSHKEYSBUCKET = "sshkeys"
+	cmd           = `#!/bin/sh
+id -u %s &>/dev/null || useradd %s
+/usr/bin/passwd %s <<EOF
+%s
+%s
+EOF
+`
 )
 
 type SshKeys struct {
@@ -85,7 +96,6 @@ func (m *Machine) SetState(state utils.State) error {
 	return nil
 }
 
-
 // FindAndSetIps returns the non loopback local IP4 (can be public or private)
 // we also have to add it in for ipv6
 func (m *Machine) FindAndSetIps() error {
@@ -136,40 +146,53 @@ func (m *Machine) findIps() map[string][]string {
 
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
-	asm, err := carton.NewAmbly(m.CartonId)
-	if err != nil {
-		return err
-	}
-	c := &SshKeys{}
-	ops := ldb.Options{
-		TableName:   SSHKEYSBUCKET,
-		Pks:         []string{"Name"},
-		Ccms:        []string{"Org_id"},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
-		CcmsClauses: map[string]interface{}{"Org_id": asm.OrgId},
-	}
-	if err = ldb.Fetchdb(ops, c); err != nil {
-		return err
+	if strings.TrimSpace(m.SSH.Password) == "" || strings.TrimSpace(m.SSH.User) == "" {
+		asm, err := carton.NewAmbly(m.CartonId)
+		if err != nil {
+			return err
+		}
+		c := &SshKeys{}
+		ops := ldb.Options{
+			TableName:   SSHKEYSBUCKET,
+			Pks:         []string{"Name"},
+			Ccms:        []string{"Org_id"},
+			Hosts:       meta.MC.Scylla,
+			Keyspace:    meta.MC.ScyllaKeyspace,
+			Username:    meta.MC.ScyllaUsername,
+			Keyspace:    meta.MC.ScyllaKeyspace,
+			PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
+			CcmsClauses: map[string]interface{}{"Org_id": asm.OrgId},
+		}
+		if err = ldb.Fetchdb(ops, c); err != nil {
+			return err
+		}
+		f, err := os.OpenFile(m.SSH.AuthKeysFile(), os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+
+		if _, err = f.WriteString(c.Publickey); err != nil {
+			return err
+		}
+	} else {
+		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User,m.SSH.User,m.SSH.User, m.SSH.Password, m.SSH.Password))
+		err := ioutil.WriteFile("dat1", d1, 0755)
+		_, err = exec.Command("./dat1").Output()
+		if err != nil {
+			return err
+		}
+		err = os.Remove("./dat1")
+		if err != nil {
+			return err
+		}
 	}
 
-	f, err := os.OpenFile(m.SSH.AuthKeysFile(), os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	if _, err = f.WriteString(c.Publickey); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (m *Machine) ChangeState(status utils.Status,state string) error {
+func (m *Machine) ChangeState(status utils.Status, state string) error {
 	log.Debugf("  change state of machine (%s, %s)", m.Name, status.String())
 
 	pons := nsqp.New()

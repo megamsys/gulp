@@ -41,6 +41,8 @@ const (
 	DefaultScyllaUsername = "vertadmin"
 	DefaultScyllaPassword = "vertadmin"
 
+  DefaultUser = "root"
+
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -114,6 +116,7 @@ func NewConfig() *Config {
 	return &Config{
 		Home:           homeDir,
 		Dir:            defaultDir,
+		User:           DefaultUser,
 		Riak:           []string{DefaultRiak},
 		NSQd:           []string{DefaultNSQd},
 		Scylla:         []string{DefaultScylla},
