@@ -38,6 +38,9 @@ const (
 	// DefaultScyllaKeyspace is the default Scyllakeyspace if one is not provided.
 	DefaultScyllaKeyspace = "vertice"
 
+	DefaultScyllaUsername = "vertadmin"
+	DefaultScyllaPassword = "vertadmin"
+
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -59,6 +62,8 @@ type Config struct {
 	NSQd           []string `toml:"nsqd"`
 	Scylla         []string `toml:"scylla"`
 	ScyllaKeyspace string   `toml:"scylla_keyspace"`
+	ScyllaUsername string   `toml:"scylla_username"`
+	ScyllaPassword string   `toml:"scylla_password"`
 	DockerPath     string   `toml:"docker_path"`
 	Name           string   `toml:"name"`
 	CartonId       string   `toml:"assembly_id"`
@@ -76,9 +81,11 @@ func (c Config) String() string {
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
 	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
-	b.Write([]byte("NSQd      " + "\t" + strings.Join(c.NSQd, ",") + "\n"))
+	b.Write([]byte("NSQd" + "\t" + strings.Join(c.NSQd, ",") + "\n"))
 	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
 	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
+	b.Write([]byte("ScyllaUsername" + "\t" + c.ScyllaUsername + "\n"))
+	b.Write([]byte("ScyllaPassword" + "\t" + c.ScyllaPassword + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
 	b.Write([]byte("AccountId" + "\t" + c.AccountId + "\n"))
@@ -111,6 +118,8 @@ func NewConfig() *Config {
 		NSQd:           []string{DefaultNSQd},
 		Scylla:         []string{DefaultScylla},
 		ScyllaKeyspace: DefaultScyllaKeyspace,
+		ScyllaUsername: DefaultScyllaUsername,
+		ScyllaPassword: DefaultScyllaPassword,
 		DockerPath:     DefaultDockerPath,
 		Name:           "",
 		AccountId:      "",
@@ -124,6 +133,8 @@ func (c *Config) ToMap() map[string]string {
 	mp["dir"] = c.Dir
 	mp["scylla_host"] = strings.Join(c.Scylla, ",")
 	mp["scylla_keyspace"] = c.ScyllaKeyspace
+	mp["scylla_username"] = c.ScyllaUsername
+	mp["scylla_password"] = c.ScyllaPassword
 	return mp
 }
 

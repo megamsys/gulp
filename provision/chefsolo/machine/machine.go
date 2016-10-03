@@ -147,6 +147,8 @@ func (m *Machine) AppendAuthKeys() error {
 		Ccms:        []string{"Org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
+		Username:    meta.MC.ScyllaUsername,
+		Password:    meta.MC.ScyllaPassword,
 		PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
 		CcmsClauses: map[string]interface{}{"Org_id": asm.OrgId},
 	}

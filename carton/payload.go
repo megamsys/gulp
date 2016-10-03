@@ -81,6 +81,8 @@ func (p *Payload) Convert() (*Requests, error) {
 			Ccms:        []string{},
 			Hosts:       meta.MC.Scylla,
 			Keyspace:    meta.MC.ScyllaKeyspace,
+			Username:    meta.MC.ScyllaUsername,
+			Password:    meta.MC.ScyllaPassword,
 			PksClauses:  map[string]interface{}{"Id": p.Id},
 			CcmsClauses: make(map[string]interface{}),
 		}
