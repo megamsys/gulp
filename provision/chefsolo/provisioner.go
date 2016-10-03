@@ -230,7 +230,6 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..
 func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
-	fmt.Println("\n --- Your app is being deploying --- \n")
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff chefsolo box (%s)\n", b.GetFullName())))
 	soloAction := make([]*action.Action, 0, 4)
 	soloAction = append(soloAction, &updateStatusInScylla, &generateSoloJson, &generateSoloConfig, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
@@ -254,7 +253,6 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 		return err
 	}
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- kickofff chefsolo box (%s) OK\n", b.GetFullName())))
-	fmt.Println(" \n --- Your app is successfully deployed --- \n ")
 	return nil
 }
 
