@@ -294,6 +294,7 @@ var stopBox = action.Action{
 			Name:     args.box.GetFullName(),
 			SSH:      args.box.SSH,
 			Status:   constants.StatusStopped,
+			State:    constants.StateStopped,
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_STOPPING, lb.INFO, fmt.Sprintf("  %s for box (%s) OK", carton.STOP, args.box.GetFullName())))
 		return mach, nil

@@ -286,6 +286,7 @@ func (p *chefsoloProvisioner) Stop(b *provision.Box, w io.Writer) error {
 	actions := []*action.Action{
 		&updateStatusInScylla,
 		&stopBox,
+		&mileStoneUpdate,
 		&updateStatusInScylla,
 	}
 	pipeline := action.NewPipeline(actions...)
@@ -293,6 +294,7 @@ func (p *chefsoloProvisioner) Stop(b *provision.Box, w io.Writer) error {
 		box:           b,
 		writer:        w,
 		machineStatus: constants.StatusStopping,
+		machineState:  constants.StateStopped,
 		provisioner:   p,
 	}
 
