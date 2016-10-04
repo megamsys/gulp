@@ -78,7 +78,7 @@ func (c Config) String() string {
 	var b bytes.Buffer
 	w.Init(&b, 0, 8, 0, '\t', 0)
 	b.Write([]byte(cmd.Colorfy("Config:", "white", "", "bold") + "\t" +
-		cmd.Colorfy("Meta", "green", "", "") + "\n"))
+	cmd.Colorfy("Meta", "green", "", "") + "\n"))
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
@@ -86,8 +86,6 @@ func (c Config) String() string {
 	b.Write([]byte("NSQd" + "\t" + strings.Join(c.NSQd, ",") + "\n"))
 	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
 	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
-	b.Write([]byte("ScyllaUsername" + "\t" + c.ScyllaUsername + "\n"))
-	b.Write([]byte("ScyllaPassword" + "\t" + c.ScyllaPassword + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
 	b.Write([]byte("AccountId" + "\t" + c.AccountId + "\n"))
