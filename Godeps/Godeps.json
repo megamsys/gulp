@@ -54,7 +54,7 @@
 		},
 		{
 			"ImportPath": "github.com/google/btree",
-			"Rev": "7364763242911ab6d418d2722e237194938ebad0"
+			"Rev": "925471ac9e2131377a91e1595defec898166fe49"
 		},
 		{
 			"ImportPath": "github.com/hailocab/go-hostpool",
@@ -97,51 +97,51 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/addons",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/alerts",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/bills",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/os",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/pairs",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/utils",
-			"Rev": "b5a7cc7efb46505d2d46637f2215671af5d1322c"
+			"Rev": "48e291e34be853ec6e27bc68f9c4f0936b0182dc"
 		},
 		{
 			"ImportPath": "github.com/megamsys/whmcs_go/whmcs",
@@ -172,8 +172,8 @@
 		},
 		{
 			"ImportPath": "github.com/pborman/uuid",
-			"Comment": "v1.0-15-gb984ec7",
-			"Rev": "b984ec7fa9ff9e428bd0cf0abf429384dfbe3e37"
+			"Comment": "v1.0-17-g3d4f2ba",
+			"Rev": "3d4f2ba23642d3cfd06bd4b54cf03d99d95c0f1b"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
@@ -204,35 +204,35 @@
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/exec",
-			"Rev": "f0f2361b30a64120242bc5a0d42c59b373a1b6f8"
+			"Rev": "d19d2f5aa3d9de65fb0ec6dbdb4dfbf6fd091e4e"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/gitinfo",
-			"Rev": "f0f2361b30a64120242bc5a0d42c59b373a1b6f8"
+			"Rev": "d19d2f5aa3d9de65fb0ec6dbdb4dfbf6fd091e4e"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/tiling",
-			"Rev": "f0f2361b30a64120242bc5a0d42c59b373a1b6f8"
+			"Rev": "d19d2f5aa3d9de65fb0ec6dbdb4dfbf6fd091e4e"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/util",
-			"Rev": "f0f2361b30a64120242bc5a0d42c59b373a1b6f8"
+			"Rev": "d19d2f5aa3d9de65fb0ec6dbdb4dfbf6fd091e4e"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/vcsinfo",
-			"Rev": "f0f2361b30a64120242bc5a0d42c59b373a1b6f8"
+			"Rev": "d19d2f5aa3d9de65fb0ec6dbdb4dfbf6fd091e4e"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
-			"Rev": "bde08f269ed27dc9a9c105465110825e04ab3d41"
+			"Rev": "7682e7e3945130cf3cde089834664f68afdd1523"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "ffe101cce3477a6c6d8f0754d103bb0a84ec1266"
+			"Rev": "2a824cf9226006580a06d9fa8f10901c17b49ed5"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+			"Rev": "8d1157a435470616f975ff9bb013bea8d0962067"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",
