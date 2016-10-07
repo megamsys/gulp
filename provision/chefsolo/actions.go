@@ -309,6 +309,7 @@ var mileStoneUpdate = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		writer := args.writer
+			fmt.Println("****************action mileStoneUpdate********************",mach.State)
 		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(),constants.LAUNCHED )))
 		if err := mach.SetState(mach.State); err != nil {
 			return err, nil
