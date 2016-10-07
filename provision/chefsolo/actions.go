@@ -144,8 +144,8 @@ var changeStateofMachine = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
-		mach.Status = constants.StatusBootstrapped
-		mach.State  = constants.StateBootstrapped
+		mach.Status = constants.StatusRunning
+		mach.State  = constants.StateRunning
 		mach.ChangeState(mach.Status,args.state)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
 		return mach, nil

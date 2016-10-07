@@ -223,6 +223,7 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 	p.LogLevel = DefaultLogLevel
 	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
+
 	return p.kickOffSolo(b, w)
 }
 
