@@ -114,7 +114,6 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
 		cmd.Colorfy(outBuffer.String(), "yellow", "", ""))
 	_ = provision.EventNotify(constants.StatusCookbookDownloaded)
-		fmt.Println(p,"****************Initialize**************finished*****on  :",elapsed)
 	return nil
 }
 
@@ -134,7 +133,6 @@ func (p *chefsoloProvisioner) String() string {
 }
 
 func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
-		fmt.Println(p,"****************Bootstrap***************entered*****",b)
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- bootstrap box (%s)\n", box.GetFullName())))
 	actions := []*action.Action{
 		&updateStatusInScylla,
@@ -161,15 +159,12 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	}
 
 	if err := pipeline.Execute(args); err != nil {
-			fmt.Println(p,"****************bootstrap error***************box*****",err)
 		return err
 	}
    switch box.GetShortTosca() {
 	 case "bitnami":
-		 fmt.Println("****************bitnami stateup********************")
 		 p.StateupBitnami(box,w)
 	 default:
-		 fmt.Println("****************vertice stateup********************")
 		 p.Stateup(box, w)
    }
 
@@ -198,7 +193,6 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 	p.LogLevel = DefaultLogLevel
 	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
-	fmt.Println(p,"****************vertice stateup***************box*****",b)
 	return p.kickOffSolo(b, w)
 }
 
@@ -241,10 +235,8 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	soloAction := make([]*action.Action, 0, 4)
 	soloAction = append(soloAction, &updateStatusInScylla, &generateSoloJson, &generateSoloConfig, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
 	if b.Level != provision.BoxNone {
-		fmt.Println("****************kickOffSolo****************app/service****")
 		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
 	}
-	fmt.Println("****************kickOffSolo**********appendcommon actions**********")
 	soloAction = append(soloAction, &setFinalState, &changeStateofMachine, &mileStoneUpdate, &updateStatusInScylla)
 	actions := soloAction
 	pipeline := action.NewPipeline(actions...)
@@ -258,11 +250,9 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	}
 
 	if err := pipeline.Execute(args); err != nil {
-			fmt.Println("****************kickOffSolo**********error**********")
 		log.Errorf("error on execute chefsolo pipeline for box %s - %s", b.GetFullName(), err)
 		return err
 	}
-		fmt.Println("****************kickOffSolo**********sucessfull**********")
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- kickofff chefsolo box (%s) OK\n", b.GetFullName())))
 	return nil
 }
