@@ -21,7 +21,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
+	"encoding/base64"
 	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/cmd"
@@ -120,7 +120,12 @@ func (c *Start) ParseConfig(path string) (*Config, error) {
 	if _, err := toml.DecodeFile(path, &config); err != nil {
 		return nil, err
 	}
-
+	user, _ := base64.StdEncoding.DecodeString(config.Meta.ScyllaUsername)
+	username := string(user)
+	pass, _ := base64.StdEncoding.DecodeString(config.Meta.ScyllaPassword)
+	password := string(pass)
+	config.Meta.ScyllaUsername = username
+	config.Meta.ScyllaPassword = password
 	log.Debug(config)
 	return config, nil
 }

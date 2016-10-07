@@ -146,6 +146,7 @@ func (m *Machine) findIps() map[string][]string {
 
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
+
 	if strings.TrimSpace(m.SSH.Password) == "" || strings.TrimSpace(m.SSH.User) == "" {
 		asm, err := carton.NewAmbly(m.CartonId)
 		if err != nil {
@@ -158,13 +159,14 @@ func (m *Machine) AppendAuthKeys() error {
 			Ccms:        []string{"Org_id"},
 			Hosts:       meta.MC.Scylla,
 			Keyspace:    meta.MC.ScyllaKeyspace,
+			Username:    meta.MC.ScyllaUsername,
+			Password:    meta.MC.ScyllaPassword,
 			PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
 			CcmsClauses: map[string]interface{}{"Org_id": asm.OrgId},
 		}
 		if err = ldb.Fetchdb(ops, c); err != nil {
 			return err
 		}
-
 		f, err := os.OpenFile(m.SSH.AuthKeysFile(), os.O_APPEND|os.O_WRONLY, 0600)
 		if err != nil {
 			return err

@@ -34,8 +34,8 @@ import (
 const (
 	ASSEMBLYBUCKET = "assembly"
 	SSHKEY         = "sshkey"
-	PASSWORD       = "linux_password"
-	USERNAME       = "linux_user"
+	PASSWORD       = "root_password"
+	USERNAME       = "root_user"
 )
 
 //An assembly comprises of various components.
@@ -161,6 +161,8 @@ func getBig(id string) (*Ambly, error) {
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
+		Username:    meta.MC.ScyllaUsername,
+		Password:    meta.MC.ScyllaPassword,
 		PksClauses:  map[string]interface{}{"Id": id},
 		CcmsClauses: make(map[string]interface{}),
 	}
@@ -203,6 +205,8 @@ func (a *Ambly) SetStatus(status utils.Status) error {
 		Ccms:        []string{"org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
+		Username:    meta.MC.ScyllaPassword,
+		Password:    meta.MC.ScyllaPassword,
 		PksClauses:  map[string]interface{}{"id": a.Id},
 		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 	}
@@ -222,6 +226,8 @@ func (a *Ambly) SetState(state utils.State) error {
 		Ccms:        []string{"org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
+		Username:    meta.MC.ScyllaUsername,
+		Password:    meta.MC.ScyllaPassword,
 		PksClauses:  map[string]interface{}{"id": a.Id},
 		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 	}
@@ -265,13 +271,14 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 		js.NukeAndSet(m) //just nuke the matching output key:
 		update_fields := make(map[string]interface{})
 		update_fields["Outputs"] = js.ToString()
-
 		ops := ldb.Options{
 			TableName:   ASSEMBLYBUCKET,
 			Pks:         []string{"id"},
 			Ccms:        []string{"org_id"},
 			Hosts:       meta.MC.Scylla,
 			Keyspace:    meta.MC.ScyllaKeyspace,
+			Username:    meta.MC.ScyllaUsername,
+			Password:    meta.MC.ScyllaPassword,
 			PksClauses:  map[string]interface{}{"id": a.Id},
 			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 		}
@@ -295,6 +302,8 @@ func get(id string) (*Assembly, error) {
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
+		Username:    meta.MC.ScyllaUsername,
+		Password:    meta.MC.ScyllaPassword,
 		PksClauses:  map[string]interface{}{"Id": id},
 		CcmsClauses: make(map[string]interface{}),
 	}
@@ -350,8 +359,8 @@ func (a *Assembly) domain() string {
 func (a *Assembly) provider() string {
 	return a.Inputs.Match(provision.PROVIDER)
 }
-
 func (a *Assembly) publicIp() string {
+
 	return a.Outputs.Match(PUBLICIPV4)
 }
 
@@ -370,7 +379,7 @@ func (a *Assembly) newCompute() provision.BoxCompute {
 
 func (a *Assembly) newSSH() provision.BoxSSH {
    user := a.user()
-	
+
 	 if strings.TrimSpace(user) == "" {
 		 user = meta.MC.User
 	 }
