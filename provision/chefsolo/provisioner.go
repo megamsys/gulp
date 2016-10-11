@@ -237,7 +237,7 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	if b.Level != provision.BoxNone {
 		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
 	}
-	soloAction = append(soloAction, &setFinalState, &changeStateofMachine, &mileStoneUpdate, &updateStatusInScylla)
+	soloAction = append(soloAction, &setFinalState, &changeDoneNotify, &mileStoneUpdate, &updateStatusInScylla)
 	actions := soloAction
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
