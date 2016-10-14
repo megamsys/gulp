@@ -292,6 +292,32 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 	return nil
 }
 
+func (a *Ambly) NukeKeysInputs(m string) error {
+	if len(m) > 0 {
+		log.Debugf("nuke keys from inputs in cassandra [%s]", m)
+		js := a.getInputs()
+		js.NukeKeys(m) //just nuke the matching output key:
+		update_fields := make(map[string]interface{})
+		update_fields["Inputs"] = js.ToString()
+		ops := ldb.Options{
+			TableName:   ASSEMBLYBUCKET,
+			Pks:         []string{"id"},
+			Ccms:        []string{"org_id"},
+			Hosts:       meta.MC.Scylla,
+			Keyspace:    meta.MC.ScyllaKeyspace,
+			Username:    meta.MC.ScyllaUsername,
+			Password:    meta.MC.ScyllaPassword,
+			PksClauses:  map[string]interface{}{"id": a.Id},
+			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
+		}
+
+		if err := ldb.Updatedb(ops, update_fields); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 //get the assembly and its children (component). we only store the
 //componentid, hence you see that we have a components map to cater to that need.
 func get(id string) (*Assembly, error) {

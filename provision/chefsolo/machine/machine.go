@@ -2,6 +2,7 @@ package machine
 
 import (
 	"encoding/json"
+	b64 "encoding/base64"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	nsqp "github.com/crackcomm/nsqueue/producer"
@@ -146,7 +147,6 @@ func (m *Machine) findIps() map[string][]string {
 
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
-
 	if strings.TrimSpace(m.SSH.Password) == "" || strings.TrimSpace(m.SSH.User) == "" {
 		asm, err := carton.NewAmbly(m.CartonId)
 		if err != nil {
@@ -178,7 +178,8 @@ func (m *Machine) AppendAuthKeys() error {
 			return err
 		}
 	} else {
-		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User,m.SSH.User,m.SSH.User, m.SSH.Password, m.SSH.Password))
+		pwd, _ := b64.StdEncoding.DecodeString(m.SSH.Password)
+		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User,m.SSH.User,m.SSH.User, string(pwd), string(pwd)))
 		err := ioutil.WriteFile("dat1", d1, 0755)
 		_, err = exec.Command("./dat1").Output()
 		if err != nil {
@@ -188,6 +189,13 @@ func (m *Machine) AppendAuthKeys() error {
 		if err != nil {
 			return err
 		}
+
+		if asm, err := carton.NewAmbly(m.CartonId); err != nil {
+			return err
+		} else if err = asm.NukeKeysInputs(carton.PASSWORD); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
