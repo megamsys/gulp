@@ -8,11 +8,11 @@ const (
 	INFO                   = "Info"
 	ERROR                  = "Error"
 	WARN                   = "Warning"
-	VM_DEPLOY              = "VM_Deploying"
-  VM_STARTING            = "VM_Startingg"
-  VM_STOPPING            = "VM_Stopping"
-  VM_RESTARTING          = "VM_Restarting"
-	CONTAINER_DEPLOY = "Container_Deploying"
+	VM_DEPLOY              = "Deploying"
+  VM_STARTING            = "Startingg"
+  VM_STOPPING            = "Stopping"
+  VM_RESTARTING          = "Restarting"
+	CONTAINER_DEPLOY = "Deploying"
 )
 
 type LogBox struct {
