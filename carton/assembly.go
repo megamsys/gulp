@@ -35,7 +35,7 @@ const (
 	ASSEMBLYBUCKET = "assembly"
 	SSHKEY         = "sshkey"
 	PASSWORD       = "root_password"
-	USERNAME       = "root_user"
+	USERNAME       = "root_username"
 )
 
 //An assembly comprises of various components.
