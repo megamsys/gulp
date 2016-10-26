@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/cmd"
 	constants "github.com/megamsys/libgo/utils"
@@ -58,14 +59,14 @@ func Boot(opts *BootOpts) error {
 
 func bootUpBox(boot *BootOpts, writer io.Writer) error {
 	if boot.OK() {
-		fmt.Fprintf(writer, "  boot for box (%s)\n", boot.B.GetFullName())
+		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  boot for box (%s)\n", boot.B.GetFullName())))
 		if bs, ok := Provisioner.(provision.Deployer); ok {
 			return bs.Bootstrap(boot.B, writer)
 		}
 	} else {
-		fmt.Fprintf(writer, "  skip boot for box (%s)\n", boot.B.GetFullName())
+		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  skip boot for box (%s)\n", boot.B.GetFullName())))
 	}
-	fmt.Fprintf(writer, "  boot for box (%s) OK\n", boot.B.GetFullName())
+	fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("   boot for box (%s) OK\n", boot.B.GetFullName())))
 	return nil
 }
 
