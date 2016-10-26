@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
 	_ "github.com/megamsys/gulp/repository/github"
@@ -36,18 +36,18 @@ func NewChefRepo(m map[string]string, w io.Writer) *ChefRepo {
 //try downloading tar first, if not, do a clone of the chef-repo
 func (ch *ChefRepo) Download(force bool) error {
  	_ = provision.EventNotify(constants.StatusCookbookDownloading)
-	fmt.Fprintf(ch.writer, "--- download (%s)\n", ch.repodir())
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- download (%s)\n", ch.repodir())))
 	if !ch.exists() || !ch.isUptodate() {
 		if err := ch.download(force); err != nil {
 			return scm().Clone(repository.Repo{URL: ch.git})
 		}
 	}
-	fmt.Fprintf(ch.writer, "--- download (%s) OK\n", ch.repodir())
+ fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- download (%s)OK\n", ch.repodir())))
 	return nil
 }
 
 func (ch *ChefRepo) Torr() error {
-	fmt.Fprintf(ch.writer, "--- torr (%s)\n", ch.tarfile())
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- torr (%s)\n", ch.tarfile())))
 	if !ch.exists() {
 		tr := NewTorr(ch.tarfile())
 		tr.Base = ch.repodir()
@@ -57,7 +57,7 @@ func (ch *ChefRepo) Torr() error {
 		}
 		return tr.cleanup()
 	}
-	fmt.Fprintf(ch.writer, "--- torr (%s) OK\n", ch.tarfile())
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- torr (%s) OK\n", ch.tarfile())))
 	return nil
 }
 
@@ -102,8 +102,7 @@ func (ch *ChefRepo) download(force bool) error {
 	if force {
 		_ = os.RemoveAll(ch.tarfile())
 	}
-	fmt.Fprintf(ch.writer, "  create tar (%s)\n", ch.tarfile())
-
+fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create tar (%s)\n", ch.tarfile())))
 	output, err := os.Create(ch.tarfile())
 	if err != nil {
 		return err
@@ -114,8 +113,7 @@ func (ch *ChefRepo) download(force bool) error {
 		return err
 	}
 	defer response.Body.Close()
-	fmt.Fprintf(ch.writer, "  http GET tar (%s)\n", ch.tar)
-
+  fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET tar (%s) \n", ch.tar)))
 	// Create the progress reader
 	progressR := &ioprogress.Reader{
 		Reader: response.Body,
@@ -126,6 +124,6 @@ func (ch *ChefRepo) download(force bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(ch.writer, "  http GET, write tar (%s) OK\n", ch.tar)
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET, write tar (%s) OK\n", ch.tar)))
 	return nil
 }
