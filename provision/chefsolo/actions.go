@@ -60,7 +60,7 @@ var updateStatusInScylla = action.Action{
 			}
 		}
 		if err := mach.SetStatus(mach.Status); err != nil {
-			fmt.Fprintf(args.writer, "  update status for machine failed.\n")
+			fmt.Fprintf(args.writer, lb.W(args.machineStatus.String(), lb.ERROR, fmt.Sprintf("    update status (%s) for machine failed.\n", args.machineStatus.String())))
 			return err, nil
 		}
 		return mach, nil
@@ -246,7 +246,7 @@ var cloneBox = action.Action{
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box (%s)", args.box.GetFullName())))
 		if err := args.box.Clone(); err != nil {
-			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box failed.\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  clone repository for box failed.\n%s\n", err.Error())))
 			return nil, err
 		}
 		mach.Status = constants.StatusCloned
@@ -266,7 +266,7 @@ var startBox = action.Action{
 		fmt.Fprintf(args.writer, lb.W(lb.VM_STARTING, lb.INFO, fmt.Sprintf("  %s for box (%s)", carton.START, args.box.GetFullName())))
 
 		scriptd := machine.NewServiceScripter(args.box.GetShortTosca(), carton.START)
-		fmt.Fprintf(args.writer, "  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())
+		fmt.Fprintf(args.writer, lb.W(lb.VM_STARTING, lb.INFO, fmt.Sprintf("  %s --> (%s)", args.box.GetFullName(), scriptd.Cmd())))
 
 		err := provision.ExecuteCommandOnce(scriptd.Cmd(), args.writer)
 		if err != nil {

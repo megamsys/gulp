@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
-
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/action"
@@ -23,8 +23,7 @@ var setEnvsAction = action.Action{
 		if args == nil {
 			return nil, errors.New("invalid arguments for pipeline, expected *runOpsPipelineArgs")
 		}
-
-		fmt.Fprintf(args.writer, "  set envs for box (%s)\n", args.box.GetFullName())
+		fmt.Fprintf(args.writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  set envs for box (%s) \n", args.box.GetFullName())))
 		bi := &bind.BindFile{}
 
 		if len(args.box.Envs) > 0 {
@@ -36,7 +35,7 @@ var setEnvsAction = action.Action{
 				return bi, err
 			}
 		}
-		fmt.Fprintf(args.writer, "  set envs for box (%s) OK\n", args.box.GetFullName())
+		fmt.Fprintf(args.writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  set envs for box (%s) OK\n", args.box.GetFullName())))
 		return bi, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -54,9 +53,9 @@ var cloneBox = action.Action{
 		if args == nil {
 			return nil, errors.New("invalid arguments for pipeline, expected *runOpsPipelineArgs")
 		}
-		fmt.Fprintf(args.writer, "  clone repository for box (%s)\n", args.box.GetFullName())
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  clone repository for box (%s)\n", args.box.GetFullName())))
 		if err := args.box.Clone(); err != nil {
-			fmt.Fprintf(args.writer, "  clone repository for box (%s) failed\n%s", args.box.GetFullName(), err.Error())
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  clone repository for box (%s) failed \n%s", args.box.GetFullName(), err.Error())))
 			return nil, err
 		}
 		return nil, nil
@@ -73,13 +72,12 @@ var buildBox = action.Action{
 		if args == nil {
 			return nil, errors.New("invalid arguments for pipeline, expected *runOpsPipelineArgs")
 		}
-		fmt.Fprintf(args.writer, "  build repository for box (%s)\n", args.box.GetFullName())
+		fmt.Fprintf(args.writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  build repository for box (%s)\n", args.box.GetFullName())))
 
 		if err := NewRepoBuilder(args.box.Repo, args.writer).Build(false); err != nil {
 			return nil, err
 		}
-
-		fmt.Fprintf(args.writer, "  build repository for box (%s) OK\n", args.box.GetFullName())
+		fmt.Fprintf(args.writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  build repository for box (%s) OK\n", args.box.GetFullName())))
 		return nil, nil
 	},
 	Backward: func(ctx action.BWContext) {
