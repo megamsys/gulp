@@ -44,7 +44,7 @@ var updateStatusInScylla = action.Action{
 	Name: "update-status-scylla",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, "  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())
+		fmt.Fprintf(args.writer, lb.W(args.machineStatus.String(), lb.INFO, fmt.Sprintf("  update status for machine (%s, %s)", args.box.GetFullName(), args.machineStatus.String())))
 		var mach machine.Machine
 		if ctx.Previous != nil && strings.Compare(reflect.TypeOf(ctx.Previous).Name(), "Machine") == 0 {
 			mach = ctx.Previous.(machine.Machine)
