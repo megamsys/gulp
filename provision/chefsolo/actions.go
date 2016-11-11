@@ -52,6 +52,7 @@ var updateStatusInScylla = action.Action{
 			mach = machine.Machine{
 				Id:       args.box.Id,
 				CartonId: args.box.CartonId,
+				CartonsId: args.box.CartonsId,
 				Level:    args.box.Level,
 				Name:     args.box.GetFullName(),
 				SSH:      args.box.SSH,
@@ -144,9 +145,9 @@ var changeStateofMachine = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
-		mach.ChangeState(mach.Status,args.state)
+		mach.ChangeState(args.state)
 		mach.Status = constants.StatusBootstrapped
-   mach.State  = constants.StateBootstrapped
+    mach.State  = constants.StateBootstrapped
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
 		return mach, nil
 	},
@@ -163,7 +164,7 @@ var changeDoneNotify = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
-		mach.ChangeState(mach.Status,args.state)
+		mach.ChangeState(args.state)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
 		return mach, nil
 	},
