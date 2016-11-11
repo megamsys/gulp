@@ -12,6 +12,7 @@ const (
   VM_STARTING            = "Startingg"
   VM_STOPPING            = "Stopping"
   VM_RESTARTING          = "Restarting"
+	VM_UPGRADING           = "Upgrading"
 	CONTAINER_DEPLOY = "Deploying"
 )
 

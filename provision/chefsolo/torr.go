@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
+	lb "github.com/megamsys/gulp/logbox"
 	"io"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ func NewTorr(sourcefile string) *Torr {
 }
 
 func (t *Torr) untar() error {
-	fmt.Fprintf(t.writer, "  untar (%s)\n", t.Source)
+	fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  untar (%s)\n", t.Source)))
 
 	file, err := os.Open(t.Source)
 	if err != nil {
@@ -54,7 +55,7 @@ func (t *Torr) untar() error {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			// handle directory
-			fmt.Fprintf(t.writer, "  creating directory (%s)\n", filename)
+			fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  creating directory (%s)\n", filename)))
 			err = os.MkdirAll(filename, os.FileMode(header.Mode)) // or use 0755 if you prefer
 
 			if err != nil {
@@ -63,7 +64,7 @@ func (t *Torr) untar() error {
 
 		case tar.TypeReg:
 			// handle normal file
-			fmt.Fprintf(t.writer, "  writing untarred (%s)\n", filename)
+			fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  writing untarred (%s)\n", filename)))
 			writer, err := os.Create(filename)
 
 			if err != nil {
@@ -80,20 +81,20 @@ func (t *Torr) untar() error {
 
 			writer.Close()
 		default:
-			fmt.Fprintf(t.writer, "  unable to untar type : %c in file (%s)\n", header.Typeflag, filename)
+			fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  unable to untar type : %c in file (%s)\n", header.Typeflag, filename)))
 		}
 	}
-	fmt.Fprintf(t.writer, "  untar (%s) OK\n", t.Source)
+	fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  untar (%s) OK\n", t.Source)))
 	return nil
 }
 
 func (t *Torr) cleanup() error {
-	fmt.Fprintf(t.writer, "  cleanup tar (%s) OK\n", t.Source)
+	fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  cleanup tar (%s) OK\n", t.Source)))
 	if _, err := os.Stat(t.Source); err == nil {
 		if err = os.Remove(t.Source); err != nil {
 			return err
 		}
 	}
-	fmt.Fprintf(t.writer, "  cleanup tar (%s) OK\n", t.Source)
+	fmt.Fprintf(t.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  cleanup tar (%s) OK\n", t.Source)))
 	return nil
 }

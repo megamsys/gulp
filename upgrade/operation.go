@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
-
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/repository"
 )
@@ -139,7 +139,7 @@ func run(args RunArgs) (OperationsRan, error) {
 			continue
 		}
 		if !m.Ran || !args.Force {
-			fmt.Fprintf(args.Writer, "Running operation (%q)...\n", m.Raw.Type)
+			fmt.Fprintf(args.Writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("Running operation (%q)...\n", m.Raw.Type)))
 			err := m.fn(args.Writer)
 			if err != nil {
 				m.Raw.Status = StatusError
@@ -147,9 +147,9 @@ func run(args RunArgs) (OperationsRan, error) {
 			}
 			m.Ran = true
 			m.Raw.Status = StatusUpgraded
-			fmt.Fprintf(args.Writer, "Ran operation (%s) OK\n", m.Raw.Type)
+			fmt.Fprintf(args.Writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("Ran operation (%s) OK\n", m.Raw.Type)))
 		} else {
-			fmt.Fprintf(args.Writer, "Skip operation (%s) OK\n", m.Raw.Type)
+			fmt.Fprintf(args.Writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("Skip operation (%s) OK\n", m.Raw.Type)))
 		}
 	}
 	return operationsToRun, nil
