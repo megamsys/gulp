@@ -21,7 +21,7 @@ import (
 
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
-	skia "go.skia.org/infra/go/gitinfo"
+	skia "go.skia.org/infra/go/git/gitinfo"
 )
 
 func init() {
@@ -31,6 +31,7 @@ func init() {
 type gitHubManager struct{}
 
 func (m gitHubManager) Clone(r repository.Repository) error {
+	var branch string
 	repoName, err := r.GetShortName()
 	if err != nil {
 		return err
@@ -41,8 +42,10 @@ func (m gitHubManager) Clone(r repository.Repository) error {
 	if err := re.Backup(repoName); err != nil {
 		return err
 	}
-
-	if _, err = skia.Clone(r.Gitr(), filepath.Join(basePath, repoName), false); err != nil {
+  if r.GitBranch() != "" {
+			branch = " -b" + r.GitBranch()
+	}
+	if _, err = skia.Clone(r.Gitr() + branch, filepath.Join(basePath, repoName), false); err != nil {
 		re.Revert(repoName)
 		return err
 	}

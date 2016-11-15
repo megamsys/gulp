@@ -80,6 +80,7 @@ type Artifacts struct {
 /* Repository represents a repository managed by the manager. */
 type Repo struct {
 	Rtype    string `json:"rtype" cql:"rtype"`
+	Branch   string `json:"branch" cql:"branch"`
 	Source   string `json:"source" cql:"source"`
 	Oneclick string `json:"oneclick" cql:"oneclick"`
 	Rurl     string `json:"url" cql:"url"`
@@ -136,6 +137,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 	if &c.Repo != nil {
 		bt.Repo = &repository.Repo{
 			Type:     c.Repo.Rtype,
+			Branch:   c.Repo.Branch,
 			Source:   c.Repo.Source,
 			OneClick: c.withOneClick(),
 			URL:      c.Repo.Rurl,

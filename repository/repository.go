@@ -41,6 +41,7 @@ var managers map[string]RepositoryManager
 type Repo struct {
 	Type     string
 	Source   string
+	Branch   string
 	OneClick bool
 	URL      string
 	Hook     *Hook
@@ -64,6 +65,10 @@ func (r Repo) GetSource() string {
 
 func (r Repo) Gitr() string {
 	return r.URL
+}
+
+func (r Repo) GitBranch() string {
+	return r.Branch
 }
 
 func (r Repo) RepoProvider() string {
@@ -111,6 +116,7 @@ type Repository interface {
 	GetToken() string
 	GetUserName() string
 	Gitr() string
+	GitBranch() string
 	Trigger() string
 	GetShortName() (string, error)
 }

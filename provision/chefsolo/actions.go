@@ -62,7 +62,7 @@ var updateStatusInScylla = action.Action{
 		}
 		if err := mach.SetStatus(mach.Status); err != nil {
 			fmt.Fprintf(args.writer, lb.W(args.machineStatus.String(), lb.ERROR, fmt.Sprintf("    update status (%s) for machine failed.\n", args.machineStatus.String())))
-			return err, nil
+			return mach, err
 		}
 		return mach, nil
 	},
@@ -187,7 +187,7 @@ var generateSoloJson = action.Action{
 		}
 		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "solo.json"), []byte(data), 0644); err != nil {
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo json for box failed.\n%s\n", err.Error())))
-			return err, nil
+			return nil, err
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo json for box (%s) OK\n", args.box.GetFullName())))
 		return mach, nil
@@ -208,7 +208,7 @@ var generateSoloConfig = action.Action{
 		data += "ssl_verify_mode :verify_peer\n"
 		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "solo.rb"), []byte(data), 0644); err != nil {
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo config for box failed.\n%s\n", err.Error())))
-			return err, nil
+			return nil, err
 		}
 		_ = provision.EventNotify(constants.StatusChefConfigSetupped)
 		mach.Status = constants.StatusCloning
@@ -330,7 +330,7 @@ var mileStoneUpdate = action.Action{
 		writer := args.writer
 		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(),constants.LAUNCHED )))
 		if err := mach.SetState(mach.State); err != nil {
-			return err, nil
+			return nil, err
 		}
 		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)OK", args.box.GetFullName(), constants.LAUNCHED)))
 
