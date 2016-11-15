@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/meta"
 )
 
@@ -91,8 +91,7 @@ func (bi *BindFile) Mutate(newEnvReader io.Reader) (err error) {
 			err = writer.Flush()
 		}
 	}()
-
-	fmt.Fprintf(bi.LogWriter, "  set envs replacing (%s)\n", bi.envSH())
+	fmt.Fprintf(bi.LogWriter, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  set envs replacing (%s)\n", bi.envSH())))
 
 	var replacer func(string) string
 	if replacer, err = mkReplaceFunction(newEnvReader); err != nil {
@@ -157,7 +156,7 @@ func mkReplaceFunction(newEnvsReader io.Reader) (func(string) string, error) {
 
 //remove env.sh.save, and rename env.sh to env.sh.save
 func backup(bi *BindFile) {
-	fmt.Fprintf(bi.LogWriter, "  set envs backing (%s)\n", bi.envSHdot())
+	fmt.Fprintf(bi.LogWriter, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  set envs backing (%s)\n", bi.envSHdot())))
 
 	if _, err := os.Stat(bi.envSHdot()); err == nil {
 		if err = os.Remove(bi.envSHdot()); err != nil {
@@ -175,7 +174,7 @@ func backup(bi *BindFile) {
 
 //remove env.sh.save file
 func cleanup(bi *BindFile) {
-	fmt.Fprintf(bi.LogWriter, "  set envs cleaning (%s)\n", bi.envSHdot())
+	fmt.Fprintf(bi.LogWriter, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  set envs cleaning (%s)\n", bi.envSHdot())))
 	if _, err := os.Stat(bi.envSHdot()); err == nil {
 		if err = os.Remove(bi.envSHdot()); err != nil {
 			return
@@ -185,8 +184,7 @@ func cleanup(bi *BindFile) {
 
 //remove env.sh, and rename env.sh.save to env.sh
 func Revert(bi *BindFile) {
-	fmt.Fprintf(bi.LogWriter, "  set envs reverting (%s)\n", bi.envSHdot())
-
+	fmt.Fprintf(bi.LogWriter, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  set envs reverting (%s)\n", bi.envSHdot())))
 	if _, err := os.Stat(bi.envSH()); err == nil {
 		if err = os.Remove(bi.envSH()); err != nil {
 			return

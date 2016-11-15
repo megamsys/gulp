@@ -1,3 +1,2 @@
-##To maintain the gulpd latest version
-git_version="6fc3231be72a2304f53363c96f44e418018287f7"
-git_branch="1.5"
+git_version=d0bea626fb54ff8954876042255cf94749f34a06
+git_branch=1.5

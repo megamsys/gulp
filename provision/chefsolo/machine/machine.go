@@ -201,18 +201,17 @@ func (m *Machine) AppendAuthKeys() error {
 	return nil
 }
 
-func (m *Machine) ChangeState(status utils.Status, state string) error {
-	log.Debugf("  change state of machine (%s, %s)", m.Name, status.String())
+func (m *Machine) ChangeState(state string) error {
+	log.Debugf("  change state of machine (%s, %s)", m.Name, m.Status.String())
 
 	pons := nsqp.New()
 	if err := pons.Connect(meta.MC.NSQd[0]); err != nil {
 		return err
 	}
-
 	bytes, err := json.Marshal(
 		carton.Requests{
 			CatId:     m.CartonsId,
-			Action:    status.String(),
+			Action:    m.Status.String(),
 			Category:  state,
 			CreatedAt: time.Now().Local().Format(time.RFC822),
 		})

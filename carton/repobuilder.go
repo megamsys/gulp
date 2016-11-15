@@ -23,7 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
@@ -69,7 +69,7 @@ func NewRepoBuilder(r repository.Repository, w io.Writer) *RepoBuilder {
 }
 
 func (rb *RepoBuilder) Build(force bool) error {
-	fmt.Fprintf(rb.writer, "  %s (%s)\n", BuildFile, rb.R.Gitr())
+	fmt.Fprintf(rb.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  %s (%s)\n", BuildFile, rb.R.Gitr())))
 	custom, err := rb.custom()
 
 	if err != nil {
@@ -83,8 +83,7 @@ func (rb *RepoBuilder) Build(force bool) error {
 	if _, err = os.Stat(rb.BP.platform); err == nil {
 		return provision.ExecuteCommandOnce(strings.Fields(rb.BP.platform), rb.writer)
 	}
-
-	fmt.Fprintf(rb.writer, "  %s (%s) failed\n", BuildFile, rb.R.Gitr())
+	fmt.Fprintf(rb.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  %s (%s) failed\n", BuildFile, rb.R.Gitr())))
 	return ErrBuildableNotFound
 }
 

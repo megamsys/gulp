@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"time"
-
+	lb "github.com/megamsys/gulp/logbox"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/upgrade"
@@ -55,7 +55,7 @@ func (u *Upgradeable) Upgrade() error {
 	defer logWriter.Close()
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	if !u.canCycle() {
-		fmt.Fprintf(writer, "  skip upgrade for box (%s)\n", u.B.GetFullName())
+		fmt.Fprintf(writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  skip upgrade for box (%s)\n", u.B.GetFullName())))
 		return nil
 	}
 	err := u.operateBox(writer)
@@ -73,7 +73,7 @@ func (u *Upgradeable) Upgrade() error {
 
 func (u *Upgradeable) operateBox(writer io.Writer) error {
 	u.w = writer
-	fmt.Fprintf(u.w, "---- operate box (%s)\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("---- operate box (%s)\n", u.B.GetFullName())))
 
 	start := time.Now()
 	opsRan, err := upgrade.Run(upgrade.RunArgs{
@@ -97,13 +97,13 @@ func (u *Upgradeable) operateBox(writer io.Writer) error {
 	if !u.ShouldRestart {
 		return nil
 	}
-	fmt.Fprintf(u.w, "---- operate box (%s) OK\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("---- operate box (%s) OK\n", u.B.GetFullName())))
 	return Provisioner.Restart(u.B, u.w)
 }
 
 func (u *Upgradeable) opsBuild(writer io.Writer) error {
 	u.w = writer
-	fmt.Fprintf(u.w, "  ops ci (%s) is kicking\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  ops ci (%s) is kicking\n", u.B.GetFullName())))
 
 	actions := []*action.Action{
 		&cloneBox,
@@ -117,13 +117,13 @@ func (u *Upgradeable) opsBuild(writer io.Writer) error {
 	if err := pipeline.Execute(&args); err != nil {
 		return err
 	}
-	fmt.Fprintf(u.w, "  ops ci (%s) OK\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  ops ci (%s) OK\n", u.B.GetFullName())))
 	return nil
 }
 
 func (u *Upgradeable) opsBind(writer io.Writer) error {
 	u.w = writer
-	fmt.Fprintf(u.w, "  ops bind (%s) is kicking\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  ops bind (%s) is kicking\n", u.B.GetFullName())))
 
 	actions := []*action.Action{
 		&setEnvsAction,
@@ -136,20 +136,21 @@ func (u *Upgradeable) opsBind(writer io.Writer) error {
 	if err := pipeline.Execute(&args); err != nil {
 		return err
 	}
-	fmt.Fprintf(u.w, "  ops bind (%s) OK\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  ops bind (%s) OK\n", u.B.GetFullName())))
 	return nil
 }
 
 func (u *Upgradeable) saveData(opsRan upgrade.OperationsRan, elapsed time.Duration) error {
 	if u.B.Level == provision.BoxSome {
-		fmt.Fprintf(u.w, "  operate box saving.. (%s)\n", u.B.GetFullName())
+		fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  operate box saving.. (%s)\n", u.B.GetFullName())))
+
 		if comp, err := NewComponent(u.B.Id); err != nil {
 			return err
 		} else if err = comp.UpdateOpsRun(opsRan); err != nil {
 			return err
 		}
 	}
-	fmt.Fprintf(u.w, "  operate box saving (%s) OK\n", u.B.GetFullName())
+	fmt.Fprintf(u.w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("  operate box saving (%s) OK\n", u.B.GetFullName())))
 	return nil
 }
 
