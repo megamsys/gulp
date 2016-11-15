@@ -21,7 +21,7 @@ import (
 
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/repository"
-	skia "go.skia.org/infra/go/gitinfo"
+	skia "go.skia.org/infra/go/git/gitinfo"
 )
 
 func init() {
