@@ -32,8 +32,6 @@ import (
 )
 
 const (
-	ID = "id"
-	ORG_ID = "org_id"
 	ASSEMBLYBUCKET = "assembly"
 	SSHKEY         = "sshkey"
 	PASSWORD       = "root_password"
@@ -159,13 +157,13 @@ func getBig(id string) (*Ambly, error) {
 	a := &Ambly{}
 	ops := ldb.Options{
 		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{ID},
+		Pks:         []string{"Id"},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{ID: id},
+		PksClauses:  map[string]interface{}{"Id": id},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Fetchdb(ops, a); err != nil {
@@ -203,18 +201,19 @@ func (a *Ambly) SetStatus(status utils.Status) error {
 	update_fields["status"] = status.String()
 	ops := ldb.Options{
 		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{ID},
-		Ccms:        []string{ORG_ID},
+		Pks:         []string{"id"},
+		Ccms:        []string{"org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaPassword,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{ID: a.Id},
-		CcmsClauses: map[string]interface{}{ORG_ID: a.OrgId},
+		PksClauses:  map[string]interface{}{"id": a.Id},
+		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 	}
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
 		return err
 	}
+
 	_ = eventNotify(status)
 	return nil
 }
@@ -224,14 +223,14 @@ func (a *Ambly) SetState(state utils.State) error {
 	update_fields["state"] = state.String()
 	ops := ldb.Options{
 		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{ID},
-		Ccms:        []string{ORG_ID},
+		Pks:         []string{"id"},
+		Ccms:        []string{"org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{ID: a.Id},
-		CcmsClauses: map[string]interface{}{ORG_ID: a.OrgId},
+		PksClauses:  map[string]interface{}{"id": a.Id},
+		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 	}
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
 		return err
@@ -272,17 +271,17 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 		js := a.getOutputs()
 		js.NukeAndSet(m) //just nuke the matching output key:
 		update_fields := make(map[string]interface{})
-		update_fields["outputs"] = js.ToString()
+		update_fields["Outputs"] = js.ToString()
 		ops := ldb.Options{
 			TableName:   ASSEMBLYBUCKET,
-			Pks:         []string{ID},
-			Ccms:        []string{ORG_ID},
+			Pks:         []string{"id"},
+			Ccms:        []string{"org_id"},
 			Hosts:       meta.MC.Scylla,
 			Keyspace:    meta.MC.ScyllaKeyspace,
 			Username:    meta.MC.ScyllaUsername,
 			Password:    meta.MC.ScyllaPassword,
-			PksClauses:  map[string]interface{}{ID: a.Id},
-			CcmsClauses: map[string]interface{}{ORG_ID: a.OrgId},
+			PksClauses:  map[string]interface{}{"id": a.Id},
+			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 		}
 
 		if err := ldb.Updatedb(ops, update_fields); err != nil {
@@ -300,17 +299,17 @@ func (a *Ambly) NukeKeysInputs(m string) error {
 		js := a.getInputs()
 		js.NukeKeys(m) //just nuke the matching output key:
 		update_fields := make(map[string]interface{})
-		update_fields["inputs"] = js.ToString()
+		update_fields["Inputs"] = js.ToString()
 		ops := ldb.Options{
 			TableName:   ASSEMBLYBUCKET,
-			Pks:         []string{ID},
-			Ccms:        []string{ORG_ID},
+			Pks:         []string{"id"},
+			Ccms:        []string{"org_id"},
 			Hosts:       meta.MC.Scylla,
 			Keyspace:    meta.MC.ScyllaKeyspace,
 			Username:    meta.MC.ScyllaUsername,
 			Password:    meta.MC.ScyllaPassword,
-			PksClauses:  map[string]interface{}{ID: a.Id},
-			CcmsClauses: map[string]interface{}{ORG_ID: a.OrgId},
+			PksClauses:  map[string]interface{}{"id": a.Id},
+			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 		}
 
 		if err := ldb.Updatedb(ops, update_fields); err != nil {
@@ -326,13 +325,13 @@ func get(id string) (*Assembly, error) {
 	a := &Ambly{}
 	ops := ldb.Options{
 		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{ID},
+		Pks:         []string{"Id"},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{ID: id},
+		PksClauses:  map[string]interface{}{"Id": id},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Fetchdb(ops, a); err != nil {

@@ -56,13 +56,15 @@ type Machine struct {
 func (m *Machine) SetStatus(status utils.Status) error {
 	log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
-	if asm, err := carton.NewAmbly(m.CartonId); err != nil {
+ asm, err := carton.NewAmbly(m.CartonId)
+ fmt.Println(asm.State,"*************status******************",asm.Status)
+ fmt.Println(asm)
+ if err != nil {
 		return err
 	} else if err = asm.SetStatus(status); err != nil {
 
 		return err
 	}
-
 	if m.Level == provision.BoxSome {
 		log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
@@ -78,7 +80,10 @@ func (m *Machine) SetStatus(status utils.Status) error {
 func (m *Machine) SetState(state utils.State) error {
 	log.Debugf("  set state[%s] of machine (%s, %s)", m.Id, m.Name, state.String())
 
-	if asm, err := carton.NewAmbly(m.CartonId); err != nil {
+	asm, err := carton.NewAmbly(m.CartonId)
+	fmt.Println(asm.State,"************State*******************",asm.Status)
+	fmt.Println(asm)
+	if err != nil {
 		return err
 	} else if err = asm.SetState(state); err != nil {
 
