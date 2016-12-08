@@ -80,7 +80,7 @@ godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep
 	godep restore ./...
 
-build: check-path get _go_test _gulpd
+build: check-path get-ref test
 
 _go_test:
 	go clean  ./...
