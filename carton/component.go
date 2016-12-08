@@ -101,13 +101,13 @@ func NewComponent(id string) (*Component, error) {
 	c := &ComponentTable{Id: id}
 	ops := ldb.Options{
 		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
+		Pks:         []string{ID},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": id},
+		PksClauses:  map[string]interface{}{ID: id},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Fetchdb(ops, c); err != nil {
@@ -155,17 +155,17 @@ func (c *Component) SetStatus(status utils.Status) error {
 	c.Inputs.NukeAndSet(m) //just nuke the matching output key:
 
 	update_fields := make(map[string]interface{})
-	update_fields["Inputs"] = c.Inputs.ToString()
-	update_fields["Status"] = status.String()
+	update_fields["inputs"] = c.Inputs.ToString()
+	update_fields["status"] = status.String()
 	ops := ldb.Options{
 		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
+		Pks:         []string{ID},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": c.Id},
+		PksClauses:  map[string]interface{}{ID: c.Id},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
@@ -178,16 +178,16 @@ func (c *Component) SetStatus(status utils.Status) error {
 
 func (c *Component) SetState(state utils.State) error {
 	update_fields := make(map[string]interface{})
-	update_fields["State"] = state.String()
+	update_fields["state"] = state.String()
 	ops := ldb.Options{
 		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
+		Pks:         []string{ID},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": c.Id},
+		PksClauses:  map[string]interface{}{ID: c.Id},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
@@ -205,16 +205,16 @@ func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
 	}
 
 	update_fields := make(map[string]interface{})
-	update_fields["Operations"] = mutatedOps
+	update_fields["operations"] = mutatedOps
 	ops := ldb.Options{
 		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
+		Pks:         []string{ID},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": c.Id},
+		PksClauses:  map[string]interface{}{ID: c.Id},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
@@ -244,13 +244,13 @@ func (a *ComponentTable) dig() (Component, error) {
 func (c *Component) Delete(compid string) {
 	ops := ldb.Options{
 		TableName:   COMPBUCKET,
-		Pks:         []string{"id"},
+		Pks:         []string{ID},
 		Ccms:        []string{},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"id": compid},
+		PksClauses:  map[string]interface{}{ID: compid},
 		CcmsClauses: make(map[string]interface{}),
 	}
 	if err := ldb.Deletedb(ops, ComponentTable{}); err != nil {
