@@ -84,7 +84,7 @@ _go_test:
 
 _gulpd:
 	rm -f gulpd
-	go build $(GO_EXTRAFLAGS) -ldflags="-X main.date=$(shell date +%Y-%m-%d_%H:%M:%S%Z)" -o gulpd ./cmd/gulpd
+	go build $(GO_EXTRAFLAGS) -ldflags="-X main.date=$(shell date +%Y-%m-%d_%H:%M:%S%Z) -X main.commit=$(shell cd $$HOME/.go/src/github.com/megamsys/libgo && commit=`git rev-parse HEAD`; echo $$commit)" -o gulpd ./cmd/gulpd
 
 _gulpdr:
 	./gulpd -v start
