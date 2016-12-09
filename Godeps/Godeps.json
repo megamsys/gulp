@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/megamsys/gulp",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"GodepVersion": "v75",
 	"Packages": [
 		"./..."
 	],
@@ -204,23 +204,23 @@
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/exec",
-			"Rev": "06ba61b1cc9c45a66e294ddb0a2e8ad9ea5a9ab2"
+			"Rev": "fde1e23ac3ab2c6aac25112c9860726cc28181aa"
 		},
 		{
-			"ImportPath": "go.skia.org/infra/go/gitinfo",
-			"Rev": "06ba61b1cc9c45a66e294ddb0a2e8ad9ea5a9ab2"
+			"ImportPath": "go.skia.org/infra/go/git/gitinfo",
+			"Rev": "fde1e23ac3ab2c6aac25112c9860726cc28181aa"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/tiling",
-			"Rev": "06ba61b1cc9c45a66e294ddb0a2e8ad9ea5a9ab2"
+			"Rev": "fde1e23ac3ab2c6aac25112c9860726cc28181aa"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/util",
-			"Rev": "06ba61b1cc9c45a66e294ddb0a2e8ad9ea5a9ab2"
+			"Rev": "fde1e23ac3ab2c6aac25112c9860726cc28181aa"
 		},
 		{
 			"ImportPath": "go.skia.org/infra/go/vcsinfo",
-			"Rev": "06ba61b1cc9c45a66e294ddb0a2e8ad9ea5a9ab2"
+			"Rev": "fde1e23ac3ab2c6aac25112c9860726cc28181aa"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
