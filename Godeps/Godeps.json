@@ -17,8 +17,8 @@
 		},
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.10.0-38-g3ec0642",
-			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
+			"Comment": "v0.11.0-25-g881bee4",
+			"Rev": "881bee4e20a5d11a6a88a5667c6f292072ac1963"
 		},
 		{
 			"ImportPath": "github.com/bmizerany/pat",
@@ -41,8 +41,8 @@
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
-			"Comment": "v1.0.0-3-g6d21280",
-			"Rev": "6d212800a42e8ab5c146b8ace3490ee17e5225f9"
+			"Comment": "v1.1.0",
+			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
 		},
 		{
 			"ImportPath": "github.com/golang/groupcache/lru",
@@ -97,55 +97,59 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/addons",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/alerts",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/bills",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/fs",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/os",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/pairs",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/utils",
-			"Rev": "86651289a66e80e27ace782facc296fdc28c2323"
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
+		},
+		{
+			"ImportPath": "github.com/megamsys/libgo/utils/obc",
+			"Rev": "0a5dd9af8b52d597003c40ec4b32f6e89eb26f43"
 		},
 		{
 			"ImportPath": "github.com/megamsys/whmcs_go/whmcs",
-			"Rev": "e7b012c072e1a0a81afb5aa6f00a4191db5a6ca2"
+			"Rev": "b8c4ad22cca58ef0380c04a95b5b494ed650394a"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/ioprogress",
@@ -153,7 +157,7 @@
 		},
 		{
 			"ImportPath": "github.com/mitchellh/mapstructure",
-			"Rev": "a6ef2f080c66d0a2e94e97cf74f80f772855da63"
+			"Rev": "5a0325d7fafaac12dda6e7fb8bd222ec1b69875e"
 		},
 		{
 			"ImportPath": "github.com/mreiferson/go-snappystream",
@@ -167,13 +171,13 @@
 		},
 		{
 			"ImportPath": "github.com/nsqio/go-nsq",
-			"Comment": "v1.0.6-1-g205b510",
-			"Rev": "205b5100ce209a3a69fe9423a21c626ed23351e8"
+			"Comment": "v1.0.6-3-g8e6d40f",
+			"Rev": "8e6d40fe7f7baa8e0e606bb64f8f9579704d72c4"
 		},
 		{
 			"ImportPath": "github.com/pborman/uuid",
-			"Comment": "v1.0-17-g3d4f2ba",
-			"Rev": "3d4f2ba23642d3cfd06bd4b54cf03d99d95c0f1b"
+			"Comment": "v1.0-19-g5007efa",
+			"Rev": "5007efa264d92316c43112bc573e754bc889b7b1"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
@@ -190,8 +194,8 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.1.4-4-g976c720",
-			"Rev": "976c720a22c8eb4eb6a0b4348ad85ad12491a506"
+			"Comment": "v1.1.4-6-g18a02ba",
+			"Rev": "18a02ba4a312f95da08ff4cfc0055750ce50ae9e"
 		},
 		{
 			"ImportPath": "github.com/tj/go-spin",
@@ -224,19 +228,19 @@
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
-			"Rev": "5f31782cfb2b6373211f8f9fbf31283fa234b570"
+			"Rev": "b07d8c96772f426812d3fc5530710ec1f3b205e7"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"Rev": "8b4af36cd21a1f85a7484b49feb7c79363106d8e"
+			"Rev": "e31bd588d1077ee66a958c0ad3a235f2084b4195"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "9bb9f0998d48b31547d975974935ae9b48c7a03c"
+			"Rev": "478fcf54317e52ab69f40bb4c7a1520288d7f7ea"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",
-			"Rev": "4f90aeace3a26ad7021961c297b22c42160c7b25"
+			"Rev": "20d25e2804050c1cd24a7eea1e7a6447dd0e74ec"
 		},
 		{
 			"ImportPath": "gopkg.in/inf.v0",
