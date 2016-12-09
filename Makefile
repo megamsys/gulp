@@ -43,7 +43,8 @@ endef
 
 all: check-path get test
 
-build: check-path get-ref test
+# build: check-path get-ref test
+build: check-path get-ref _go_test _gulpd
 
 # It does not support GOPATH with multiple paths.
 check-path:
@@ -79,8 +80,6 @@ get-code:
 godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep
 	godep restore ./...
-
-build: check-path get-ref test
 
 _go_test:
 	go clean  ./...
