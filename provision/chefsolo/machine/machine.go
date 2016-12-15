@@ -34,7 +34,7 @@ EOF
 type SshKeys struct {
 	OrgId      string `json:"org_id" cql:"org_id"`
 	Name       string `json:"name" cql:"name"`
-	CreatedAt  string `json:"created_at" cql:"created_at"`
+	CreatedAt  time.Time `json:"created_at" cql:"created_at"`
 	Id         string `json:"id" cql:"id"`
 	JsonClaz   string `json:"json_claz" cql:"json_claz"`
 	Privatekey string `json:"privatekey" cql:"privatekey"`
@@ -56,10 +56,7 @@ type Machine struct {
 func (m *Machine) SetStatus(status utils.Status) error {
 	log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
- asm, err := carton.NewAmbly(m.CartonId)
- fmt.Println(asm.State,"*************status******************",asm.Status)
- fmt.Println(asm)
- if err != nil {
+ if asm, err := carton.NewAmbly(m.CartonId); err != nil {
 		return err
 	} else if err = asm.SetStatus(status); err != nil {
 
@@ -80,10 +77,8 @@ func (m *Machine) SetStatus(status utils.Status) error {
 func (m *Machine) SetState(state utils.State) error {
 	log.Debugf("  set state[%s] of machine (%s, %s)", m.Id, m.Name, state.String())
 
-	asm, err := carton.NewAmbly(m.CartonId)
-	fmt.Println(asm.State,"************State*******************",asm.Status)
-	fmt.Println(asm)
-	if err != nil {
+
+	if asm, err := carton.NewAmbly(m.CartonId); err != nil {
 		return err
 	} else if err = asm.SetState(state); err != nil {
 

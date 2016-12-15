@@ -40,19 +40,19 @@ const (
 
 //An assembly comprises of various components.
 type Ambly struct {
-	Id         string   `json:"id" cql:"id"`
-	OrgId      string   `json:"org_id" cql:"org_id"`
-	AccountId  string   `json:"account_id" cql:"account_id"`
-	Name       string   `json:"name" cql:"name"`
-	JsonClaz   string   `json:"json_claz" cql:"json_claz"`
-	Tosca      string   `json:"tosca_type" cql:"tosca_type"`
-	Inputs     []string `json:"inputs" cql:"inputs"`
-	Outputs    []string `json:"outputs" cql:"outputs"`
-	Policies   []string `json:"policies" cql:"policies"`
-	Status     string   `json:"status" cql:"status"`
-	State      string   `json:"state" cql:"state"`
-	CreatedAt  string   `json:"created_at" cql:"created_at"`
-	Components []string `json:"components" cql:"components"`
+	Id         string    `json:"id" cql:"id"`
+	OrgId      string    `json:"org_id" cql:"org_id"`
+	AccountId  string    `json:"account_id" cql:"account_id"`
+	Name       string    `json:"name" cql:"name"`
+	JsonClaz   string    `json:"json_claz" cql:"json_claz"`
+	Tosca      string    `json:"tosca_type" cql:"tosca_type"`
+	Inputs     []string  `json:"inputs" cql:"inputs"`
+	Outputs    []string  `json:"outputs" cql:"outputs"`
+	Policies   []string  `json:"policies" cql:"policies"`
+	Status     string    `json:"status" cql:"status"`
+	State      string    `json:"state" cql:"state"`
+	CreatedAt  time.Time `json:"created_at" cql:"created_at"`
+	Components []string  `json:"components" cql:"components"`
 }
 
 type Assembly struct {
@@ -67,7 +67,7 @@ type Assembly struct {
 	Policies   []*Policy       `json:"policies" cql:"policies"`
 	Status     string          `json:"status" cql:"status"`
 	State      string          `json:"state" cql:"state"`
-	CreatedAt  string          `json:"created_at" cql:"created_at"`
+	CreatedAt  time.Time       `json:"created_at" cql:"created_at"`
 	Components map[string]*Component
 }
 
@@ -195,41 +195,39 @@ func (a *Ambly) SetStatus(status utils.Status) error {
 	m["status"] = []string{status.String()}
 	js.NukeAndSet(m) //just nuke the matching output key:
 	a.Status = status.String()
-
 	update_fields := make(map[string]interface{})
-	update_fields["inputs"] = js.ToString()
-	update_fields["status"] = status.String()
+	update_fields["Inputs"] = js.ToString()
+	update_fields["Status"] = status.String()
 	ops := ldb.Options{
 		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{"id"},
-		Ccms:        []string{"org_id"},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaPassword,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"id": a.Id},
-		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
-	}
-	if err := ldb.Updatedb(ops, update_fields); err != nil {
-		return err
-	}
-
-	_ = eventNotify(status)
-	return nil
-}
-
-func (a *Ambly) SetState(state utils.State) error {
-	update_fields := make(map[string]interface{})
-	update_fields["state"] = state.String()
-	ops := ldb.Options{
-		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{"id"},
+		Pks:         []string{"Id"},
 		Ccms:        []string{"org_id"},
 		Hosts:       meta.MC.Scylla,
 		Keyspace:    meta.MC.ScyllaKeyspace,
 		Username:    meta.MC.ScyllaUsername,
 		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"id": a.Id},
+		PksClauses:  map[string]interface{}{"Id": a.Id},
+		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
+	}
+	if err := ldb.Updatedb(ops, update_fields); err != nil {
+		return err
+	}
+	return a.trigger_event(status)
+
+}
+
+func (a *Ambly) SetState(state utils.State) error {
+	update_fields := make(map[string]interface{})
+	update_fields["State"] = state.String()
+	ops := ldb.Options{
+		TableName:   ASSEMBLYBUCKET,
+		Pks:         []string{"Id"},
+		Ccms:        []string{"org_id"},
+		Hosts:       meta.MC.Scylla,
+		Keyspace:    meta.MC.ScyllaKeyspace,
+		Username:    meta.MC.ScyllaUsername,
+		Password:    meta.MC.ScyllaPassword,
+		PksClauses:  map[string]interface{}{"Id": a.Id},
 		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
 	}
 	if err := ldb.Updatedb(ops, update_fields); err != nil {
@@ -238,6 +236,31 @@ func (a *Ambly) SetState(state utils.State) error {
 	return nil
 }
 
+func (a *Ambly) trigger_event(status utils.Status) error {
+	mi := make(map[string]string)
+	js := make(pairs.JsonPairs, 0)
+	m := make(map[string][]string, 2)
+	m["status"] = []string{status.String()}
+	m["description"] = []string{status.Description(a.Name)}
+	js.NukeAndSet(m) //just nuke the matching output key:
+
+	mi[constants.ASSEMBLY_ID] = a.Id
+	mi[constants.ACCOUNT_ID] = a.AccountId
+	mi[constants.EVENT_TYPE] = status.Event_type()
+
+	newEvent := events.NewMulti(
+		[]*events.Event{
+			&events.Event{
+				AccountsId:  a.AccountId,
+				EventAction: alerts.STATUS,
+				EventType:   constants.EventUser,
+				EventData:   alerts.EventData{M: mi, D: js.ToString()},
+				Timestamp:   time.Now().Local(),
+			},
+		})
+
+	return newEvent.Write()
+}
 
 func eventNotify(status utils.Status) error {
 	mi := make(map[string]string)
@@ -405,15 +428,15 @@ func (a *Assembly) newCompute() provision.BoxCompute {
 }
 
 func (a *Assembly) newSSH() provision.BoxSSH {
-   user := a.user()
+	user := a.user()
 
-	 if strings.TrimSpace(user) == "" {
-		 user = meta.MC.User
-	 }
+	if strings.TrimSpace(user) == "" {
+		user = meta.MC.User
+	}
 
-	return provision.BoxSSH {
-		User: user,
-		Prefix: a.sshkey(),
+	return provision.BoxSSH{
+		User:     user,
+		Prefix:   a.sshkey(),
 		Password: a.password(),
 	}
 

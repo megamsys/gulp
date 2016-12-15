@@ -52,23 +52,23 @@ type Component struct {
 	Operations        []*upgrade.Operation `json:"operations"`
 	Status            string               `json:"status"`
 	State             string               `json:"state"`
-	CreatedAt         string               `json:"created_at"`
+	CreatedAt         time.Time            `json:"created_at"`
 }
 
 type ComponentTable struct {
-	Id                string   `json:"id" cql:"id"`
-	Name              string   `json:"name" cql:"name"`
-	Tosca             string   `json:"tosca_type" cql:"tosca_type"`
-	Inputs            []string `json:"inputs" cql:"inputs"`
-	Outputs           []string `json:"outputs" cql:"outputs"`
-	Envs              []string `json:"envs" cql:"envs"`
-	Repo              string   `json:"repo" cql:"repo"`
-	Artifacts         string   `json:"artifacts" cql:"artifacts"`
-	RelatedComponents []string `json:"related_components" cql:"related_components"`
-	Operations        []string `json:"operations" cql:"operations"`
-	Status            string   `json:"status" cql:"status"`
-	State             string   `json:"state" cql:"state"`
-	CreatedAt         string   `json:"created_at" cql:"created_at"`
+	Id                string    `json:"id" cql:"id"`
+	Name              string    `json:"name" cql:"name"`
+	Tosca             string    `json:"tosca_type" cql:"tosca_type"`
+	Inputs            []string  `json:"inputs" cql:"inputs"`
+	Outputs           []string  `json:"outputs" cql:"outputs"`
+	Envs              []string  `json:"envs" cql:"envs"`
+	Repo              string    `json:"repo" cql:"repo"`
+	Artifacts         string    `json:"artifacts" cql:"artifacts"`
+	RelatedComponents []string  `json:"related_components" cql:"related_components"`
+	Operations        []string  `json:"operations" cql:"operations"`
+	Status            string    `json:"status" cql:"status"`
+	State             string    `json:"state" cql:"state"`
+	CreatedAt         time.Time `json:"created_at" cql:"created_at"`
 }
 
 type Artifacts struct {
@@ -131,7 +131,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Provider:   c.provider(),
 		PublicIp:   c.publicIp(),
 		Inputs:     c.getInputsMap(),
-		State:    utils.State(c.State),
+		State:      utils.State(c.State),
 	}
 
 	if &c.Repo != nil {
@@ -175,7 +175,6 @@ func (c *Component) SetStatus(status utils.Status) error {
 	return nil
 }
 
-
 func (c *Component) SetState(state utils.State) error {
 	update_fields := make(map[string]interface{})
 	update_fields["state"] = state.String()
@@ -195,7 +194,6 @@ func (c *Component) SetState(state utils.State) error {
 	}
 	return nil
 }
-
 
 func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
 	mutatedOps := make([]*upgrade.Operation, 0, len(opsRan))
