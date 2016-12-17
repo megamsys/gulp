@@ -36,7 +36,7 @@ type SshKeys struct {
 
 type ApiSshKeys struct {
 	JsonClaz string `json:"json_claz" cql:"json_claz"`
-	Results SshKeys `json:"results" cql:"results"`
+	Results []SshKeys `json:"results" cql:"results"`
 }
 
 

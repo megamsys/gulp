@@ -117,7 +117,7 @@ func GetSSHKeys(name string) (*SshKeys, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := &s.Results
+	c := &s.Results[0]
 
 	return c, err
 }

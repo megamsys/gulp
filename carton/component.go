@@ -59,7 +59,7 @@ type Repo struct {
 
 type ApiComponent struct {
 	JsonClaz string    `json:"json_claz"`
-	Results  Component `json:"results"`
+	Results  []Component `json:"results"`
 }
 
 type Component struct {
@@ -108,7 +108,7 @@ func NewComponent(id string) (*Component, error) {
 		fmt.Println("Error while json parsing  :", err)
 		return nil, err
 	}
-	return &ac.Results, nil
+	return &ac.Results[0], nil
 }
 
 func (c *Component) updateComponent() error {
