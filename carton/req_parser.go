@@ -134,9 +134,16 @@ type Requests struct {
 	Id        string `json:"id"`       //assembly id
 	CatId     string `json:"cat_id"`   // assemblies_id
 	Action    string `json:"action"`   // start, stop ...
+	AccountId string `json:"email"`
 	Category  string `json:"category"` // state, control, policy
 	CreatedAt string `json:"created_at"`
 }
+
+type ApiRequests struct {
+	JsonClaz string `json:"json_claz" cql:"json_claz"`
+	Results  Requests `json:"results" cql:"results"`
+}
+
 
 func (r *Requests) String() string {
 	if d, err := yaml.Marshal(r); err != nil {

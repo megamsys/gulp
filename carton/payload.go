@@ -17,15 +17,16 @@ package carton
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"github.com/megamsys/libgo/api"
 	log "github.com/Sirupsen/logrus"
-	"github.com/megamsys/gulp/meta"
-	ldb "github.com/megamsys/libgo/db"
 )
 
 type Payload struct {
 	Id        string `json:"id" cql:"id"`
 	Action    string `json:"action" cql:"action"`
 	CatId     string `json:"cat_id" cql:"cat_id"`
+	AccountId string `json:"email" cql:"-"`
 	CatType   string `json:"cattype" cql:"cattype"`
 	Category  string `json:"category" cql:"category"`
 	CreatedAt string `json:"created_at" cql:"created_at"`
@@ -73,23 +74,23 @@ func (p *Payload) Convert() (*Requests, error) {
 		log.Debugf("Requests %v", r)
 		return r, nil
 	} else {
-		r := &Requests{}
-
-		ops := ldb.Options{
-			TableName:   "requests",
-			Pks:         []string{"Id"},
-			Ccms:        []string{},
-			Hosts:       meta.MC.Scylla,
-			Keyspace:    meta.MC.ScyllaKeyspace,
-			Username:    meta.MC.ScyllaUsername,
-			Password:    meta.MC.ScyllaPassword,
-			PksClauses:  map[string]interface{}{"Id": p.Id},
-			CcmsClauses: make(map[string]interface{}),
+		apiArgs.Path = "/requests/" +  p.Id
+		cl := api.NewClient(apiArgs)
+		response, err := cl.Get()
+		if err != nil {
+			return nil, err
 		}
-		if err := ldb.Fetchdb(ops, r); err != nil {
+		htmlData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
 			return nil, err
 		}
 
+		res := &ApiRequests{}
+		err = json.Unmarshal(htmlData, res)
+		if err != nil {
+			return nil, err
+		}
+		r := &res.Results
 		log.Debugf("Requests %v", r)
 		return r, nil
 	}

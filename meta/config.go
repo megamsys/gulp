@@ -60,7 +60,7 @@ type Config struct {
 	Home           string   `toml:"home"` //figured out from MEGAM_HOME variable
 	Dir            string   `toml:"dir"`
 	User           string   `toml:"user"`
-	Riak           []string `toml:"riak"`
+	Api            string   `toml:"vertice_api"`
 	NSQd           []string `toml:"nsqd"`
 	Scylla         []string `toml:"scylla"`
 	ScyllaKeyspace string   `toml:"scylla_keyspace"`
@@ -71,6 +71,7 @@ type Config struct {
 	CartonId       string   `toml:"assembly_id"`
 	AccountId      string   `toml:"account_id"`
 	CartonsId      string   `toml:"assemblies_id"`
+	ApiKey         string   `toml:"api_key"`
 }
 
 func (c Config) String() string {
@@ -82,7 +83,6 @@ func (c Config) String() string {
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
-	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
 	b.Write([]byte("NSQd" + "\t" + strings.Join(c.NSQd, ",") + "\n"))
 	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
 	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
@@ -115,16 +115,16 @@ func NewConfig() *Config {
 		Home:           homeDir,
 		Dir:            defaultDir,
 		User:           DefaultUser,
-		Riak:           []string{DefaultRiak},
 		NSQd:           []string{DefaultNSQd},
 		Scylla:         []string{DefaultScylla},
 		ScyllaKeyspace: DefaultScyllaKeyspace,
 		ScyllaUsername: DefaultScyllaUsername,
 		ScyllaPassword: DefaultScyllaPassword,
 		DockerPath:     DefaultDockerPath,
-		Name:           "",
-		AccountId:      "",
+		Name:           "gulpd",
+		AccountId:      "info@megam.io",
 		CartonId:       DefaultAssemblyID,
+		ApiKey:         "abcdefghijklmnopqrstuvwxyz",
 	}
 }
 
@@ -136,6 +136,7 @@ func (c *Config) ToMap() map[string]string {
 	mp["scylla_keyspace"] = c.ScyllaKeyspace
 	mp["scylla_username"] = c.ScyllaUsername
 	mp["scylla_password"] = c.ScyllaPassword
+	mp["api_key"] = c.ApiKey
 	return mp
 }
 

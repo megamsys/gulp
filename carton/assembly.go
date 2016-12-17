@@ -17,16 +17,18 @@ package carton
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
-	ldb "github.com/megamsys/libgo/db"
+	"github.com/megamsys/libgo/api"
 	"github.com/megamsys/libgo/events"
 	"github.com/megamsys/libgo/events/alerts"
 	"github.com/megamsys/libgo/pairs"
 	"github.com/megamsys/libgo/utils"
 	constants "github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"strings"
 	"time"
 )
@@ -38,44 +40,35 @@ const (
 	USERNAME       = "root_username"
 )
 
-//An assembly comprises of various components.
-type Ambly struct {
-	Id         string    `json:"id" cql:"id"`
-	OrgId      string    `json:"org_id" cql:"org_id"`
-	AccountId  string    `json:"account_id" cql:"account_id"`
-	Name       string    `json:"name" cql:"name"`
-	JsonClaz   string    `json:"json_claz" cql:"json_claz"`
-	Tosca      string    `json:"tosca_type" cql:"tosca_type"`
-	Inputs     []string  `json:"inputs" cql:"inputs"`
-	Outputs    []string  `json:"outputs" cql:"outputs"`
-	Policies   []string  `json:"policies" cql:"policies"`
-	Status     string    `json:"status" cql:"status"`
-	State      string    `json:"state" cql:"state"`
-	CreatedAt  time.Time `json:"created_at" cql:"created_at"`
-	Components []string  `json:"components" cql:"components"`
-}
-
-type Assembly struct {
-	Id         string          `json:"id" cql:"id"`
-	OrgId      string          `json:"org_id" cql:"org_id"`
-	AccountId  string          `json:"account_id" cql:"account_id"`
-	Name       string          `json:"name" cql:"name"`
-	JsonClaz   string          `json:"json_claz" cql:"json_claz"`
-	Tosca      string          `json:"tosca_type" cql:"tosca_type"`
-	Inputs     pairs.JsonPairs `json:"inputs" cql:"inputs"`
-	Outputs    pairs.JsonPairs `json:"outputs" cql:"outputs"`
-	Policies   []*Policy       `json:"policies" cql:"policies"`
-	Status     string          `json:"status" cql:"status"`
-	State      string          `json:"state" cql:"state"`
-	CreatedAt  time.Time       `json:"created_at" cql:"created_at"`
-	Components map[string]*Component
-}
-
 type Policy struct {
 	Name    string   `json:"name" cql:"name"`
 	Type    string   `json:"type" cql:"type"`
 	Members []string `json:"members" cql:"members"`
 }
+
+type Assembly struct {
+	Id           string                `json:"id" cql:"id"`
+	OrgId        string                `json:"org_id" cql:"org_id"`
+	AccountId    string                `json:"account_id" cql:"account_id"`
+	Name         string                `json:"name" cql:"name"`
+	JsonClaz     string                `json:"json_claz" cql:"json_claz"`
+	Tosca        string                `json:"tosca_type" cql:"tosca_type"`
+	Status       string                `json:"status" cql:"status"`
+	State        string                `json:"state" cql:"state"`
+	CreatedAt    time.Time             `json:"created_at" cql:"created_at"`
+	Inputs       pairs.JsonPairs       `json:"inputs" cql:"inputs"`
+	Outputs      pairs.JsonPairs       `json:"outputs" cql:"outputs"`
+	Policies     []*Policy             `json:"policies" cql:"policies"`
+	ComponentIds []string              `json:"components" cql:"components"`
+	Components   map[string]*Component `json:"-" cql:"-"`
+}
+
+type ApiAssembly struct {
+	JsonClaz string     `json:"json_claz"`
+	Results  []Assembly `json:"results"`
+}
+
+var apiArgs api.ApiArgs
 
 func (a *Assembly) String() string {
 	if d, err := yaml.Marshal(a); err != nil {
@@ -85,13 +78,98 @@ func (a *Assembly) String() string {
 	}
 }
 
+func get(ay string) (*Assembly, error) {
+	apiArgs.Path = "/assembly/" + ay
+	cl := api.NewClient(apiArgs)
+	response, err := cl.Get()
+	if err != nil {
+		return nil, err
+	}
+	htmlData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	ac := &ApiAssembly{}
+	err = json.Unmarshal(htmlData, ac)
+	if err != nil {
+		fmt.Println("Error while json parsing  :", err)
+		return nil, err
+	}
+	a := ac.Results[0]
+	return a.dig()
+}
+
+func GetSSHKeys(name string) (*SshKeys, error) {
+	apiArgs.Path = "/sshkeys/" + name
+	cl := api.NewClient(apiArgs)
+	response, err := cl.Get()
+	if err != nil {
+		return nil, err
+	}
+	htmlData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	s := ApiSshKeys{}
+	err = json.Unmarshal(htmlData, s)
+	if err != nil {
+		return nil, err
+	}
+	c := &s.Results
+
+	return c, err
+}
+
+func (a *Assembly) dig() (*Assembly, error) {
+	a.Components = make(map[string]*Component)
+	for _, cid := range a.ComponentIds {
+		if len(strings.TrimSpace(cid)) > 1 {
+			if comp, err := NewComponent(cid); err != nil {
+				log.Errorf("Failed to get component %s from scylla: %s.", cid, err.Error())
+				return a, err
+			} else {
+				a.Components[cid] = comp
+			}
+		}
+	}
+	return a, nil
+}
+
+func (a *Assembly) updateAsm() error {
+	apiArgs.Path = "/assembly/update/"
+	cl := api.NewClient(apiArgs)
+	_, err := cl.Post(a)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewArgs(org string) {
+	apiArgs = newArgs(org)
+	log.Debugf("Api Credentials %v", apiArgs)
+}
+
+func newArgs(org string) api.ApiArgs {
+	return api.ApiArgs{
+		Api_Key: meta.MC.ApiKey,
+		Url:     meta.MC.Api,
+		Email:   meta.MC.AccountId,
+		Org_Id:  org,
+	}
+}
+
 //Assembly into a carton.
 //a carton comprises of self contained boxes
-func mkCarton(aies string, ay string) (*Carton, error) {
+func mkCarton(aies, ay string) (*Carton, error) {
+	fmt.Println("************************", apiArgs)
 	a, err := get(ay)
 	if err != nil {
 		return nil, err
 	}
+	apiArgs.Org_Id = a.OrgId
 	b, err := a.mkBoxes(aies)
 	if err != nil {
 		return nil, err
@@ -130,7 +208,6 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 				b.CartonId = a.Id
 				b.CartonsId = aies
 				b.CartonName = a.Name
-
 				if len(strings.TrimSpace(b.Provider)) <= 0 {
 					b.Provider = a.provider()
 				}
@@ -153,90 +230,36 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 	return newBoxs, nil
 }
 
-func getBig(id string) (*Ambly, error) {
-	a := &Ambly{}
-	ops := ldb.Options{
-		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": id},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Fetchdb(ops, a); err != nil {
-		return nil, err
-	}
-	return a, nil
-}
-
 //Temporary hack to create an assembly from its id.
 //This is used by SetStatus.
 //We need add a Notifier interface duck typed by Box and Carton ?
 func NewAssembly(id string) (*Assembly, error) {
 	return get(id)
 }
-
-func NewAmbly(id string) (*Ambly, error) {
-	return getBig(id)
-}
-
-func NewCarton(aies string, ay string) (*Carton, error) {
+func NewCarton(aies, ay string) (*Carton, error) {
 	return mkCarton(aies, ay)
 }
 
-func (a *Ambly) SetStatus(status utils.Status) error {
-	js := a.getInputs()
+func (a *Assembly) SetStatus(status utils.Status) error {
 	LastStatusUpdate := time.Now().Local().Format(time.RFC822)
 	m := make(map[string][]string, 2)
 	m["lastsuccessstatusupdate"] = []string{LastStatusUpdate}
 	m["status"] = []string{status.String()}
-	js.NukeAndSet(m) //just nuke the matching output key:
+	a.Inputs.NukeAndSet(m) //just nuke the matching output key:
 	a.Status = status.String()
-	update_fields := make(map[string]interface{})
-	update_fields["Inputs"] = js.ToString()
-	update_fields["Status"] = status.String()
-	ops := ldb.Options{
-		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{"org_id"},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": a.Id},
-		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
-	}
-	if err := ldb.Updatedb(ops, update_fields); err != nil {
+	err := a.updateAsm()
+	if err != nil {
 		return err
 	}
 	return a.trigger_event(status)
-
 }
 
-func (a *Ambly) SetState(state utils.State) error {
-	update_fields := make(map[string]interface{})
-	update_fields["State"] = state.String()
-	ops := ldb.Options{
-		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{"org_id"},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": a.Id},
-		CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
-	}
-	if err := ldb.Updatedb(ops, update_fields); err != nil {
-		return err
-	}
-	return nil
+func (a *Assembly) SetState(state utils.State) error {
+	a.State = state.String()
+	return a.updateAsm()
 }
 
-func (a *Ambly) trigger_event(status utils.Status) error {
+func (a *Assembly) trigger_event(status utils.Status) error {
 	mi := make(map[string]string)
 	js := make(pairs.JsonPairs, 0)
 	m := make(map[string][]string, 2)
@@ -287,27 +310,12 @@ func eventNotify(status utils.Status) error {
 }
 
 //update outputs in riak, nuke the matching keys available
-func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
-
+func (a *Assembly) NukeAndSetOutputs(m map[string][]string) error {
 	if len(m) > 0 {
-		log.Debugf("nuke and set outputs in riak [%s]", m)
-		js := a.getOutputs()
-		js.NukeAndSet(m) //just nuke the matching output key:
-		update_fields := make(map[string]interface{})
-		update_fields["Outputs"] = js.ToString()
-		ops := ldb.Options{
-			TableName:   ASSEMBLYBUCKET,
-			Pks:         []string{"id"},
-			Ccms:        []string{"org_id"},
-			Hosts:       meta.MC.Scylla,
-			Keyspace:    meta.MC.ScyllaKeyspace,
-			Username:    meta.MC.ScyllaUsername,
-			Password:    meta.MC.ScyllaPassword,
-			PksClauses:  map[string]interface{}{"id": a.Id},
-			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
-		}
-
-		if err := ldb.Updatedb(ops, update_fields); err != nil {
+		log.Debugf("nuke and set outputs in scylla [%s]", m)
+		a.Outputs.NukeAndSet(m) //just nuke the matching output key:
+		err := a.updateAsm()
+		if err != nil {
 			return err
 		}
 	} else {
@@ -316,78 +324,18 @@ func (a *Ambly) NukeAndSetOutputs(m map[string][]string) error {
 	return nil
 }
 
-func (a *Ambly) NukeKeysInputs(m string) error {
+func (a *Assembly) NukeKeysInputs(m string) error {
 	if len(m) > 0 {
 		log.Debugf("nuke keys from inputs in cassandra [%s]", m)
-		js := a.getInputs()
-		js.NukeKeys(m) //just nuke the matching output key:
-		update_fields := make(map[string]interface{})
-		update_fields["Inputs"] = js.ToString()
-		ops := ldb.Options{
-			TableName:   ASSEMBLYBUCKET,
-			Pks:         []string{"id"},
-			Ccms:        []string{"org_id"},
-			Hosts:       meta.MC.Scylla,
-			Keyspace:    meta.MC.ScyllaKeyspace,
-			Username:    meta.MC.ScyllaUsername,
-			Password:    meta.MC.ScyllaPassword,
-			PksClauses:  map[string]interface{}{"id": a.Id},
-			CcmsClauses: map[string]interface{}{"org_id": a.OrgId},
-		}
-
-		if err := ldb.Updatedb(ops, update_fields); err != nil {
+		a.Inputs.NukeKeys(m) //just nuke the matching output key:
+		err := a.updateAsm()
+		if err != nil {
 			return err
 		}
+	} else {
+		return provision.ErrNoOutputsFound
 	}
 	return nil
-}
-
-//get the assembly and its children (component). we only store the
-//componentid, hence you see that we have a components map to cater to that need.
-func get(id string) (*Assembly, error) {
-	a := &Ambly{}
-	ops := ldb.Options{
-		TableName:   ASSEMBLYBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": id},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Fetchdb(ops, a); err != nil {
-		return nil, err
-	}
-	asm, _ := a.dig()
-	return &asm, nil
-}
-
-func (a *Ambly) dig() (Assembly, error) {
-	asm := Assembly{}
-	asm.Id = a.Id
-	asm.Name = a.Name
-	asm.Tosca = a.Tosca
-	asm.JsonClaz = asm.JsonClaz
-	asm.Inputs = a.getInputs()
-	asm.Outputs = a.getOutputs()
-	asm.Policies = a.getPolicies()
-	asm.Status = a.Status
-	asm.State = a.State
-	asm.CreatedAt = a.CreatedAt
-	asm.Components = make(map[string]*Component)
-	for _, cid := range a.Components {
-		if len(strings.TrimSpace(cid)) > 1 {
-			if comp, err := NewComponent(cid); err != nil {
-				log.Errorf("Failed to get component %s from riak: %s.", cid, err.Error())
-				return asm, err
-			} else {
-				asm.Components[cid] = comp
-			}
-		}
-	}
-	return asm, nil
 }
 
 func (a *Assembly) sshkey() string {
@@ -460,36 +408,6 @@ func (a *Assembly) getHDD() string {
 		return "10"
 	}
 	return a.Inputs.Match(provision.HDD)
-}
-
-func (a *Ambly) getInputs() pairs.JsonPairs {
-	keys := make([]*pairs.JsonPair, 0)
-	for _, in := range a.Inputs {
-		inputs := pairs.JsonPair{}
-		parseStringToStruct(in, &inputs)
-		keys = append(keys, &inputs)
-	}
-	return keys
-}
-
-func (a *Ambly) getOutputs() pairs.JsonPairs {
-	keys := make([]*pairs.JsonPair, 0)
-	for _, in := range a.Outputs {
-		outputs := pairs.JsonPair{}
-		parseStringToStruct(in, &outputs)
-		keys = append(keys, &outputs)
-	}
-	return keys
-}
-
-func (a *Ambly) getPolicies() []*Policy {
-	keys := make([]*Policy, 0)
-	for _, in := range a.Policies {
-		p := Policy{}
-		parseStringToStruct(in, &p)
-		keys = append(keys, &p)
-	}
-	return keys
 }
 
 func parseStringToStruct(str string, data interface{}) error {
