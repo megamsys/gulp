@@ -5,7 +5,6 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
-	"time"
 )
 
 type Carton struct {
@@ -27,7 +26,7 @@ type Carton struct {
 type SshKeys struct {
 	OrgId      string `json:"org_id" cql:"org_id"`
 	Name       string `json:"name" cql:"name"`
-	CreatedAt  time.Time `json:"created_at" cql:"created_at"`
+	CreatedAt  string `json:"created_at" cql:"created_at"`
 	Id         string `json:"id" cql:"id"`
 	JsonClaz   string `json:"json_claz" cql:"json_claz"`
 	Privatekey string `json:"privatekey" cql:"privatekey"`
