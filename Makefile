@@ -44,7 +44,9 @@ endef
 all: check-path get test
 
 # build: check-path get-ref test
-build: check-path get-ref _go_test _gulpd
+build: check-path get _go_test _gulpd
+
+#build: all check-path get hg git bzr get-code test_build
 
 # It does not support GOPATH with multiple paths.
 check-path:
@@ -59,8 +61,6 @@ endif
 
 get: hg git bzr get-code godep
 
-get-ref: hg git bzr get-code-ref godep
-
 hg:
 	$(if $(shell hg), , $(error $(HG_ERROR)))
 
@@ -69,9 +69,6 @@ git:
 
 bzr:
 	$(if $(shell bzr), , $(error $(BZR_ERROR)))
-
-get-code-ref:
-	go get $(GO_EXTRAFLAGS) -u -d -t -insecure ./...
 
 get-code:
 	rm -rf ~/.go
@@ -97,6 +94,8 @@ _sh_tests:
 	@conf/trusty/megam/megam_test.sh
 
 test: _go_test _gulpd _gulpdr
+
+test_build: _go_test _gulpd
 
 _install_deadcode: git
 	go get $(GO_EXTRAFLAGS) github.com/remyoudompheng/go-misc/deadcode
