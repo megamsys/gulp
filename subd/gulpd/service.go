@@ -117,7 +117,7 @@ func (s *Service) processNSQ(msg *nsqc.Message) {
 func (s *Service) boot() {
 	go func() {
 		b, err := (&carton.Payload{}).AsBytes("", s.Meta.CartonId,
-			carton.BOOT, carton.STATE, time.Now())
+			carton.BOOT, carton.STATE, time.Now().Local().Format(time.RFC822))
 		if err != nil {
 			return
 		}

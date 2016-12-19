@@ -16,7 +16,6 @@
 package carton
 
 import (
-	"time"
 	"encoding/json"
 	"io/ioutil"
 	"github.com/megamsys/libgo/api"
@@ -30,7 +29,7 @@ type Payload struct {
 	AccountId string `json:"email" cql:"-"`
 	CatType   string `json:"cattype" cql:"cattype"`
 	Category  string `json:"category" cql:"category"`
-	CreatedAt time.Time `json:"created_at" cql:"created_at"`
+	CreatedAt string `json:"created_at" cql:"created_at"`
 }
 
 type PayloadConvertor interface {
@@ -50,7 +49,7 @@ func NewPayload(b []byte) (*Payload, error) {
 func (p *Payload) AsBytes(id string,
 	catid string, action string,
 	category string,
-	createdat time.Time) ([]byte, error) {
+	createdat string) ([]byte, error) {
 	p.Id = id
 	p.CatId = catid
 	p.Action = action
