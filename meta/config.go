@@ -30,7 +30,7 @@ import (
 
 const (
 	// DefaultRiak is the default riak if one is not provided.
-	DefaultRiak = "localhost:8087"
+	DefaultApi = "http://localhost:9000/v2"
 
 	// DefaultScylla is the default scylla if one is not provided.
 	DefaultScylla = "localhost"
@@ -62,10 +62,6 @@ type Config struct {
 	User           string   `toml:"user"`
 	Api            string   `toml:"vertice_api"`
 	NSQd           []string `toml:"nsqd"`
-	Scylla         []string `toml:"scylla"`
-	ScyllaKeyspace string   `toml:"scylla_keyspace"`
-	ScyllaUsername string   `toml:"scylla_username"`
-	ScyllaPassword string   `toml:"scylla_password"`
 	DockerPath     string   `toml:"docker_path"`
 	Name           string   `toml:"name"`
 	CartonId       string   `toml:"assembly_id"`
@@ -84,8 +80,7 @@ func (c Config) String() string {
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
 	b.Write([]byte("NSQd" + "\t" + strings.Join(c.NSQd, ",") + "\n"))
-	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
-	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
+	b.Write([]byte("VerticeApi " + "\t" + c.Api + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
 	b.Write([]byte("AccountId" + "\t" + c.AccountId + "\n"))
@@ -115,11 +110,8 @@ func NewConfig() *Config {
 		Home:           homeDir,
 		Dir:            defaultDir,
 		User:           DefaultUser,
+		Api: 						DefaultApi,
 		NSQd:           []string{DefaultNSQd},
-		Scylla:         []string{DefaultScylla},
-		ScyllaKeyspace: DefaultScyllaKeyspace,
-		ScyllaUsername: DefaultScyllaUsername,
-		ScyllaPassword: DefaultScyllaPassword,
 		DockerPath:     DefaultDockerPath,
 		Name:           "gulpd",
 		AccountId:      "info@megam.io",
@@ -132,11 +124,8 @@ func (c *Config) ToMap() map[string]string {
 	mp := make(map[string]string)
 	mp["home"] = c.Home
 	mp["dir"] = c.Dir
-	mp["scylla_host"] = strings.Join(c.Scylla, ",")
-	mp["scylla_keyspace"] = c.ScyllaKeyspace
-	mp["scylla_username"] = c.ScyllaUsername
-	mp["scylla_password"] = c.ScyllaPassword
 	mp["api_key"] = c.ApiKey
+	mp["url"] = c.Api
 	return mp
 }
 

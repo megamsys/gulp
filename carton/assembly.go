@@ -30,6 +30,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"time"
+	"fmt"
 )
 
 const (
@@ -110,7 +111,7 @@ func GetSSHKeys(name string) (*SshKeys, error) {
 		return nil, err
 	}
 
-	s := ApiSshKeys{}
+	s := &ApiSshKeys{}
 	err = json.Unmarshal(htmlData, s)
 	if err != nil {
 		return nil, err
@@ -136,7 +137,7 @@ func (a *Assembly) dig() (*Assembly, error) {
 }
 
 func (a *Assembly) updateAsm() error {
-	apiArgs.Path = "/assembly/update/"
+	apiArgs.Path = "/assembly/update"
 	cl := api.NewClient(apiArgs)
 	_, err := cl.Post(a)
 	if err != nil {
@@ -171,6 +172,7 @@ func mkCarton(aies, ay string) (*Carton, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("********************assembly update****************",apiArgs)
 
 	c := &Carton{
 		Id:           ay,   //assembly id
