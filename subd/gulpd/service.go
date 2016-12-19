@@ -64,6 +64,7 @@ func NewService(c *meta.Config, d *Config) *Service {
 	s.Handler = NewHandler(s.Gulpd)
 	c.MkGlobal()
 	d.MkGlobal()
+	carton.NewArgs("")
 	return s
 }
 
@@ -116,7 +117,7 @@ func (s *Service) processNSQ(msg *nsqc.Message) {
 func (s *Service) boot() {
 	go func() {
 		b, err := (&carton.Payload{}).AsBytes("", s.Meta.CartonId,
-			carton.BOOT, carton.STATE, time.Now().Local().Format(time.RFC822))
+			carton.BOOT, carton.STATE, time.Now())
 		if err != nil {
 			return
 		}

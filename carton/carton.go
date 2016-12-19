@@ -5,6 +5,7 @@ import (
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
+	"time"
 )
 
 type Carton struct {
@@ -22,6 +23,22 @@ type Carton struct {
 	Status       utils.Status
 	State        utils.State
 }
+
+type SshKeys struct {
+	OrgId      string `json:"org_id" cql:"org_id"`
+	Name       string `json:"name" cql:"name"`
+	CreatedAt  time.Time `json:"created_at" cql:"created_at"`
+	Id         string `json:"id" cql:"id"`
+	JsonClaz   string `json:"json_claz" cql:"json_claz"`
+	Privatekey string `json:"privatekey" cql:"privatekey"`
+	Publickey  string `json:"publickey" cql:"publickey"`
+}
+
+type ApiSshKeys struct {
+	JsonClaz string `json:"json_claz" cql:"json_claz"`
+	Results []SshKeys `json:"results" cql:"results"`
+}
+
 
 func (a *Carton) String() string {
 	if d, err := yaml.Marshal(a); err != nil {

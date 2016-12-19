@@ -20,14 +20,16 @@ import (
 	"time"
 
 	"github.com/megamsys/gulp/carton/bind"
-	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/gulp/upgrade"
-	ldb "github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/pairs"
 	"github.com/megamsys/libgo/utils"
+	"github.com/megamsys/libgo/api"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"encoding/json"
+	"fmt"
 )
 
 const (
@@ -39,38 +41,6 @@ const (
 	ONECLICK      = "oneclick"
 )
 
-type Component struct {
-	Id                string               `json:"id"`
-	Name              string               `json:"name"`
-	Tosca             string               `json:"tosca_type"`
-	Inputs            pairs.JsonPairs      `json:"inputs"`
-	Outputs           pairs.JsonPairs      `json:"outputs"`
-	Envs              pairs.JsonPairs      `json:"envs"`
-	Repo              Repo                 `json:"repo"`
-	Artifacts         *Artifacts           `json:"artifacts"`
-	RelatedComponents []string             `json:"related_components"`
-	Operations        []*upgrade.Operation `json:"operations"`
-	Status            string               `json:"status"`
-	State             string               `json:"state"`
-	CreatedAt         string               `json:"created_at"`
-}
-
-type ComponentTable struct {
-	Id                string   `json:"id" cql:"id"`
-	Name              string   `json:"name" cql:"name"`
-	Tosca             string   `json:"tosca_type" cql:"tosca_type"`
-	Inputs            []string `json:"inputs" cql:"inputs"`
-	Outputs           []string `json:"outputs" cql:"outputs"`
-	Envs              []string `json:"envs" cql:"envs"`
-	Repo              string   `json:"repo" cql:"repo"`
-	Artifacts         string   `json:"artifacts" cql:"artifacts"`
-	RelatedComponents []string `json:"related_components" cql:"related_components"`
-	Operations        []string `json:"operations" cql:"operations"`
-	Status            string   `json:"status" cql:"status"`
-	State             string   `json:"state" cql:"state"`
-	CreatedAt         string   `json:"created_at" cql:"created_at"`
-}
-
 type Artifacts struct {
 	Type         string          `json:"artifact_type" cql:"type"`
 	Content      string          `json:"content" cql:"content"`
@@ -80,10 +50,32 @@ type Artifacts struct {
 /* Repository represents a repository managed by the manager. */
 type Repo struct {
 	Rtype    string `json:"rtype" cql:"rtype"`
-	Branch   string `json:"branch" cql:"branch"`
 	Source   string `json:"source" cql:"source"`
+	Branch   string `json:"branch" cql:"branch"`
 	Oneclick string `json:"oneclick" cql:"oneclick"`
 	Rurl     string `json:"url" cql:"url"`
+}
+
+
+type ApiComponent struct {
+	JsonClaz string    `json:"json_claz"`
+	Results  []Component `json:"results"`
+}
+
+type Component struct {
+	Id                string                `json:"id"`
+	Name              string                `json:"name"`
+	Tosca             string                `json:"tosca_type"`
+	Inputs            pairs.JsonPairs       `json:"inputs"`
+	Outputs           pairs.JsonPairs       `json:"outputs"`
+	Envs              pairs.JsonPairs       `json:"envs"`
+	Repo              Repo                  `json:"repo"`
+	Artifacts         *Artifacts            `json:"artifacts"`
+	RelatedComponents []string              `json:"related_components"`
+	Operations        []*upgrade.Operation `json:"operations"`
+	Status            string                `json:"status"`
+	State             string                `json:"state"`
+	CreatedAt         time.Time             `json:"created_at"`
 }
 
 func (a *Component) String() string {
@@ -97,24 +89,36 @@ func (a *Component) String() string {
 /**
 **fetch the component json from riak and parse the json to struct
 **/
+
 func NewComponent(id string) (*Component, error) {
-	c := &ComponentTable{Id: id}
-	ops := ldb.Options{
-		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": id},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Fetchdb(ops, c); err != nil {
+	apiArgs.Path = "/components/" + id
+	cl := api.NewClient(apiArgs)
+	response, err := cl.Get()
+	if err != nil {
 		return nil, err
 	}
-	com, _ := c.dig()
-	return &com, nil
+	htmlData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	ac := &ApiComponent{}
+	err = json.Unmarshal(htmlData, ac)
+	if err != nil {
+		fmt.Println("Error while json parsing  :", err)
+		return nil, err
+	}
+	return &ac.Results[0], nil
+}
+
+func (c *Component) updateComponent() error {
+	apiArgs.Path = "/components/update"
+	cl := api.NewClient(apiArgs)
+	_, err := cl.Post(c)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //make a box with the details for a provisioner.
@@ -130,8 +134,8 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Commit:     "",
 		Provider:   c.provider(),
 		PublicIp:   c.publicIp(),
-		Inputs:     c.getInputsMap(),
-		State:    utils.State(c.State),
+		Inputs:     c.Inputs.ToMap(),
+		State:      utils.State(c.State),
 	}
 
 	if &c.Repo != nil {
@@ -153,109 +157,36 @@ func (c *Component) SetStatus(status utils.Status) error {
 	m["lastsuccessstatusupdate"] = []string{LastStatusUpdate}
 	m["status"] = []string{status.String()}
 	c.Inputs.NukeAndSet(m) //just nuke the matching output key:
-
-	update_fields := make(map[string]interface{})
-	update_fields["inputs"] = c.Inputs.ToString()
-	update_fields["status"] = status.String()
-	ops := ldb.Options{
-		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": c.Id},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Updatedb(ops, update_fields); err != nil {
-		return err
+	c.Status = status.String()
+	if err := c.updateComponent(); err != nil {
+	  return err
 	}
 	_ = eventNotify(status)
 	return nil
 }
 
-
 func (c *Component) SetState(state utils.State) error {
-	update_fields := make(map[string]interface{})
-	update_fields["state"] = state.String()
-	ops := ldb.Options{
-		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": c.Id},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Updatedb(ops, update_fields); err != nil {
-		return err
-	}
-	return nil
+	c.State = state.String()
+	return c.updateComponent()
 }
-
 
 func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
 	mutatedOps := make([]*upgrade.Operation, 0, len(opsRan))
-
 	for _, o := range opsRan {
 		mutatedOps = append(mutatedOps, o.Raw)
 	}
+  c.Operations = mutatedOps
+	return c.updateComponent()
+}
 
-	update_fields := make(map[string]interface{})
-	update_fields["operations"] = mutatedOps
-	ops := ldb.Options{
-		TableName:   COMPBUCKET,
-		Pks:         []string{"Id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"Id": c.Id},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Updatedb(ops, update_fields); err != nil {
+func (c *Component) Delete() error {
+	apiArgs.Path = "/components/" + c.Id
+	cl := api.NewClient(apiArgs)
+	_, err := cl.Delete()
+	if err != nil {
 		return err
 	}
-
 	return nil
-}
-
-func (a *ComponentTable) dig() (Component, error) {
-	asm := Component{}
-	asm.Id = a.Id
-	asm.Name = a.Name
-	asm.Tosca = a.Tosca
-	asm.Inputs = a.getInputs()
-	asm.Outputs = a.getOutputs()
-	asm.Envs = a.getEnvs()
-	asm.Repo = a.getRepo()
-	asm.Artifacts = a.getArtifacts()
-	asm.RelatedComponents = a.RelatedComponents
-	asm.Operations = a.getOperations()
-	asm.Status = a.Status
-	asm.CreatedAt = a.CreatedAt
-	return asm, nil
-}
-
-func (c *Component) Delete(compid string) {
-	ops := ldb.Options{
-		TableName:   COMPBUCKET,
-		Pks:         []string{"id"},
-		Ccms:        []string{},
-		Hosts:       meta.MC.Scylla,
-		Keyspace:    meta.MC.ScyllaKeyspace,
-		Username:    meta.MC.ScyllaUsername,
-		Password:    meta.MC.ScyllaPassword,
-		PksClauses:  map[string]interface{}{"id": compid},
-		CcmsClauses: make(map[string]interface{}),
-	}
-	if err := ldb.Deletedb(ops, ComponentTable{}); err != nil {
-		return
-	}
 }
 
 func (c *Component) domain() string {
@@ -286,56 +217,4 @@ func (c *Component) envs() bind.EnvVars {
 		envs = append(envs, bind.EnvVar{Name: i.K, Value: i.V})
 	}
 	return envs
-}
-
-func (a *ComponentTable) getInputs() pairs.JsonPairs {
-	keys := make([]*pairs.JsonPair, 0)
-	for _, in := range a.Inputs {
-		inputs := pairs.JsonPair{}
-		parseStringToStruct(in, &inputs)
-		keys = append(keys, &inputs)
-	}
-	return keys
-}
-
-func (a *ComponentTable) getOutputs() pairs.JsonPairs {
-	keys := make([]*pairs.JsonPair, 0)
-	for _, in := range a.Outputs {
-		outputs := pairs.JsonPair{}
-		parseStringToStruct(in, &outputs)
-		keys = append(keys, &outputs)
-	}
-	return keys
-}
-
-func (a *ComponentTable) getEnvs() pairs.JsonPairs {
-	keys := make([]*pairs.JsonPair, 0)
-	for _, in := range a.Envs {
-		outputs := pairs.JsonPair{}
-		parseStringToStruct(in, &outputs)
-		keys = append(keys, &outputs)
-	}
-	return keys
-}
-
-func (a *ComponentTable) getRepo() Repo {
-	outputs := Repo{}
-	parseStringToStruct(a.Repo, &outputs)
-	return outputs
-}
-
-func (a *ComponentTable) getArtifacts() *Artifacts {
-	outputs := Artifacts{}
-	parseStringToStruct(a.Artifacts, &outputs)
-	return &outputs
-}
-
-func (a *ComponentTable) getOperations() []*upgrade.Operation {
-	keys := make([]*upgrade.Operation, 0)
-	for _, in := range a.Operations {
-		p := upgrade.Operation{}
-		parseStringToStruct(in, &p)
-		keys = append(keys, &p)
-	}
-	return keys
 }

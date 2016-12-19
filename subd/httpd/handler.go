@@ -88,7 +88,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			pprof.Index(w, r)
 		}
 	} else {
-		
+
 	}
 
 	return
@@ -98,7 +98,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) servePing(w http.ResponseWriter, r *http.Request) {
 	v := make(map[string]string)
 	v["name"] = "gulp"
-	v["version"] = "0.9.2"
+	v["version"] = "1.5"
 	w.Header().Set("Content-Type", "application/json")
 }
 

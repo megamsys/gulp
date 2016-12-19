@@ -9,7 +9,6 @@ import (
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
-	ldb "github.com/megamsys/libgo/db"
 	"github.com/megamsys/libgo/utils"
 	"io/ioutil"
 	"net"
@@ -31,21 +30,12 @@ EOF
 `
 )
 
-type SshKeys struct {
-	OrgId      string `json:"org_id" cql:"org_id"`
-	Name       string `json:"name" cql:"name"`
-	CreatedAt  string `json:"created_at" cql:"created_at"`
-	Id         string `json:"id" cql:"id"`
-	JsonClaz   string `json:"json_claz" cql:"json_claz"`
-	Privatekey string `json:"privatekey" cql:"privatekey"`
-	Publickey  string `json:"publickey" cql:"publickey"`
-}
-
 type Machine struct {
 	Name      string
 	Id        string
 	CartonId  string
 	CartonsId string
+	OrgId     string
 	Level     provision.BoxLevel
 	SSH       provision.BoxSSH
 	PublicIp  string
@@ -56,10 +46,7 @@ type Machine struct {
 func (m *Machine) SetStatus(status utils.Status) error {
 	log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
- asm, err := carton.NewAmbly(m.CartonId)
- fmt.Println(asm.State,"*************status******************",asm.Status)
- fmt.Println(asm)
- if err != nil {
+ if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 		return err
 	} else if err = asm.SetStatus(status); err != nil {
 
@@ -80,10 +67,8 @@ func (m *Machine) SetStatus(status utils.Status) error {
 func (m *Machine) SetState(state utils.State) error {
 	log.Debugf("  set state[%s] of machine (%s, %s)", m.Id, m.Name, state.String())
 
-	asm, err := carton.NewAmbly(m.CartonId)
-	fmt.Println(asm.State,"************State*******************",asm.Status)
-	fmt.Println(asm)
-	if err != nil {
+
+	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 		return err
 	} else if err = asm.SetState(state); err != nil {
 
@@ -109,7 +94,7 @@ func (m *Machine) FindAndSetIps() error {
 
 	log.Debugf("  find and setips of machine (%s, %s)", m.Id, m.Name)
 
-	if asm, err := carton.NewAmbly(m.CartonId); err != nil {
+	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 		return err
 	} else if err = asm.NukeAndSetOutputs(ips); err != nil {
 		return err
@@ -153,25 +138,11 @@ func (m *Machine) findIps() map[string][]string {
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
 	if strings.TrimSpace(m.SSH.Password) == "" || strings.TrimSpace(m.SSH.User) == "" {
-		asm, err := carton.NewAmbly(m.CartonId)
+    c, err := carton.GetSSHKeys(m.SSH.Pub())
 		if err != nil {
 			return err
 		}
-		c := &SshKeys{}
-		ops := ldb.Options{
-			TableName:   SSHKEYSBUCKET,
-			Pks:         []string{"Name"},
-			Ccms:        []string{"Org_id"},
-			Hosts:       meta.MC.Scylla,
-			Keyspace:    meta.MC.ScyllaKeyspace,
-			Username:    meta.MC.ScyllaUsername,
-			Password:    meta.MC.ScyllaPassword,
-			PksClauses:  map[string]interface{}{"Name": m.SSH.Pub()},
-			CcmsClauses: map[string]interface{}{"Org_id": asm.OrgId},
-		}
-		if err = ldb.Fetchdb(ops, c); err != nil {
-			return err
-		}
+
 		f, err := os.OpenFile(m.SSH.AuthKeysFile(), os.O_APPEND|os.O_WRONLY, 0600)
 		if err != nil {
 			return err
@@ -195,7 +166,7 @@ func (m *Machine) AppendAuthKeys() error {
 			return err
 		}
 
-		if asm, err := carton.NewAmbly(m.CartonId); err != nil {
+		if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 			return err
 		} else if err = asm.NukeKeysInputs(carton.PASSWORD); err != nil {
 			return err
@@ -217,8 +188,9 @@ func (m *Machine) ChangeState(state string) error {
 		carton.Requests{
 			CatId:     m.CartonsId,
 			Action:    m.Status.String(),
+			AccountId: meta.MC.AccountId,
 			Category:  state,
-			CreatedAt: time.Now().Local().Format(time.RFC822),
+			CreatedAt: time.Now(),
 		})
 
 	if err != nil {
