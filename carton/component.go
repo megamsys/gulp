@@ -29,7 +29,6 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"encoding/json"
-	"fmt"
 )
 
 const (
@@ -75,7 +74,7 @@ type Component struct {
 	Operations        []*upgrade.Operation `json:"operations"`
 	Status            string                `json:"status"`
 	State             string                `json:"state"`
-	CreatedAt         time.Time             `json:"created_at"`
+	CreatedAt         string             `json:"created_at"`
 }
 
 func (a *Component) String() string {
@@ -105,7 +104,6 @@ func NewComponent(id string) (*Component, error) {
 	ac := &ApiComponent{}
 	err = json.Unmarshal(htmlData, ac)
 	if err != nil {
-		fmt.Println("Error while json parsing  :", err)
 		return nil, err
 	}
 	return &ac.Results[0], nil

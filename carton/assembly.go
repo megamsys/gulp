@@ -17,7 +17,6 @@ package carton
 
 import (
 	"encoding/json"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
@@ -55,7 +54,7 @@ type Assembly struct {
 	Tosca        string                `json:"tosca_type" cql:"tosca_type"`
 	Status       string                `json:"status" cql:"status"`
 	State        string                `json:"state" cql:"state"`
-	CreatedAt    time.Time             `json:"created_at" cql:"created_at"`
+	CreatedAt    string		             `json:"created_at" cql:"created_at"`
 	Inputs       pairs.JsonPairs       `json:"inputs" cql:"inputs"`
 	Outputs      pairs.JsonPairs       `json:"outputs" cql:"outputs"`
 	Policies     []*Policy             `json:"policies" cql:"policies"`
@@ -93,7 +92,6 @@ func get(ay string) (*Assembly, error) {
 	ac := &ApiAssembly{}
 	err = json.Unmarshal(htmlData, ac)
 	if err != nil {
-		fmt.Println("Error while json parsing  :", err)
 		return nil, err
 	}
 	a := ac.Results[0]
@@ -164,7 +162,6 @@ func newArgs(org string) api.ApiArgs {
 //Assembly into a carton.
 //a carton comprises of self contained boxes
 func mkCarton(aies, ay string) (*Carton, error) {
-	fmt.Println("************************", apiArgs)
 	a, err := get(ay)
 	if err != nil {
 		return nil, err

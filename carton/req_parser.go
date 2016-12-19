@@ -18,7 +18,6 @@ package carton
 import (
 	"fmt"
 	"strings"
-  "time"
 	"gopkg.in/yaml.v2"
 )
 
@@ -136,7 +135,7 @@ type Requests struct {
 	Action    string `json:"action"`   // start, stop ...
 	AccountId string `json:"email"`
 	Category  string `json:"category"` // state, control, policy
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt string `json:"created_at"`
 }
 
 type ApiRequests struct {

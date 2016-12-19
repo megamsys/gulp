@@ -190,7 +190,7 @@ func (m *Machine) ChangeState(state string) error {
 			Action:    m.Status.String(),
 			AccountId: meta.MC.AccountId,
 			Category:  state,
-			CreatedAt: time.Now(),
+			CreatedAt: time.Now().String(),
 		})
 
 	if err != nil {
