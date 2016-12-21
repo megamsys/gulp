@@ -90,8 +90,7 @@ func (a *Component) String() string {
 **/
 
 func NewComponent(id string) (*Component, error) {
-	apiArgs.Path = "/components/" + id
-	cl := api.NewClient(apiArgs)
+	cl := api.NewClient(apiArgs,  "/components/" + id)
 	response, err := cl.Get()
 	if err != nil {
 		return nil, err
@@ -110,8 +109,7 @@ func NewComponent(id string) (*Component, error) {
 }
 
 func (c *Component) updateComponent() error {
-	apiArgs.Path = "/components/update"
-	cl := api.NewClient(apiArgs)
+	cl := api.NewClient(apiArgs, "/components/update")
 	_, err := cl.Post(c)
 	if err != nil {
 		return err
@@ -178,8 +176,7 @@ func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
 }
 
 func (c *Component) Delete() error {
-	apiArgs.Path = "/components/" + c.Id
-	cl := api.NewClient(apiArgs)
+	cl := api.NewClient(apiArgs, "/components/" + c.Id)
 	_, err := cl.Delete()
 	if err != nil {
 		return err

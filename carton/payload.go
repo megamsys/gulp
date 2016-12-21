@@ -74,8 +74,7 @@ func (p *Payload) Convert() (*Requests, error) {
 		log.Debugf("Requests %v", r)
 		return r, nil
 	} else {
-		apiArgs.Path = "/requests/" +  p.Id
-		cl := api.NewClient(apiArgs)
+		cl := api.NewClient(apiArgs, "/requests/" +  p.Id)
 		response, err := cl.Get()
 		if err != nil {
 			return nil, err
