@@ -79,8 +79,7 @@ func (a *Assembly) String() string {
 }
 
 func get(ay string) (*Assembly, error) {
-	apiArgs.Path = "/assembly/" + ay
-	cl := api.NewClient(apiArgs)
+	cl := api.NewClient(apiArgs, "/assembly/" + ay)
 	response, err := cl.Get()
 	if err != nil {
 		return nil, err
@@ -100,8 +99,7 @@ func get(ay string) (*Assembly, error) {
 }
 
 func GetSSHKeys(name string) (*SshKeys, error) {
-	apiArgs.Path = "/sshkeys/" + name
-	cl := api.NewClient(apiArgs)
+	cl := api.NewClient(apiArgs, "/sshkeys/" + name)
 	response, err := cl.Get()
 	if err != nil {
 		return nil, err
@@ -137,8 +135,7 @@ func (a *Assembly) dig() (*Assembly, error) {
 }
 
 func (a *Assembly) updateAsm() error {
-	apiArgs.Path = "/assembly/update"
-	cl := api.NewClient(apiArgs)
+	cl := api.NewClient(apiArgs, "/assembly/update")
 	_, err := cl.Post(a)
 	if err != nil {
 		return err
