@@ -30,7 +30,6 @@ import (
 	"io/ioutil"
 	"strings"
 	"time"
-	"fmt"
 )
 
 const (
@@ -169,7 +168,6 @@ func mkCarton(aies, ay string) (*Carton, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("********************assembly update****************",apiArgs)
 
 	c := &Carton{
 		Id:           ay,   //assembly id
