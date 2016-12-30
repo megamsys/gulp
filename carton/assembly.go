@@ -27,10 +27,8 @@ import (
 	"github.com/megamsys/libgo/utils"
 	constants "github.com/megamsys/libgo/utils"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"strings"
 	"time"
-	"fmt"
 )
 
 const (
@@ -84,13 +82,9 @@ func get(ay string) (*Assembly, error) {
 	if err != nil {
 		return nil, err
 	}
-	htmlData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
 
 	ac := &ApiAssembly{}
-	err = json.Unmarshal(htmlData, ac)
+	err = json.Unmarshal(response, ac)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +98,9 @@ func GetSSHKeys(name string) (*SshKeys, error) {
 	if err != nil {
 		return nil, err
 	}
-	htmlData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
 
 	s := &ApiSshKeys{}
-	err = json.Unmarshal(htmlData, s)
+	err = json.Unmarshal(response, s)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +159,6 @@ func mkCarton(aies, ay string) (*Carton, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("********************assembly update****************",apiArgs)
 
 	c := &Carton{
 		Id:           ay,   //assembly id

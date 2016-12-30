@@ -17,7 +17,6 @@ package carton
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"github.com/megamsys/libgo/api"
 	log "github.com/Sirupsen/logrus"
 )
@@ -79,13 +78,9 @@ func (p *Payload) Convert() (*Requests, error) {
 		if err != nil {
 			return nil, err
 		}
-		htmlData, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return nil, err
-		}
 
 		res := &ApiRequests{}
-		err = json.Unmarshal(htmlData, res)
+		err = json.Unmarshal(response, res)
 		if err != nil {
 			return nil, err
 		}
