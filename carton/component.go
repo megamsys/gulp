@@ -27,7 +27,6 @@ import (
 	"github.com/megamsys/libgo/utils"
 	"github.com/megamsys/libgo/api"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"encoding/json"
 )
 
@@ -95,13 +94,9 @@ func NewComponent(id string) (*Component, error) {
 	if err != nil {
 		return nil, err
 	}
-	htmlData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
 
 	ac := &ApiComponent{}
-	err = json.Unmarshal(htmlData, ac)
+	err = json.Unmarshal(response, ac)
 	if err != nil {
 		return nil, err
 	}
