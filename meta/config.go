@@ -43,6 +43,7 @@ const (
 
   DefaultUser = "root"
 
+	DefaultEmail = "info@megam.io"
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -61,6 +62,7 @@ type Config struct {
 	Dir            string   `toml:"dir"`
 	User           string   `toml:"user"`
 	Api            string   `toml:"vertice_api"`
+	AdminUser      string   `toml:"admin_email"`
 	NSQd           []string `toml:"nsqd"`
 	DockerPath     string   `toml:"docker_path"`
 	Name           string   `toml:"name"`
@@ -78,6 +80,7 @@ func (c Config) String() string {
 	cmd.Colorfy("Meta", "green", "", "") + "\n"))
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
+	b.Write([]byte("AdminUser" + "\t" + c.AdminUser + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
 	b.Write([]byte("NSQd" + "\t" + strings.Join(c.NSQd, ",") + "\n"))
 	b.Write([]byte("VerticeApi " + "\t" + c.Api + "\n"))
@@ -114,7 +117,7 @@ func NewConfig() *Config {
 		NSQd:           []string{DefaultNSQd},
 		DockerPath:     DefaultDockerPath,
 		Name:           "gulpd",
-		AccountId:      "info@megam.io",
+		AccountId:      DefaultEmail,
 		CartonId:       DefaultAssemblyID,
 		ApiKey:         "abcdefghijklmnopqrstuvwxyz",
 	}

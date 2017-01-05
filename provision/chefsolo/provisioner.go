@@ -69,6 +69,7 @@ type ReposBitnami struct {
 	BitnamiURL      string   `json:"bitnami_url"`
 	BitnamiUserName string   `json:"bitnami_username"`
 	BitnamiPassword string   `json:"bitnami_password"`
+	BitnamiEmail    string   `json:"bitnami_email"`
 	RepoSource      string   `json:"provider"`
 }
 
@@ -215,6 +216,7 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 		BitnamiURL:    repo,
 		BitnamiUserName: username,
 		BitnamiPassword: pswd,
+		BitnamiEmail: meta.MC.AdminUser,
 		RepoSource: src,
 	})
 
