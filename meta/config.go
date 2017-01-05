@@ -43,6 +43,7 @@ const (
 
   DefaultUser = "root"
 
+	DefaultEmail = "info@megam.io"
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -114,7 +115,7 @@ func NewConfig() *Config {
 		NSQd:           []string{DefaultNSQd},
 		DockerPath:     DefaultDockerPath,
 		Name:           "gulpd",
-		AccountId:      "info@megam.io",
+		AccountId:      DefaultEmail,
 		CartonId:       DefaultAssemblyID,
 		ApiKey:         "abcdefghijklmnopqrstuvwxyz",
 	}

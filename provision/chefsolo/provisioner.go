@@ -69,6 +69,7 @@ type ReposBitnami struct {
 	BitnamiURL      string   `json:"bitnami_url"`
 	BitnamiUserName string   `json:"bitnami_username"`
 	BitnamiPassword string   `json:"bitnami_password"`
+	BitnamiEmail    string   `json:"bitnami_email"`
 	RepoSource      string   `json:"provider"`
 }
 
@@ -207,6 +208,7 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 	if len(b.Inputs) > 0  {
 		username = b.Inputs[provision.BITUSERNAME]
 		pswd = b.Inputs[provision.BITPASSWORD]
+		email = b.Inputs[provision.BITNAME_ADMIN_EMAIL]
 	}
 
 	DefaultAttributes, _ := json.Marshal(&ReposBitnami{
@@ -215,6 +217,7 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 		BitnamiURL:    repo,
 		BitnamiUserName: username,
 		BitnamiPassword: pswd,
+		BitnamiEmail: email,
 		RepoSource: src,
 	})
 
