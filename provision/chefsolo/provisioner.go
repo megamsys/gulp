@@ -208,7 +208,7 @@ func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) erro
 	if len(b.Inputs) > 0  {
 		username = b.Inputs[provision.BITUSERNAME]
 		pswd = b.Inputs[provision.BITPASSWORD]
-		email = b.Inputs[provision.BITNAME_ADMIN_EMAIL]
+		email = b.Inputs[provision.BITUSERNAME]
 	}
 
 	DefaultAttributes, _ := json.Marshal(&ReposBitnami{
