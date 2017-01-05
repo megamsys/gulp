@@ -199,7 +199,7 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 
 func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- stateup box (%s)\n", b.GetFullName())))
-	var repo, src, username,pswd string
+	var repo, src, username,pswd, email string
 	if b.Repo != nil {
 		repo = b.Repo.Gitr()
 		src = b.Repo.RepoProvider()
