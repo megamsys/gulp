@@ -341,7 +341,6 @@ var mileStoneUpdate = action.Action{
 	},
 }
 
-
 var setFinalState = action.Action{
 	Name: "set-final-state",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
@@ -357,5 +356,25 @@ var setChefsoloStatus = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		mach.Status = constants.StatusAppDeploying
 		return mach, nil
+	},
+}
+
+
+var resetNewPassword = action.Action{
+	Name: "set-new-password",
+	Forward: func(ctx action.FWContext) (action.Result, error) {
+		mach := ctx.Previous.(machine.Machine)
+		args := ctx.Params[0].(runMachineActionsArgs)
+		writer := args.writer
+		fmt.Fprintf(writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(),constants.LAUNCHED )))
+		if err := mach.ResetPassword(); err != nil {
+			return nil, err
+		}
+		fmt.Fprintf(writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)OK", args.box.GetFullName(), constants.LAUNCHED)))
+
+		return mach, nil
+	},
+	Backward: func(ctx action.BWContext) {
+		//this is tricky..
 	},
 }

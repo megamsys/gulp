@@ -68,6 +68,7 @@ type Carton interface {
 type Deployer interface {
 	Bootstrap(b *Box, w io.Writer) error
 	Stateup(b *Box, w io.Writer) error
+	ResetPassword(b *Box, w io.Writer) error
 }
 
 type BitnamiDeployer interface {

@@ -359,3 +359,27 @@ func (p chefsoloProvisioner) Command() []string {
 	}
 	return cmd
 }
+
+
+func (p *chefsoloProvisioner) ResetPassword(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("\n--- reset machine root password (%s)\n", b.GetFullName())))
+	actions := []*action.Action{
+		&updateStatusInScylla,
+		&resetNewPassword,
+		&updateStatusInScylla,
+	}
+	pipeline := action.NewPipeline(actions...)
+	args := runMachineActionsArgs{
+		box:           b,
+		writer:        w,
+		machineStatus: constants.StatusResetPassword,
+		provisioner:   p,
+	}
+
+	if err := pipeline.Execute(args); err != nil {
+		log.Errorf("error on execute reset password pipeline for machine %s - %s", b.GetFullName(), err)
+		return err
+	}
+	fmt.Fprintf(w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("--- reset machine root password (%s) OK\n", b.GetFullName())))
+	return nil
+}

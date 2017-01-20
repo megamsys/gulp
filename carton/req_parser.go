@@ -37,6 +37,7 @@ var (
 	//the operation actions is just one called upgrade
 	OPERATIONS = "operations"
 	UPGRADE    = "upgrade"
+	RESETPASSWORD = "resetpassword"
 )
 
 type ReqParser struct {
@@ -106,6 +107,10 @@ func (p *ReqParser) parseOperations(action string) (MegdProcessor, error) {
 	switch action {
 	case UPGRADE:
 		return UpgradeProcess{
+			Name: p.name,
+		}, nil
+	case RESETPASSWORD:
+		return ResetPasswordProcess{
 			Name: p.name,
 		}, nil
 	default:

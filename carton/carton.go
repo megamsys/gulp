@@ -161,3 +161,16 @@ func (c *Carton) Restart() error {
 	}
 	return nil
 }
+
+
+// reset vm root password
+
+func (c *Carton) ResetPassword() error {
+	boxs := *c.Boxes
+		err := ResetPassword(&ResetOpts{B: &boxs[0]})
+		if err != nil {
+			log.Errorf("Unable to reset vm root password %s", err)
+			return err
+		}
+	return nil
+}
