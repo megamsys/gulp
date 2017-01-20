@@ -28,6 +28,8 @@ id -u %s &>/dev/null || useradd %s
 %s
 EOF
 `
+resetPwd = `echo %s:%s | /usr/sbin/chpasswd
+`
 )
 
 type Machine struct {
@@ -203,5 +205,22 @@ func (m *Machine) ChangeState(state string) error {
 	}
 
 	defer pons.Stop()
+	return nil
+}
+
+func (m *Machine) ResetPassword() error {
+	pwd, _ := b64.StdEncoding.DecodeString(m.SSH.Password)
+	_, err := exec.Command(fmt.Sprintf(cmd, m.SSH.User, string(pwd))).Output()
+	if err != nil {
+		return err
+	}
+
+	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
+		return err
+	} else if err = asm.NukeKeysInputs(carton.PASSWORD); err != nil {
+		return err
+	}
+
+	log.Debugf("  password updated successfully")
 	return nil
 }
