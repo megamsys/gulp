@@ -34,10 +34,9 @@ type SshKeys struct {
 }
 
 type ApiSshKeys struct {
-	JsonClaz string `json:"json_claz" cql:"json_claz"`
-	Results []SshKeys `json:"results" cql:"results"`
+	JsonClaz string    `json:"json_claz" cql:"json_claz"`
+	Results  []SshKeys `json:"results" cql:"results"`
 }
-
 
 func (a *Carton) String() string {
 	if d, err := yaml.Marshal(a); err != nil {
@@ -162,15 +161,14 @@ func (c *Carton) Restart() error {
 	return nil
 }
 
-
 // reset vm root password
 
 func (c *Carton) ResetPassword() error {
 	boxs := *c.Boxes
-		err := ResetPassword(&ResetOpts{B: &boxs[0]})
-		if err != nil {
-			log.Errorf("Unable to reset vm root password %s", err)
-			return err
-		}
+	err := ResetPassword(&ResetOpts{B: &boxs[0]})
+	if err != nil {
+		log.Errorf("Unable to reset vm root password %s", err)
+		return err
+	}
 	return nil
 }

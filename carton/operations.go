@@ -2,15 +2,15 @@ package carton
 
 import (
 	"bytes"
-	"io"
-	"time"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/libgo/cmd"
+	"io"
+	"time"
 )
 
 type ResetOpts struct {
-	B     *provision.Box
+	B *provision.Box
 }
 
 // Deploy runs a deployment of an application.
@@ -23,10 +23,10 @@ func ResetPassword(opts *ResetOpts) error {
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	err := updateNewPassword(opts, writer)
 	elapsed := time.Since(start)
-  if err != nil {
+	if err != nil {
 		return err
 	}
-  log.Debugf("%s in (%s)\n%s",
+	log.Debugf("%s in (%s)\n%s",
 		cmd.Colorfy(opts.B.GetFullName(), "cyan", "", "bold"),
 		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
 		cmd.Colorfy(outBuffer.String(), "yellow", "", ""))
@@ -34,8 +34,8 @@ func ResetPassword(opts *ResetOpts) error {
 }
 
 func updateNewPassword(opts *ResetOpts, writer io.Writer) error {
-   	if deployer, ok := Provisioner.(provision.Deployer); ok {
-   		deployer.ResetPassword(opts.B, writer)
-   	}
-  return nil
+	if deployer, ok := Provisioner.(provision.Deployer); ok {
+		deployer.ResetPassword(opts.B, writer)
+	}
+	return nil
 }

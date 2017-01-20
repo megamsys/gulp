@@ -17,8 +17,8 @@ package carton
 
 import (
 	"fmt"
-	"strings"
 	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 var (
@@ -35,8 +35,8 @@ var (
 	RESTART = "restart"
 
 	//the operation actions is just one called upgrade
-	OPERATIONS = "operations"
-	UPGRADE    = "upgrade"
+	OPERATIONS    = "operations"
+	UPGRADE       = "upgrade"
 	RESETPASSWORD = "resetpassword"
 )
 
@@ -135,19 +135,18 @@ func (e *ParseError) Error() string {
 }
 
 type Requests struct {
-	Id        string `json:"id"`       //assembly id
-	CatId     string `json:"cat_id"`   // assemblies_id
-	Action    string `json:"action"`   // start, stop ...
+	Id        string `json:"id"`     //assembly id
+	CatId     string `json:"cat_id"` // assemblies_id
+	Action    string `json:"action"` // start, stop ...
 	AccountId string `json:"email"`
 	Category  string `json:"category"` // state, control, policy
 	CreatedAt string `json:"created_at"`
 }
 
 type ApiRequests struct {
-	JsonClaz string `json:"json_claz" cql:"json_claz"`
+	JsonClaz string     `json:"json_claz" cql:"json_claz"`
 	Results  []Requests `json:"results" cql:"results"`
 }
-
 
 func (r *Requests) String() string {
 	if d, err := yaml.Marshal(r); err != nil {

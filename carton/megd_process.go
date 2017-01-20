@@ -120,7 +120,6 @@ func (s UpgradeProcess) Process(ca *Carton) error {
 	return nil
 }
 
-
 // ResetPassword to reset new password of VM root user.
 type ResetPasswordProcess struct {
 	Name string
@@ -128,7 +127,7 @@ type ResetPasswordProcess struct {
 
 func (s ResetPasswordProcess) String() string {
 	var buf bytes.Buffer
-	_, _ = buf.WriteString("UPGRADE CARTON ")
+	_, _ = buf.WriteString("RESET PASSWORD CARTON ")
 	_, _ = buf.WriteString(s.Name)
 	return buf.String()
 }
@@ -139,8 +138,6 @@ func (s ResetPasswordProcess) Process(ca *Carton) error {
 	}
 	return nil
 }
-
-
 
 // StateupProcess represents a command for restarting  cartons.
 type StateupProcess struct {

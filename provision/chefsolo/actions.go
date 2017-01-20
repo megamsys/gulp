@@ -37,7 +37,7 @@ type runMachineActionsArgs struct {
 	machineStatus utils.Status
 	machineState  utils.State
 	provisioner   *chefsoloProvisioner
-	state          string
+	state         string
 }
 
 var updateStatusInScylla = action.Action{
@@ -50,14 +50,14 @@ var updateStatusInScylla = action.Action{
 			mach = ctx.Previous.(machine.Machine)
 		} else {
 			mach = machine.Machine{
-				Id:       args.box.Id,
-				CartonId: args.box.CartonId,
+				Id:        args.box.Id,
+				CartonId:  args.box.CartonId,
 				CartonsId: args.box.CartonsId,
-				Level:    args.box.Level,
-				Name:     args.box.GetFullName(),
-				SSH:      args.box.SSH,
-				Status:   args.machineStatus,
-				State:    args.machineState,
+				Level:     args.box.Level,
+				Name:      args.box.GetFullName(),
+				SSH:       args.box.SSH,
+				Status:    args.machineStatus,
+				State:     args.machineState,
 			}
 		}
 		if err := mach.SetStatus(mach.Status); err != nil {
@@ -110,7 +110,7 @@ var updateIpsInSyclla = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.Status = constants.StatusError
-    c.State = constants.StatePreError
+		c.State = constants.StatePreError
 		_ = provision.EventNotify(constants.StatusIpsFailure)
 	},
 }
@@ -128,7 +128,7 @@ var appendAuthKeys = action.Action{
 		}
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  append authorized keys for box (%s) OK\n", args.box.GetFullName())))
 
-		_	= provision.EventNotify(constants.StatusAuthkeysUpdated)
+		_ = provision.EventNotify(constants.StatusAuthkeysUpdated)
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
@@ -147,7 +147,7 @@ var changeStateofMachine = action.Action{
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine from (%s, %s)\n", args.box.GetFullName(), mach.Status.String())))
 		mach.ChangeState(args.state)
 		mach.Status = constants.StatusBootstrapped
-    mach.State  = constants.StateBootstrapped
+		mach.State = constants.StateBootstrapped
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  change state of machine (%s, %s) OK\n", args.box.GetFullName(), mach.Status.String())))
 		return mach, nil
 	},
@@ -328,7 +328,7 @@ var mileStoneUpdate = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		writer := args.writer
-		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(),constants.LAUNCHED )))
+		fmt.Fprintf(writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(), constants.LAUNCHED)))
 		if err := mach.SetState(mach.State); err != nil {
 			return nil, err
 		}
@@ -346,7 +346,7 @@ var setFinalState = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
 		mach.Status = constants.StatusRunning
-		mach.State  = constants.StateRunning
+		mach.State = constants.StateRunning
 		return mach, nil
 	},
 }
@@ -359,14 +359,13 @@ var setChefsoloStatus = action.Action{
 	},
 }
 
-
 var resetNewPassword = action.Action{
 	Name: "set-new-password",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		writer := args.writer
-		fmt.Fprintf(writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(),constants.LAUNCHED )))
+		fmt.Fprintf(writer, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf(" update milestone state for machine (%s, %s)", args.box.GetFullName(), constants.LAUNCHED)))
 		if err := mach.ResetPassword(); err != nil {
 			return nil, err
 		}
