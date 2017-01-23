@@ -43,7 +43,6 @@ const (
 
 	BITUSERNAME = "bitnami_username"
 	BITPASSWORD = "bitnami_password"
-	BITNAME_ADMIN_EMAIL = "bitnami_admin_email"
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
 
