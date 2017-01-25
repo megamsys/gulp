@@ -71,7 +71,9 @@ type ReposBitnami struct {
 	BitnamiPassword string   `json:"bitnami_password,omitempty"`
 	BitnamiEmail    string   `json:"bitnami_email,omitempty"`
 	BitnamiDBPassword string `json:"bitnami_database_password,omitempty"`
-	RepoSource      string   `json:"provider,omitempty"`
+	OwncloudSite      string   `json:"bitnami_owncloud_site,omitempty"`
+	PrestashopSite    string   `json:"bitnami_prestashop_site,omitempty"`
+	RepoSource        string   `json:"provider,omitempty"`
 }
 
 // Provisioner is a provisioner based on Chef Solo.
@@ -200,35 +202,52 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 
 func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- stateup box (%s)\n", b.GetFullName())))
-	var repo, src string
-	var DefaultAttributes []byte
-	if b.Repo != nil {
-		repo = b.Repo.Gitr()
-		src = b.Repo.RepoProvider()
-	}
-
-	if len(b.Inputs) > 0  {
-		DefaultAttributes, _ = json.Marshal(&ReposBitnami{
-			RunList:    []string{"recipe[" + p.Cookbook + "]"},
-			ToscaType:  b.GetShortTosca(),
-			BitnamiURL:    repo,
-			BitnamiUserName: b.Inputs[provision.BITUSERNAME],
-			BitnamiPassword: b.Inputs[provision.BITPASSWORD],
-			BitnamiEmail: b.Inputs[provision.BITUSERNAME],
-			BitnamiDBPassword: b.Inputs[provision.BITPASSWORD],
-			RepoSource: src,
-		})
-	}
-
-	p.Attributes = string(DefaultAttributes)
+	p.Attributes = string(p.setBitnamiAttributes(b))
 	p.Format = DefaultFormat
 	p.LogLevel = DefaultLogLevel
 	p.RootPath = meta.MC.Dir
 	p.Sudo = DefaultSudo
-
 	return p.kickOffSolo(b, w)
 }
 
+func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
+	var repo, src, ip string
+	if b.Repo != nil {
+		repo = b.Repo.Gitr()
+		src = b.Repo.RepoProvider()
+	}
+	bitAtr := &ReposBitnami{
+		RunList:    []string{"recipe[" + p.Cookbook + "]"},
+		ToscaType:  b.GetShortTosca(),
+		BitnamiURL: repo,
+		RepoSource: src,
+	}
+
+	if b.Outputs[carton.PUBLICIPV4] != "" {
+    ip = b.Outputs[carton.PUBLICIPV4]
+	} else if b.Outputs[carton.PRIVATEIPV4] != "" {
+		ip = b.Outputs[carton.PRIVATEIPV4]
+	}
+
+	 for _,v := range provision.BitnamiAttributes {
+		 switch true {
+		 case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
+				bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
+				bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
+		 case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
+				bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
+	   case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
+			  bitAtr.BitnamiDBPassword = b.Environments[provision.BITPASSWORD]
+		 case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
+		    bitAtr.PrestashopSite = ip
+	   case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
+	    	bitAtr.OwncloudSite = ip
+		 }
+	 }
+
+	res, _ := json.Marshal(bitAtr)
+  return res
+}
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..

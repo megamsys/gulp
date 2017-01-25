@@ -97,7 +97,7 @@ var updateIpsInSyclla = action.Action{
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  update ips for box (%s)\n", args.box.GetFullName())))
-		err := mach.FindAndSetIps()
+		err := mach.FindAndSetIps(args.box)
 		if err != nil {
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  update ips for box failed\n%s\n", err.Error())))
 			return nil, err
