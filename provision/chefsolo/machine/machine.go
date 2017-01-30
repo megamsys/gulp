@@ -211,7 +211,7 @@ func (m *Machine) ChangeState(state string) error {
 
 func (m *Machine) ResetPassword() error {
 	pwd, _ := b64.StdEncoding.DecodeString(m.SSH.Password)
-	_, err := exec.Command(fmt.Sprintf(cmd, m.SSH.User, string(pwd))).Output()
+	_, err := exec.Command("sh","-c",fmt.Sprintf(resetPwd, m.SSH.User, string(pwd))).Output()
 	if err != nil {
 		return err
 	}
