@@ -91,16 +91,17 @@ func (m *Machine) SetState(state utils.State) error {
 
 // FindAndSetIps returns the non loopback local IP4 (can be public or private)
 // we also have to add it in for ipv6
-func (m *Machine) FindAndSetIps() error {
+func (m *Machine) FindAndSetIps(b *provision.Box) error {
 	ips := m.findIps()
 
 	log.Debugf("  find and setips of machine (%s, %s)", m.Id, m.Name)
-
-	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
+  asm, err := carton.NewAssembly(m.CartonId)
+	if  err != nil {
 		return err
 	} else if err = asm.NukeAndSetOutputs(ips); err != nil {
 		return err
 	}
+  b.Outputs = asm.Outputs.ToMap()
 	return nil
 }
 
@@ -210,7 +211,7 @@ func (m *Machine) ChangeState(state string) error {
 
 func (m *Machine) ResetPassword() error {
 	pwd, _ := b64.StdEncoding.DecodeString(m.SSH.Password)
-	_, err := exec.Command(fmt.Sprintf(cmd, m.SSH.User, string(pwd))).Output()
+	_, err := exec.Command("sh","-c",fmt.Sprintf(resetPwd, m.SSH.User, string(pwd))).Output()
 	if err != nil {
 		return err
 	}

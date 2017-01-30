@@ -342,10 +342,15 @@ func (a *Assembly) domain() string {
 func (a *Assembly) provider() string {
 	return a.Inputs.Match(provision.PROVIDER)
 }
-func (a *Assembly) publicIp() string {
 
+func (a *Assembly) publicIp() string {
 	return a.Outputs.Match(PUBLICIPV4)
 }
+
+func (a *Assembly) privateIp() string {
+	return a.Outputs.Match(PRIVATEIPV4)
+}
+
 
 func (a *Assembly) imageVersion() string {
 	return a.Inputs.Match(IMAGE_VERSION)

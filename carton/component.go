@@ -126,7 +126,12 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Provider:   c.provider(),
 		PublicIp:   c.publicIp(),
 		Inputs:     c.Inputs.ToMap(),
+		Environments: c.Envs.ToMap(),
 		State:      utils.State(c.State),
+	}
+
+	if c.Outputs != nil {
+		bt.Outputs = c.Outputs.ToMap()
 	}
 
 	if &c.Repo != nil {
