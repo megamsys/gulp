@@ -231,16 +231,16 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 
 	 for _,v := range provision.BitnamiAttributes {
 		 switch true {
-		 case v == provision.BITUSERNAME:
+		 case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
 				bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
 				bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
-		 case v == provision.BITPASSWORD:
+		 case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
 				bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
-	   case v == provision.BITNAMI_DB_PASSWORD:
+	   case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
 			  bitAtr.BitnamiDBPassword = b.Environments[provision.BITPASSWORD]
-		 case v == provision.BITNAMI_PROSTASHOP_IP:
+		 case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
 		    bitAtr.PrestashopSite = ip
-	   case v == provision.BITNAMI_OWNCLOUD_IP:
+	  case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
 	    	bitAtr.OwncloudSite = ip
 		 }
 	 }
