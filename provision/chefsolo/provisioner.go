@@ -144,7 +144,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&updateStatusInScylla,
 		&updateIpsInSyclla,
 		&updateStatusInScylla,
-		&appendAuthKeys,
+	//	&appendAuthKeys,
 		&updateStatusInScylla,
 		&changeStateofMachine,
 		&mileStoneUpdate,
@@ -228,7 +228,6 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 	} else if b.Outputs[carton.PRIVATEIPV4] != "" {
 		ip = b.Outputs[carton.PRIVATEIPV4]
 	}
-
 	 for _,v := range provision.BitnamiAttributes {
 		 switch true {
 		 case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
@@ -237,7 +236,7 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 		 case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
 				bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
 	   case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
-			  bitAtr.BitnamiDBPassword = b.Environments[provision.BITPASSWORD]
+			  bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
 		 case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
 		    bitAtr.PrestashopSite = ip
 	  case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
