@@ -63,6 +63,7 @@ type ApiComponent struct {
 type Component struct {
 	Id                string                `json:"id"`
 	Name              string                `json:"name"`
+	OrgId             string                `json:"org_id"`
 	Tosca             string                `json:"tosca_type"`
 	Inputs            pairs.JsonPairs       `json:"inputs"`
 	Outputs           pairs.JsonPairs       `json:"outputs"`
