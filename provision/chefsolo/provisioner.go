@@ -144,7 +144,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&updateStatusInScylla,
 		&updateIpsInSyclla,
 		&updateStatusInScylla,
-	//	&appendAuthKeys,
+		&appendAuthKeys,
 		&updateStatusInScylla,
 		&changeStateofMachine,
 		&mileStoneUpdate,
