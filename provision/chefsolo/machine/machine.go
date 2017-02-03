@@ -92,8 +92,7 @@ func (m *Machine) SetState(state utils.State) error {
 // FindAndSetIps returns the non loopback local IP4 (can be public or private)
 // we also have to add it in for ipv6
 func (m *Machine) FindAndSetIps(b *provision.Box) error {
-	ips := m.findIps()
-
+	ips := m.mergeSameIPtype(m.findIps())
 	log.Debugf("  find and setips of machine (%s, %s)", m.Id, m.Name)
   asm, err := carton.NewAssembly(m.CartonId)
 	if  err != nil {
@@ -103,6 +102,20 @@ func (m *Machine) FindAndSetIps(b *provision.Box) error {
 	}
   b.Outputs = asm.Outputs.ToMap()
 	return nil
+}
+
+
+func (m *Machine) mergeSameIPtype(mm map[string][]string)  map[string][]string {
+  for IPtype, ips := range mm {
+		var sameIp string
+		for _, ip := range ips {
+			sameIp = sameIp +  ip + ", "
+		}
+		if sameIp != "" {
+			mm[IPtype] = []string{strings.TrimRight(sameIp, ", ")}
+		}
+	}
+	return mm
 }
 
 // FindIps returns the non loopback local IP4 (can be public or private)
