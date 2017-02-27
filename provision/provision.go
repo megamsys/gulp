@@ -32,7 +32,7 @@ import (
 
 const (
 	PROVIDER = "provider"
-	CHEFSOLO = "chefsolo"
+	GRU = "gru"
 )
 
 var (

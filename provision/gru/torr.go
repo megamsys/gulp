@@ -1,4 +1,4 @@
-package chefsolo
+package gru
 
 import (
 	"archive/tar"

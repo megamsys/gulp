@@ -15,11 +15,11 @@
  */
 
 // Package chefsolo implements a provisioner using Chef Solo.
-package chefsolo
+package gru
 
 import (
 	"bytes"
-	"encoding/json"
+//	"encoding/json"
 	"fmt"
 	"io"
 	"path"
@@ -47,12 +47,12 @@ const (
 	//Do not run commands with sudo (enabled by default)
 	DefaultSudo       = true
 	NAME              = "name"
-	CHEFREPO_GIT      = "chefrepo"
-	CHEFREPO_TARBALL  = "chefrepo_tarball"
-	CHEFREPO_COOKBOOK = "cookbook"
+	GRU_GIT      = "gru"
+	GRU_TARBALL  = "gru_tarball"
+	GRUCTL_TAR  = "gructl_tar"
 )
 
-var mainChefSoloProvisioner *chefsoloProvisioner
+var mainGruProvisioner *gruProvisioner
 
 type Attributes struct {
 	RunList    []string `json:"run_list"`
@@ -76,38 +76,41 @@ type ReposBitnami struct {
 	RepoSource        string   `json:"provider,omitempty"`
 }
 
-// Provisioner is a provisioner based on Chef Solo.
-type chefsoloProvisioner struct {
-	RunList    []string
+// Provisioner is a provisioner based on Gructl.
+type gruProvisioner struct {
+//	RunList    []string
 	Attributes string
 	Format     string
 	LogLevel   string
-	Cookbook   string
+	Gructltar   string
 	RootPath   string
 	Sudo       bool
 }
 
 func init() {
-	mainChefSoloProvisioner = &chefsoloProvisioner{}
-	provision.Register(provision.CHEFSOLO, mainChefSoloProvisioner)
+	mainGruProvisioner = &gruProvisioner{}
+	provision.Register(provision.GRU, mainGruProvisioner)
 }
 
 //initialize the provisioner and setup the requirements for provisioner
-func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
+func (p *gruProvisioner) Initialize(m map[string]string) error {
 	var outBuffer bytes.Buffer
 	start := time.Now()
 
-	p.Cookbook = m[CHEFREPO_COOKBOOK]
 	logWriter := carton.NewLogWriter(&provision.Box{CartonName: m[NAME]})
 	writer := io.MultiWriter(&outBuffer, &logWriter)
 	defer logWriter.Close()
 
-	cr := NewChefRepo(m, writer)
+	cr := NewGruRepo(m, writer)
 	if err := cr.Download(true); err != nil {
 		err = provision.EventNotify(constants.StatusCookbookFailure)
 		return err
 	}
 	if err := cr.Torr(); err != nil {
+		err = provision.EventNotify(constants.StatusCookbookFailure)
+		return err
+	}
+	if err := cr.gructldownload(true, cr.gructltar); err != nil {
 		err = provision.EventNotify(constants.StatusCookbookFailure)
 		return err
 	}
@@ -121,22 +124,22 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 	return nil
 }
 
-func (p *chefsoloProvisioner) StartupMessage() (string, error) {
+func (p *gruProvisioner) StartupMessage() (string, error) {
 	w := new(tabwriter.Writer)
 	var b bytes.Buffer
 	w.Init(&b, 0, 8, 0, '\t', 0)
-	b.Write([]byte(cmd.Colorfy("  > chefsolo ", "white", "", "bold") + "\t" +
+	b.Write([]byte(cmd.Colorfy("  > gructl ", "white", "", "bold") + "\t" +
 		cmd.Colorfy(p.String(), "cyan", "", "")))
 	fmt.Fprintln(w)
 	w.Flush()
 	return strings.TrimSpace(b.String()), nil
 }
 
-func (p *chefsoloProvisioner) String() string {
+func (p *gruProvisioner) String() string {
 	return "ready"
 }
 
-func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- bootstrap box (%s)\n", box.GetFullName())))
 	actions := []*action.Action{
 		&updateStatusInScylla,
@@ -176,7 +179,7 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	return nil
 }
 
-func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- stateup box (%s)\n", b.GetFullName())))
 	var repo, src string
 	if b.Repo != nil {
@@ -184,44 +187,49 @@ func (p *chefsoloProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 		src = b.Repo.RepoProvider()
 	}
 
-	DefaultAttributes, _ := json.Marshal(&Attributes{
-		RunList:    []string{"recipe[" + p.Cookbook + "]"},
+	atr := &Attributes{
 		ToscaType:  b.GetShortTosca(),
 		RepoURL:    repo,
 		RepoSource: src,
 		Version:    b.ImageVersion,
-	})
+	}
 
-	p.Attributes = string(DefaultAttributes)
+
+DefaultAttributes := fmt.Sprintf( "tosca_type = \"%s\"\n  scm =  \"%s\"\n ", atr.ToscaType , atr.RepoURL )
+DefaultAttributes +=  fmt.Sprintf("provider = \"%s\"\n version = \"%s\"\n",  atr.RepoSource , atr.Version )
+	p.Attributes = DefaultAttributes
 	p.Format = DefaultFormat
 	p.LogLevel = DefaultLogLevel
-	p.RootPath = meta.MC.Dir
+	p.RootPath = meta.MC.Home
 	p.Sudo = DefaultSudo
 	return p.kickOffSolo(b, w)
 }
 
-func (p *chefsoloProvisioner) StateupBitnami(b *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) StateupBitnami(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- stateup box (%s)\n", b.GetFullName())))
-	p.Attributes = string(p.setBitnamiAttributes(b))
+	p.Attributes = p.setBitnamiAttributes(b)
 	p.Format = DefaultFormat
 	p.LogLevel = DefaultLogLevel
-	p.RootPath = meta.MC.Dir
+	p.RootPath = meta.MC.Home
 	p.Sudo = DefaultSudo
 	return p.kickOffSolo(b, w)
 }
 
-func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
+func (p *gruProvisioner) setBitnamiAttributes(b *provision.Box) string {
 	var repo, src, ip string
 	if b.Repo != nil {
 		repo = b.Repo.Gitr()
 		src = b.Repo.RepoProvider()
 	}
+
 	bitAtr := &ReposBitnami{
-		RunList:    []string{"recipe[" + p.Cookbook + "]"},
+		//RunList:    []string{"recipe[" + p.Cookbook + "]"},
 		ToscaType:  b.GetShortTosca(),
 		BitnamiURL: repo,
 		RepoSource: src,
 	}
+
+	DefaultAttributes := fmt.Sprintf( "tosca_type =  \"%s\"\n  bitnami_url = \"%s\"\n  provider = \"%s\"\n", bitAtr.ToscaType, bitAtr.RepoSource ,bitAtr.BitnamiURL)
 
 	if b.Outputs[carton.PUBLICIPV4] != "" {
     ip = b.Outputs[carton.PUBLICIPV4]
@@ -231,34 +239,40 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 	 for _,v := range provision.BitnamiAttributes {
 		 switch true {
 		 case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
-				bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
+					bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
 				bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
+       	DefaultAttributes += fmt.Sprintf("bitnami_username =  \"%s\"\n  bitnami_email = \"%s\"\n", bitAtr.BitnamiUserName, bitAtr.BitnamiEmail)
+
 		 case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
-				bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
+					bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
+				DefaultAttributes += fmt.Sprintf("bitnami_password = \"%s\"\n", bitAtr.BitnamiPassword)
 	   case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
-			  bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
+			  	bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
+				DefaultAttributes +=  fmt.Sprintf("bitnami_database_password = \"%s\"\n ", bitAtr.BitnamiDBPassword)
 		 case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
-		    bitAtr.PrestashopSite = ip
+		    	bitAtr.PrestashopSite = ip
+				DefaultAttributes += fmt.Sprintf("bitnami_prestashop_site = \"%s\"\n", bitAtr.PrestashopSite)
 	  case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
-	    	bitAtr.OwncloudSite = ip
+	    		bitAtr.OwncloudSite = ip
+				DefaultAttributes +=  fmt.Sprintf("bitnami_owncloud_site = \"%s\"\n", bitAtr.OwncloudSite)
 		 }
 	 }
 
-	res, _ := json.Marshal(bitAtr)
-  return res
+	//res, _ := json.Marshal(bitAtr)
+  return DefaultAttributes
 }
 //1. &prepareJSON in generate the json file for chefsolo
-//2. &prepareConfig in generate the config file for chefsolo.
+//2. &prepareConfig in generate the config file for gru.
 //3. &updateStatus in Riak - Creating..
-func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
-	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff chefsolo box (%s)\n", b.GetFullName())))
-	soloAction := make([]*action.Action, 0, 4)
-	soloAction = append(soloAction, &updateStatusInScylla, &generateSoloJson, &generateSoloConfig, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
+func (p *gruProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
+	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff gru box (%s)\n", b.GetFullName())))
+	gruAction := make([]*action.Action, 0, 4)
+	gruAction = append(gruAction, &updateStatusInScylla,  &generateGruParam, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
 	if b.Level != provision.BoxNone {
-		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
+		gruAction = append(gruAction, &setGruStatus, &updateStatusInScylla, &gructlRun, &updateStatusInScylla)
 	}
-	soloAction = append(soloAction, &setFinalState, &changeDoneNotify, &mileStoneUpdate, &updateStatusInScylla)
-	actions := soloAction
+	gruAction = append(gruAction, &setFinalState, &changeDoneNotify, &mileStoneUpdate, &updateStatusInScylla)
+	actions := gruAction
 	pipeline := action.NewPipeline(actions...)
 	args := runMachineActionsArgs{
 		box:           b,
@@ -270,14 +284,14 @@ func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	}
 
 	if err := pipeline.Execute(args); err != nil {
-		log.Errorf("error on execute chefsolo pipeline for box %s - %s", b.GetFullName(), err)
+		log.Errorf("error on execute gru pipeline for box %s - %s", b.GetFullName(), err)
 		return err
 	}
-	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- kickofff chefsolo box (%s) OK\n", b.GetFullName())))
+	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- kickofff gru box (%s) OK\n", b.GetFullName())))
 	return nil
 }
 
-func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) Start(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_STARTING, lb.INFO, fmt.Sprintf("\n--- start box (%s)\n", b.GetFullName())))
 	actions := []*action.Action{
 		&updateStatusInScylla,
@@ -302,7 +316,7 @@ func (p *chefsoloProvisioner) Start(b *provision.Box, w io.Writer) error {
 	return nil
 }
 
-func (p *chefsoloProvisioner) Stop(b *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) Stop(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_STOPPING, lb.INFO, fmt.Sprintf("\n--- stop box (%s)\n", b.GetFullName())))
 	actions := []*action.Action{
 		&updateStatusInScylla,
@@ -327,7 +341,7 @@ func (p *chefsoloProvisioner) Stop(b *provision.Box, w io.Writer) error {
 	return nil
 }
 
-func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) Restart(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_RESTARTING, lb.INFO, fmt.Sprintf("\n--- restart box (%s)\n", b.GetFullName())))
 	actions := []*action.Action{
 		&updateStatusInScylla,
@@ -356,8 +370,8 @@ func (p *chefsoloProvisioner) Restart(b *provision.Box, w io.Writer) error {
 
 // Command returns the command string which will invoke the provisioner on the
 // prepared machine.
-func (p chefsoloProvisioner) Command() []string {
-	format := p.Format
+func (p gruProvisioner) Command() []string {
+	/*format := p.Format
 	if format == "" {
 		format = DefaultFormat
 	}
@@ -366,19 +380,18 @@ func (p chefsoloProvisioner) Command() []string {
 	if logLevel == "" {
 		logLevel = DefaultLogLevel
 	}
-
+*/
 	cmd := []string{
-		"chef-solo",
-		"--config", path.Join(p.RootPath, "solo.rb"),
-		"--json-attributes", path.Join(p.RootPath, "solo.json"),
-		"--format", format,
-		"--log_level", logLevel,
+		"gructl apply ",
+		 path.Join(p.RootPath, "gru/site/route/route.lua"),
+	//	"--format", format,
+	//	"--log_level", logLevel,
 	}
 	return cmd
 }
 
 
-func (p *chefsoloProvisioner) ResetPassword(b *provision.Box, w io.Writer) error {
+func (p *gruProvisioner) ResetPassword(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("\n--- reset machine root password (%s)\n", b.GetFullName())))
 	actions := []*action.Action{
 		&updateStatusInScylla,

@@ -26,14 +26,16 @@ func (s *S) TestDeploydConfig_Parse(c *check.C) {
 	// Parse configuration.
 	var cm Config
 	if _, err := toml.Decode(`
-		provider = "chefsolo"
-		chefrepo   = "github"
-		chefrepo_tar = "https://github.com/megamsys/chef-repo.git"
+		provider = "gru"
+		gru   = "github"
+                gructl_tar = "https://s3-ap-southeast-1.amazonaws.com/megampub/gru-site/gructl.tar.gz"
+		gru_tar = "https://github.com/megamsys/gru.git"
 `, &cm); err != nil {
 		c.Fatal(err)
 	}
 
-	c.Assert(cm.Provider, check.Equals, "chefsolo")
-	c.Assert(cm.ChefRepoGit, check.Equals, "github")
-	c.Assert(cm.ChefRepoTarball, check.Equals, "https://github.com/megamsys/chef-repo.git")
+	c.Assert(cm.Provider, check.Equals, "gru")
+	c.Assert(cm.GruGit, check.Equals, "github")
+        c.Assert(cm.GructlTar, check.Equals, "https://s3-ap-southeast-1.amazonaws.com/megampub/gru-site/gructl.tar.gz")
+	c.Assert(cm.GruTarball, check.Equals, "https://github.com/megamsys/gru.git")
 }

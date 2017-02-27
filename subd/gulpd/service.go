@@ -26,7 +26,7 @@ import (
 	"github.com/megamsys/gulp/carton"
 	"github.com/megamsys/gulp/meta"
 	"github.com/megamsys/gulp/provision"
-	_ "github.com/megamsys/gulp/provision/chefsolo"
+	_ "github.com/megamsys/gulp/provision/gru"
 	"github.com/megamsys/libgo/events"
 	constants "github.com/megamsys/libgo/utils"
 	nsq "github.com/nsqio/go-nsq"
