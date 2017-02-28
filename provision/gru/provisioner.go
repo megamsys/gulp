@@ -217,13 +217,12 @@ func (p *gruProvisioner) setBitnamiAttributes(b *provision.Box) string {
 	}
 
 	bitAtr := &ReposBitnami{
-		//RunList:    []string{"recipe[" + p.Cookbook + "]"},
 		ToscaType:  b.GetShortTosca(),
 		BitnamiURL: repo,
 		RepoSource: src,
 	}
 
-	DefaultAttributes := fmt.Sprintf( "tosca_type =  \"%s\"\n  bitnami_url = \"%s\"\n  provider = \"%s\"\n", bitAtr.ToscaType, bitAtr.RepoSource ,bitAtr.BitnamiURL)
+	DefaultAttributes := fmt.Sprintf( "tosca_type =  \"%s\"\n  bitnami_url = \"%s\"\n  provider = \"%s\"\n", bitAtr.ToscaType, bitAtr.BitnamiURL, bitAtr.RepoSource)
 
 	if b.Outputs[carton.PUBLICIPV4] != "" {
     ip = b.Outputs[carton.PUBLICIPV4]
@@ -365,16 +364,7 @@ func (p *gruProvisioner) Restart(b *provision.Box, w io.Writer) error {
 // Command returns the command string which will invoke the provisioner on the
 // prepared machine.
 func (p gruProvisioner) Command() []string {
-	/*format := p.Format
-	if format == "" {
-		format = DefaultFormat
-	}
-
-	logLevel := p.LogLevel
-	if logLevel == "" {
-		logLevel = DefaultLogLevel
-	}
-*/
+	
 	cmd := []string{
 		path.Join(p.RootPath,"gru/gulp/gructl"),
 		"apply", path.Join(p.RootPath, "gru/site/route/route.lua"),
