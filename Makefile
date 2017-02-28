@@ -43,7 +43,10 @@ endef
 
 all: check-path get test
 
+# build: check-path get-ref test
 build: check-path get _go_test _gulpd
+
+#build: all check-path get hg git bzr get-code test_build
 
 # It does not support GOPATH with multiple paths.
 check-path:
@@ -67,7 +70,6 @@ git:
 bzr:
 	$(if $(shell bzr), , $(error $(BZR_ERROR)))
 
-
 get-code:
 	rm -rf ~/.go
 	go get $(GO_EXTRAFLAGS) -u -d -t -insecure ./...
@@ -76,15 +78,13 @@ godep:
 	go get $(GO_EXTRAFLAGS) github.com/tools/godep
 	godep restore ./...
 
-build: check-path get _go_test _gulpd
-
 _go_test:
 	go clean  ./...
 	go test  ./...
 
 _gulpd:
 	rm -f gulpd
-	go build $(GO_EXTRAFLAGS) -ldflags="-X main.date=$(shell date +%Y-%m-%d_%H:%M:%S%Z)" -o gulpd ./cmd/gulpd
+	go build $(GO_EXTRAFLAGS) -ldflags="-X main.date=$(shell date +%Y-%m-%d_%H:%M:%S%Z) -X main.commit=$(shell cd $$HOME/.go/src/github.com/megamsys/libgo && commit=`git rev-parse HEAD`; echo $$commit)" -o gulpd ./cmd/gulpd
 
 _gulpdr:
 	./gulpd -v start
@@ -94,6 +94,8 @@ _sh_tests:
 	@conf/trusty/megam/megam_test.sh
 
 test: _go_test _gulpd _gulpdr
+
+test_build: _go_test _gulpd
 
 _install_deadcode: git
 	go get $(GO_EXTRAFLAGS) github.com/remyoudompheng/go-misc/deadcode

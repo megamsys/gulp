@@ -64,6 +64,7 @@ func NewService(c *meta.Config, d *Config) *Service {
 	s.Handler = NewHandler(s.Gulpd)
 	c.MkGlobal()
 	d.MkGlobal()
+	carton.NewArgs("")
 	return s
 }
 

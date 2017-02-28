@@ -30,7 +30,7 @@ import (
 
 const (
 	// DefaultRiak is the default riak if one is not provided.
-	DefaultRiak = "localhost:8087"
+	DefaultApi = "http://localhost:9000/v2"
 
 	// DefaultScylla is the default scylla if one is not provided.
 	DefaultScylla = "localhost"
@@ -43,6 +43,7 @@ const (
 
   DefaultUser = "root"
 
+	DefaultEmail = "info@megam.io"
 	// DefaultNSQ is the default nsqd if its not provided.
 	DefaultNSQd = "localhost:4161"
 
@@ -60,17 +61,14 @@ type Config struct {
 	Home           string   `toml:"home"` //figured out from MEGAM_HOME variable
 	Dir            string   `toml:"dir"`
 	User           string   `toml:"user"`
-	Riak           []string `toml:"riak"`
+	Api            string   `toml:"vertice_api"`
 	NSQd           []string `toml:"nsqd"`
-	Scylla         []string `toml:"scylla"`
-	ScyllaKeyspace string   `toml:"scylla_keyspace"`
-	ScyllaUsername string   `toml:"scylla_username"`
-	ScyllaPassword string   `toml:"scylla_password"`
 	DockerPath     string   `toml:"docker_path"`
 	Name           string   `toml:"name"`
 	CartonId       string   `toml:"assembly_id"`
 	AccountId      string   `toml:"account_id"`
 	CartonsId      string   `toml:"assemblies_id"`
+	ApiKey         string   `toml:"api_key"`
 }
 
 func (c Config) String() string {
@@ -82,10 +80,8 @@ func (c Config) String() string {
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
-	b.Write([]byte("Riak" + "\t" + strings.Join(c.Riak, ",") + "\n"))
 	b.Write([]byte("NSQd" + "\t" + strings.Join(c.NSQd, ",") + "\n"))
-	b.Write([]byte("Scylla" + "\t" + strings.Join(c.Scylla, ",") + "\n"))
-	b.Write([]byte("ScyllaKeyspace" + "\t" + c.ScyllaKeyspace + "\n"))
+	b.Write([]byte("VerticeApi " + "\t" + c.Api + "\n"))
 	b.Write([]byte("DockerPath" + "\t" + c.DockerPath + "\n"))
 	b.Write([]byte("Name" + "\t" + c.Name + "\n"))
 	b.Write([]byte("AccountId" + "\t" + c.AccountId + "\n"))
@@ -115,16 +111,13 @@ func NewConfig() *Config {
 		Home:           homeDir,
 		Dir:            defaultDir,
 		User:           DefaultUser,
-		Riak:           []string{DefaultRiak},
+		Api: 						DefaultApi,
 		NSQd:           []string{DefaultNSQd},
-		Scylla:         []string{DefaultScylla},
-		ScyllaKeyspace: DefaultScyllaKeyspace,
-		ScyllaUsername: DefaultScyllaUsername,
-		ScyllaPassword: DefaultScyllaPassword,
 		DockerPath:     DefaultDockerPath,
-		Name:           "",
-		AccountId:      "",
+		Name:           "gulpd",
+		AccountId:      DefaultEmail,
 		CartonId:       DefaultAssemblyID,
+		ApiKey:         "abcdefghijklmnopqrstuvwxyz",
 	}
 }
 
@@ -132,10 +125,8 @@ func (c *Config) ToMap() map[string]string {
 	mp := make(map[string]string)
 	mp["home"] = c.Home
 	mp["dir"] = c.Dir
-	mp["scylla_host"] = strings.Join(c.Scylla, ",")
-	mp["scylla_keyspace"] = c.ScyllaKeyspace
-	mp["scylla_username"] = c.ScyllaUsername
-	mp["scylla_password"] = c.ScyllaPassword
+	mp["api_key"] = c.ApiKey
+	mp["url"] = c.Api
 	return mp
 }
 

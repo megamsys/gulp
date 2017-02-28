@@ -32,6 +32,6 @@ func (s *S) TestConfig_Parse(c *check.C) {
 	}
 
 	c.Assert(cm, check.NotNil)
-	c.Assert(cm.Meta.Riak, check.DeepEquals, []string{"localhost:8087"})
+	c.Assert(cm.Meta.NSQd, check.DeepEquals, []string{"localhost:4151"})
 	c.Assert(cm.Gulpd.Provider, check.Equals, "chefsolo")
 }
