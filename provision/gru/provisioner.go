@@ -82,7 +82,6 @@ type gruProvisioner struct {
 	Attributes string
 	Format     string
 	LogLevel   string
-	Gructltar   string
 	RootPath   string
 	Sudo       bool
 }
@@ -110,12 +109,7 @@ func (p *gruProvisioner) Initialize(m map[string]string) error {
 		err = provision.EventNotify(constants.StatusCookbookFailure)
 		return err
 	}
-	if err := cr.gructldownload(true, cr.gructltar); err != nil {
-		err = provision.EventNotify(constants.StatusCookbookFailure)
-		return err
-	}
 	elapsed := time.Since(start)
-
 	log.Debugf("%s in (%s)\n%s",
 		cmd.Colorfy(m[NAME], "cyan", "", "bold"),
 		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
@@ -382,8 +376,8 @@ func (p gruProvisioner) Command() []string {
 	}
 */
 	cmd := []string{
-		"gructl apply ",
-		 path.Join(p.RootPath, "gru/site/route/route.lua"),
+		path.Join(p.RootPath,"gru/gulp/gructl"),
+		"apply", path.Join(p.RootPath, "gru/site/route/route.lua"),
 	//	"--format", format,
 	//	"--log_level", logLevel,
 	}

@@ -19,7 +19,6 @@ import (
 type Gru struct {
 	git     string
 	tar     string
-	gructltar string
 	dir     string
 	version string
 	writer  io.Writer
@@ -29,7 +28,6 @@ func NewGruRepo(m map[string]string, w io.Writer) *Gru {
 	return &Gru{
 		git:    m[GRU_GIT],
 		tar:    m[GRU_TARBALL],
-		gructltar: m[GRUCTL_TAR],
 		dir:    meta.MC.Home,
 		writer: w,
 	}
@@ -131,44 +129,5 @@ fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create tar (%s
 		return err
 	}
 	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET, write tar (%s) OK\n", ch.tar)))
-	return nil
-}
-
-func (ch *Gru) gructldownload(force bool,tar string) error {
-	fmt.Println("8888888888888888888888888888")
-	if force {
-		_ = os.RemoveAll(ch.tarfile())
-	}
-fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create tar (%s)\n", ch.tarfile())))
-	output, err := os.Create(ch.tarfile())
-	if err != nil {
-		return err
-	}
-	defer output.Close()
-
-	response, err := http.Get(tar)
-	fmt.Println("-------------------------------------------==============")
-	fmt.Printf("%#v",response)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET tar (%s) \n", tar)))
-	// Create the progress reader
-	progressR := &ioprogress.Reader{
-		Reader: response.Body,
-		Size:   response.ContentLength,
-	}
-
-	_, err = io.Copy(output, progressR)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET, write tar (%s) OK\n", tar)))
-
-	if err := ch.Torr(); err != nil {
-		err = provision.EventNotify(constants.StatusCookbookFailure)
-		return err
-	}
 	return nil
 }

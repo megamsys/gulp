@@ -28,7 +28,6 @@ func (s *S) TestDeploydConfig_Parse(c *check.C) {
 	if _, err := toml.Decode(`
 		provider = "gru"
 		gru   = "github"
-                gructl_tar = "https://s3-ap-southeast-1.amazonaws.com/megampub/gru-site/gructl.tar.gz"
 		gru_tar = "https://github.com/megamsys/gru.git"
 `, &cm); err != nil {
 		c.Fatal(err)
@@ -36,6 +35,5 @@ func (s *S) TestDeploydConfig_Parse(c *check.C) {
 
 	c.Assert(cm.Provider, check.Equals, "gru")
 	c.Assert(cm.GruGit, check.Equals, "github")
-        c.Assert(cm.GructlTar, check.Equals, "https://s3-ap-southeast-1.amazonaws.com/megampub/gru-site/gructl.tar.gz")
 	c.Assert(cm.GruTarball, check.Equals, "https://github.com/megamsys/gru.git")
 }
