@@ -5,14 +5,14 @@ import (
 )
 
 const (
-	INFO                   = "Info"
-	ERROR                  = "Error"
-	WARN                   = "Warning"
-	VM_DEPLOY              = "Deploying"
-  VM_STARTING            = "Startingg"
-  VM_STOPPING            = "Stopping"
-  VM_RESTARTING          = "Restarting"
-	VM_UPGRADING           = "Upgrading"
+	INFO             = "Info"
+	ERROR            = "Error"
+	WARN             = "Warning"
+	VM_DEPLOY        = "Deploying"
+	VM_STARTING      = "Startingg"
+	VM_STOPPING      = "Stopping"
+	VM_RESTARTING    = "Restarting"
+	VM_UPGRADING     = "Upgrading"
 	CONTAINER_DEPLOY = "Deploying"
 )
 

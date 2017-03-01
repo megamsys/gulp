@@ -18,14 +18,14 @@ package bind
 import (
 	"bufio"
 	"fmt"
+	lb "github.com/megamsys/gulp/logbox"
+	"github.com/megamsys/gulp/meta"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	lb "github.com/megamsys/gulp/logbox"
-	"github.com/megamsys/gulp/meta"
 )
 
 // BindFile represents a file with  environment variable

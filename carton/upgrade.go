@@ -3,15 +3,15 @@ package carton
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"time"
-	lb "github.com/megamsys/gulp/logbox"
 	log "github.com/Sirupsen/logrus"
+	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/upgrade"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/cmd"
 	constants "github.com/megamsys/libgo/utils"
+	"io"
+	"time"
 )
 
 type Upgradeable struct {
