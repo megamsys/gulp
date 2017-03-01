@@ -224,14 +224,16 @@ var chefSoloRun = action.Action{
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run started.\n")))
-		err := provision.ExecuteCommandOnce(args.provisioner.Command(), args.writer)
-		if err != nil {
-			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
-			return nil, err
+		if !strings.Contains(args.box.Tosca, "windows") {
+			err := provision.ExecuteCommandOnce(args.provisioner.Command(), args.writer)
+			if err != nil {
+				fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
+				return nil, err
+			}
 		}
 		_ = provision.EventNotify(constants.StatusAppDeployed)
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run OK.\n")))
-		return &args, err
+		return &args, nil
 	},
 
 	Backward: func(ctx action.BWContext) {
