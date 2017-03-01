@@ -1,3 +1,5 @@
+package chefsolo
+
 /*
 ** Copyright [2013-2016] [Megam Systems]
 **
@@ -15,7 +17,6 @@
  */
 
 // Package chefsolo implements a provisioner using Chef Solo.
-package chefsolo
 
 import (
 	"bytes"
@@ -23,6 +24,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"runtime"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -254,9 +256,9 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 func (p *chefsoloProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff chefsolo box (%s)\n", b.GetFullName())))
 	soloAction := make([]*action.Action, 0, 4)
-	soloAction = append(soloAction, &updateStatusInScylla, &generateSoloJson, &generateSoloConfig, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
-	if b.Level != provision.BoxNone {
-		soloAction = append(soloAction, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
+	soloAction = append(soloAction, &updateStatusInScylla)
+	if b.Level != provision.BoxNone && runtime.GOOS != "windows" {
+		soloAction = append(soloAction, &generateSoloJson, &generateSoloConfig, &updateStatusInScylla, &cloneBox, &updateStatusInScylla, &setChefsoloStatus, &updateStatusInScylla, &chefSoloRun, &updateStatusInScylla)
 	}
 	soloAction = append(soloAction, &setFinalState, &changeDoneNotify, &mileStoneUpdate, &updateStatusInScylla)
 	actions := soloAction
