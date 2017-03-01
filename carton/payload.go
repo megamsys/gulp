@@ -17,8 +17,8 @@ package carton
 
 import (
 	"encoding/json"
-	"github.com/megamsys/libgo/api"
 	log "github.com/Sirupsen/logrus"
+	"github.com/megamsys/libgo/api"
 )
 
 type Payload struct {
@@ -73,7 +73,7 @@ func (p *Payload) Convert() (*Requests, error) {
 		log.Debugf("Requests %v", r)
 		return r, nil
 	} else {
-		cl := api.NewClient(apiArgs, "/requests/" +  p.Id)
+		cl := api.NewClient(apiArgs, "/requests/"+p.Id)
 		response, err := cl.Get()
 		if err != nil {
 			return nil, err

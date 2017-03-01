@@ -75,7 +75,6 @@ func (r Repo) RepoProvider() string {
 	return r.Source
 }
 
-
 func (r Repo) IsEnabled() bool {
 	return r.Hook != nil && r.Hook.Enabled
 }

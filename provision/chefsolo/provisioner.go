@@ -64,13 +64,13 @@ type Attributes struct {
 
 // Repos for Bitnami
 type ReposBitnami struct {
-	RunList         []string `json:"run_list,omitempty"`
-	ToscaType       string   `json:"tosca_type,omitempty"`
-	BitnamiURL      string   `json:"bitnami_url,omitempty"`
-	BitnamiUserName string   `json:"bitnami_username,omitempty"`
-	BitnamiPassword string   `json:"bitnami_password,omitempty"`
-	BitnamiEmail    string   `json:"bitnami_email,omitempty"`
-	BitnamiDBPassword string `json:"bitnami_database_password,omitempty"`
+	RunList           []string `json:"run_list,omitempty"`
+	ToscaType         string   `json:"tosca_type,omitempty"`
+	BitnamiURL        string   `json:"bitnami_url,omitempty"`
+	BitnamiUserName   string   `json:"bitnami_username,omitempty"`
+	BitnamiPassword   string   `json:"bitnami_password,omitempty"`
+	BitnamiEmail      string   `json:"bitnami_email,omitempty"`
+	BitnamiDBPassword string   `json:"bitnami_database_password,omitempty"`
 	OwncloudSite      string   `json:"bitnami_owncloud_site,omitempty"`
 	PrestashopSite    string   `json:"bitnami_prestashop_site,omitempty"`
 	RepoSource        string   `json:"provider,omitempty"`
@@ -165,12 +165,12 @@ func (p *chefsoloProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
-   switch box.GetShortTosca() {
-	 case "bitnami":
-		 p.StateupBitnami(box,w)
-	 default:
-		 p.Stateup(box, w)
-   }
+	switch box.GetShortTosca() {
+	case "bitnami":
+		p.StateupBitnami(box, w)
+	default:
+		p.Stateup(box, w)
+	}
 
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- bootstrap box (%s) OK\n", box.GetFullName())))
 	return nil
@@ -224,29 +224,30 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 	}
 
 	if b.Outputs[carton.PUBLICIPV4] != "" {
-    ip = b.Outputs[carton.PUBLICIPV4]
+		ip = b.Outputs[carton.PUBLICIPV4]
 	} else if b.Outputs[carton.PRIVATEIPV4] != "" {
 		ip = b.Outputs[carton.PRIVATEIPV4]
 	}
-	 for _,v := range provision.BitnamiAttributes {
-		 switch true {
-		 case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
-				bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
-				bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
-		 case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
-				bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
-	   case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
-			  bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
-		 case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
-		    bitAtr.PrestashopSite = ip
-	  case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
-	    	bitAtr.OwncloudSite = ip
-		 }
-	 }
+	for _, v := range provision.BitnamiAttributes {
+		switch true {
+		case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
+			bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
+			bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
+		case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
+			bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
+		case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
+			bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
+		case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
+			bitAtr.PrestashopSite = ip
+		case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
+			bitAtr.OwncloudSite = ip
+		}
+	}
 
 	res, _ := json.Marshal(bitAtr)
-  return res
+	return res
 }
+
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for chefsolo.
 //3. &updateStatus in Riak - Creating..
@@ -376,7 +377,6 @@ func (p chefsoloProvisioner) Command() []string {
 	}
 	return cmd
 }
-
 
 func (p *chefsoloProvisioner) ResetPassword(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("\n--- reset machine root password (%s)\n", b.GetFullName())))

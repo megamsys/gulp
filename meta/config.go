@@ -41,7 +41,7 @@ const (
 	DefaultScyllaUsername = "vertadmin"
 	DefaultScyllaPassword = "vertadmin"
 
-  DefaultUser = "root"
+	DefaultUser = "root"
 
 	DefaultEmail = "info@megam.io"
 	// DefaultNSQ is the default nsqd if its not provided.
@@ -58,17 +58,17 @@ var MC *Config
 
 // Config represents the meta configuration.
 type Config struct {
-	Home           string   `toml:"home"` //figured out from MEGAM_HOME variable
-	Dir            string   `toml:"dir"`
-	User           string   `toml:"user"`
-	Api            string   `toml:"vertice_api"`
-	NSQd           []string `toml:"nsqd"`
-	DockerPath     string   `toml:"docker_path"`
-	Name           string   `toml:"name"`
-	CartonId       string   `toml:"assembly_id"`
-	AccountId      string   `toml:"account_id"`
-	CartonsId      string   `toml:"assemblies_id"`
-	ApiKey         string   `toml:"api_key"`
+	Home       string   `toml:"home"` //figured out from MEGAM_HOME variable
+	Dir        string   `toml:"dir"`
+	User       string   `toml:"user"`
+	Api        string   `toml:"vertice_api"`
+	NSQd       []string `toml:"nsqd"`
+	DockerPath string   `toml:"docker_path"`
+	Name       string   `toml:"name"`
+	CartonId   string   `toml:"assembly_id"`
+	AccountId  string   `toml:"account_id"`
+	CartonsId  string   `toml:"assemblies_id"`
+	ApiKey     string   `toml:"api_key"`
 }
 
 func (c Config) String() string {
@@ -76,7 +76,7 @@ func (c Config) String() string {
 	var b bytes.Buffer
 	w.Init(&b, 0, 8, 0, '\t', 0)
 	b.Write([]byte(cmd.Colorfy("Config:", "white", "", "bold") + "\t" +
-	cmd.Colorfy("Meta", "green", "", "") + "\n"))
+		cmd.Colorfy("Meta", "green", "", "") + "\n"))
 	b.Write([]byte("Home" + "\t" + c.Home + "\n"))
 	b.Write([]byte("Dir" + "\t" + c.Dir + "\n"))
 	b.Write([]byte("User" + "\t" + c.User + "\n"))
@@ -108,16 +108,16 @@ func NewConfig() *Config {
 
 	// Config represents the configuration format for the gulpd.
 	return &Config{
-		Home:           homeDir,
-		Dir:            defaultDir,
-		User:           DefaultUser,
-		Api: 						DefaultApi,
-		NSQd:           []string{DefaultNSQd},
-		DockerPath:     DefaultDockerPath,
-		Name:           "gulpd",
-		AccountId:      DefaultEmail,
-		CartonId:       DefaultAssemblyID,
-		ApiKey:         "abcdefghijklmnopqrstuvwxyz",
+		Home:       homeDir,
+		Dir:        defaultDir,
+		User:       DefaultUser,
+		Api:        DefaultApi,
+		NSQd:       []string{DefaultNSQd},
+		DockerPath: DefaultDockerPath,
+		Name:       "gulpd",
+		AccountId:  DefaultEmail,
+		CartonId:   DefaultAssemblyID,
+		ApiKey:     "abcdefghijklmnopqrstuvwxyz",
 	}
 }
 

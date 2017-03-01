@@ -1,4 +1,5 @@
 package chefsolo
+
 /*
 import (
 	"io/ioutil"

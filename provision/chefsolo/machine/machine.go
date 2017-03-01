@@ -1,8 +1,8 @@
 package machine
 
 import (
-	"encoding/json"
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	nsqp "github.com/crackcomm/nsqueue/producer"
@@ -28,7 +28,7 @@ id -u %s &>/dev/null || useradd %s
 %s
 EOF
 `
-resetPwd = `echo %s:%s | /usr/sbin/chpasswd
+	resetPwd = `echo %s:%s | /usr/sbin/chpasswd
 `
 )
 
@@ -48,7 +48,7 @@ type Machine struct {
 func (m *Machine) SetStatus(status utils.Status) error {
 	log.Debugf("  set status[%s] of machine (%s, %s)", m.Id, m.Name, status.String())
 
- if asm, err := carton.NewAssembly(m.CartonId); err != nil {
+	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 		return err
 	} else if err = asm.SetStatus(status); err != nil {
 
@@ -68,7 +68,6 @@ func (m *Machine) SetStatus(status utils.Status) error {
 
 func (m *Machine) SetState(state utils.State) error {
 	log.Debugf("  set state[%s] of machine (%s, %s)", m.Id, m.Name, state.String())
-
 
 	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 		return err
@@ -94,22 +93,21 @@ func (m *Machine) SetState(state utils.State) error {
 func (m *Machine) FindAndSetIps(b *provision.Box) error {
 	ips := m.mergeSameIPtype(m.findIps())
 	log.Debugf("  find and setips of machine (%s, %s)", m.Id, m.Name)
-  asm, err := carton.NewAssembly(m.CartonId)
-	if  err != nil {
+	asm, err := carton.NewAssembly(m.CartonId)
+	if err != nil {
 		return err
 	} else if err = asm.NukeAndSetOutputs(ips); err != nil {
 		return err
 	}
-  b.Outputs = asm.Outputs.ToMap()
+	b.Outputs = asm.Outputs.ToMap()
 	return nil
 }
 
-
-func (m *Machine) mergeSameIPtype(mm map[string][]string)  map[string][]string {
-  for IPtype, ips := range mm {
+func (m *Machine) mergeSameIPtype(mm map[string][]string) map[string][]string {
+	for IPtype, ips := range mm {
 		var sameIp string
 		for _, ip := range ips {
-			sameIp = sameIp +  ip + ", "
+			sameIp = sameIp + ip + ", "
 		}
 		if sameIp != "" {
 			mm[IPtype] = []string{strings.TrimRight(sameIp, ", ")}
@@ -154,7 +152,7 @@ func (m *Machine) findIps() map[string][]string {
 // append user sshkey into authorized_keys file
 func (m *Machine) AppendAuthKeys() error {
 	if strings.TrimSpace(m.SSH.Password) == "" || strings.TrimSpace(m.SSH.User) == "" {
-    c, err := carton.GetSSHKeys(m.SSH.Pub())
+		c, err := carton.GetSSHKeys(m.SSH.Pub())
 		if err != nil {
 			return err
 		}
@@ -171,7 +169,7 @@ func (m *Machine) AppendAuthKeys() error {
 		}
 	} else {
 		pwd, _ := b64.StdEncoding.DecodeString(m.SSH.Password)
-		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User,m.SSH.User,m.SSH.User, string(pwd), string(pwd)))
+		d1 := []byte(fmt.Sprintf(cmd, m.SSH.User, m.SSH.User, m.SSH.User, string(pwd), string(pwd)))
 		err := ioutil.WriteFile("dat1", d1, 0755)
 		_, err = exec.Command("./dat1").Output()
 		if err != nil {
@@ -224,7 +222,7 @@ func (m *Machine) ChangeState(state string) error {
 
 func (m *Machine) ResetPassword() error {
 	pwd, _ := b64.StdEncoding.DecodeString(m.SSH.Password)
-	_, err := exec.Command("sh","-c",fmt.Sprintf(resetPwd, m.SSH.User, string(pwd))).Output()
+	_, err := exec.Command("sh", "-c", fmt.Sprintf(resetPwd, m.SSH.User, string(pwd))).Output()
 	if err != nil {
 		return err
 	}
