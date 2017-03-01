@@ -1,4 +1,4 @@
-package chefsolo
+package gru
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 	constants "github.com/megamsys/libgo/utils"
 )
 
-type ChefRepo struct {
+type Gru struct {
 	git     string
 	tar     string
 	dir     string
@@ -24,19 +24,20 @@ type ChefRepo struct {
 	writer  io.Writer
 }
 
-func NewChefRepo(m map[string]string, w io.Writer) *ChefRepo {
-	return &ChefRepo{
-		git:    m[CHEFREPO_GIT],
-		tar:    m[CHEFREPO_TARBALL],
-		dir:    meta.MC.Dir,
+func NewGruRepo(m map[string]string, w io.Writer) *Gru {
+	return &Gru{
+		git:    m[GRU_GIT],
+		tar:    m[GRU_TARBALL],
+		dir:    meta.MC.Home,
 		writer: w,
 	}
 }
 
-//try downloading tar first, if not, do a clone of the chef-repo
-func (ch *ChefRepo) Download(force bool) error {
+//try downloading tar first, if not, do a clone of the gru
+func (ch *Gru) Download(force bool) error {
  	_ = provision.EventNotify(constants.StatusCookbookDownloading)
 	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- download (%s)\n", ch.repodir())))
+
 	if !ch.exists() || !ch.isUptodate() {
 		if err := ch.download(force); err != nil {
 			return scm().Clone(repository.Repo{URL: ch.git})
@@ -46,7 +47,7 @@ func (ch *ChefRepo) Download(force bool) error {
 	return nil
 }
 
-func (ch *ChefRepo) Torr() error {
+func (ch *Gru) Torr() error {
 	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- torr (%s)\n", ch.tarfile())))
 	if !ch.exists() {
 		tr := NewTorr(ch.tarfile())
@@ -61,11 +62,11 @@ func (ch *ChefRepo) Torr() error {
 	return nil
 }
 
-func (ch *ChefRepo) filename() (string, error) {
+func (ch *Gru) filename() (string, error) {
 	return (repository.Repo{URL: ch.git}).GetShortName()
 }
 
-func (ch *ChefRepo) repodir() string {
+func (ch *Gru) repodir() string {
 	f, err := ch.filename()
 	if err != nil {
 		return ""
@@ -73,7 +74,7 @@ func (ch *ChefRepo) repodir() string {
 	return filepath.Join(ch.dir, f)
 }
 
-func (ch *ChefRepo) tarfile() string {
+func (ch *Gru) tarfile() string {
 	tokens := strings.Split(ch.tar, "/")
 	return filepath.Join(ch.dir, tokens[len(tokens)-1])
 }
@@ -83,7 +84,7 @@ func scm() repository.RepositoryManager {
 	return repository.Manager("github")
 }
 
-func (ch *ChefRepo) exists() bool {
+func (ch *Gru) exists() bool {
 	var exists = false
 	if f := ch.repodir(); len(strings.TrimSpace(f)) > 0 {
 		if _, err := os.Stat(ch.repodir()); err == nil {
@@ -94,11 +95,13 @@ func (ch *ChefRepo) exists() bool {
 }
 
 //for now its always uptodate
-func (ch *ChefRepo) isUptodate() bool {
+func (ch *Gru) isUptodate() bool {
 	return true
 }
 
-func (ch *ChefRepo) download(force bool) error {
+
+
+func (ch *Gru) download(force bool) error {
 	if force {
 		_ = os.RemoveAll(ch.tarfile())
 	}
@@ -108,12 +111,13 @@ fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create tar (%s
 		return err
 	}
 	defer output.Close()
+
 	response, err := http.Get(ch.tar)
 	if err != nil {
 		return err
 	}
 	defer response.Body.Close()
-  fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET tar (%s) \n", ch.tar)))
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  http GET tar (%s) \n", ch.tar)))
 	// Create the progress reader
 	progressR := &ioprogress.Reader{
 		Reader: response.Body,

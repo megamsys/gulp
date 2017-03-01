@@ -13,14 +13,14 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
  */
-package chefsolo
+package gru
 
 import (
 	"fmt"
 	"github.com/megamsys/gulp/carton"
 	lb "github.com/megamsys/gulp/logbox"
 	"github.com/megamsys/gulp/provision"
-	"github.com/megamsys/gulp/provision/chefsolo/machine"
+	"github.com/megamsys/gulp/provision/gru/machine"
 	"github.com/megamsys/libgo/action"
 	"github.com/megamsys/libgo/utils"
 	constants "github.com/megamsys/libgo/utils"
@@ -36,7 +36,7 @@ type runMachineActionsArgs struct {
 	writer        io.Writer
 	machineStatus utils.Status
 	machineState  utils.State
-	provisioner   *chefsoloProvisioner
+	provisioner   *gruProvisioner
 	state         string
 }
 
@@ -198,39 +198,40 @@ var generateSoloJson = action.Action{
 	},
 }
 
-var generateSoloConfig = action.Action{
-	Name: "generate-solo-config",
+var generateGruParam = action.Action{
+	Name: "generate-gru-Param",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo config for box (%s)\n", args.box.GetFullName())))
-		data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "/chef-repo/cookbooks"))
-		data += "ssl_verify_mode :verify_peer\n"
-		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "solo.rb"), []byte(data), 0644); err != nil {
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate gru param for box (%s)\n", args.box.GetFullName())))
+		//data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "/chef-repo/cookbooks"))
+		//data += "ssl_verify_mode :verify_peer\n"
+    data := args.provisioner.Attributes
+		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "gru/gulp/param.lua"), []byte(data), 0644); err != nil {
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo config for box failed.\n%s\n", err.Error())))
 			return nil, err
 		}
 		_ = provision.EventNotify(constants.StatusChefConfigSetupped)
 		mach.Status = constants.StatusCloning
-		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate solo config for box (%s) OK\n", args.box.GetFullName())))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate gru param for box (%s) OK\n", args.box.GetFullName())))
 		return mach, nil
 	},
 	Backward: func(ctx action.BWContext) {
 	},
 }
 
-var chefSoloRun = action.Action{
-	Name: "chef-solo-run",
+var gructlRun = action.Action{
+	Name: "gructl-run",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		args := ctx.Params[0].(runMachineActionsArgs)
-		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run started.\n")))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  gructl run started.\n")))
 		err := provision.ExecuteCommandOnce(args.provisioner.Command(), args.writer)
 		if err != nil {
-			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  chefsolo run ended failed.\n%s\n", err.Error())))
+			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf(" gructl run ended failed.\n%s\n", err.Error())))
 			return nil, err
 		}
 		_ = provision.EventNotify(constants.StatusAppDeployed)
-		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  chefsolo run OK.\n")))
+		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  gructl run OK.\n")))
 		return &args, err
 	},
 
@@ -350,8 +351,8 @@ var setFinalState = action.Action{
 		return mach, nil
 	},
 }
-var setChefsoloStatus = action.Action{
-	Name: "set chefsolo state",
+var setGruStatus = action.Action{
+	Name: "set gru state",
 	Forward: func(ctx action.FWContext) (action.Result, error) {
 		mach := ctx.Previous.(machine.Machine)
 		mach.Status = constants.StatusAppDeploying

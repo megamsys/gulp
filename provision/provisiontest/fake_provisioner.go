@@ -48,7 +48,7 @@ func NewFakeCarton(name, tosca string, lvl provision.BoxLevel, units int) *FakeC
 			Tosca:      tosca,
 			Repo:       &repository.Repo{},
 			Status:     constants.StatusBootstrapping,
-			Provider:   provision.CHEFSOLO,
+			Provider:   provision.GRU,
 		}
 	}
 

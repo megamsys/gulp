@@ -14,7 +14,7 @@
 ** limitations under the License.
  */
 
-package chefsolo
+package gru
 
 import (
 //	"net"

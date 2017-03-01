@@ -14,7 +14,7 @@
 ** limitations under the License.
  */
 
-package chefsolo
+package gru
 
 import (
 	"github.com/megamsys/gulp/meta"
@@ -38,8 +38,8 @@ func (s *S) SetUpSuite(c *check.C) {
 	cfg.MkGlobal()
 	s.config = cfg
 	m := make(map[string]string)
-	m[CHEFREPO_GIT] = "https://github.com/megamsys/chef-repo.git"
-	m[CHEFREPO_TARBALL] = "https://github.com/megamsys/chef-repo/archive/0.96.tar.gz"
+	m[GRU_GIT] = "https://github.com/megamsys/gru.git"
+	m[GRU_TARBALL] = "https://github.com/megamsys/gru/archive/0.96.tar.gz"
 	s.M = m
 	c.Assert(s.config, check.NotNil)
 	c.Assert(s.M, check.NotNil)
@@ -50,7 +50,7 @@ func (s *S) SetUpSuite(c *check.C) {
 func (s *S) TestPrepareFiles(c *check.C) {
 		os.MkdirAll("/tmp/chef-solo/sandbox", 0755)
 
-		p := chefsoloProvisioner{
+		p := gruProvisioner{
 			SandboxPath: "/tmp/chef-solo/sandbox",
 			RootPath:    "/tmp/chef-solo",
 		}
@@ -60,7 +60,7 @@ func (s *S) TestPrepareFiles(c *check.C) {
 func (s *S) TestPrepareFiles_CustomJSON(c *check.C) {
 		os.MkdirAll(".chef-solo/sandbox", 0755)
 
-		p := chefsoloProvisioner{
+		p := gruProvisioner{
 			Attributes:  `{"foo": "bar"}`,
 			SandboxPath: ".chef-solo/sandbox",
 			RootPath:    "/tmp/chef-solo",
