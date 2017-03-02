@@ -99,28 +99,26 @@ func (p *chefsoloProvisioner) Initialize(m map[string]string) error {
 	var outBuffer bytes.Buffer
 	start := time.Now()
 	p.Cookbook = m[CHEFREPO_COOKBOOK]
-	if runtime.GOOS != "windows" {
-		logWriter := carton.NewLogWriter(&provision.Box{CartonName: m[NAME]})
-		writer := io.MultiWriter(&outBuffer, &logWriter)
-		defer logWriter.Close()
+	logWriter := carton.NewLogWriter(&provision.Box{CartonName: m[NAME]})
+	writer := io.MultiWriter(&outBuffer, &logWriter)
+	defer logWriter.Close()
 
-		cr := NewChefRepo(m, writer)
-		if err := cr.Download(true); err != nil {
-			err = provision.EventNotify(constants.StatusCookbookFailure)
-			return err
-		}
-		if err := cr.Torr(); err != nil {
-			err = provision.EventNotify(constants.StatusCookbookFailure)
-			return err
-		}
-		elapsed := time.Since(start)
-
-		log.Debugf("%s in (%s)\n%s",
-			cmd.Colorfy(m[NAME], "cyan", "", "bold"),
-			cmd.Colorfy(elapsed.String(), "green", "", "bold"),
-			cmd.Colorfy(outBuffer.String(), "yellow", "", ""))
-		_ = provision.EventNotify(constants.StatusCookbookDownloaded)
+	cr := NewChefRepo(m, writer)
+	if err := cr.Download(true); err != nil {
+		err = provision.EventNotify(constants.StatusCookbookFailure)
+		return err
 	}
+	if err := cr.Torr(); err != nil {
+		err = provision.EventNotify(constants.StatusCookbookFailure)
+		return err
+	}
+	elapsed := time.Since(start)
+
+	log.Debugf("%s in (%s)\n%s",
+		cmd.Colorfy(m[NAME], "cyan", "", "bold"),
+		cmd.Colorfy(elapsed.String(), "green", "", "bold"),
+		cmd.Colorfy(outBuffer.String(), "yellow", "", ""))
+	_ = provision.EventNotify(constants.StatusCookbookDownloaded)
 	return nil
 }
 
