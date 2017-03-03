@@ -224,10 +224,10 @@ func (p *chefsoloProvisioner) setBitnamiAttributes(b *provision.Box) []byte {
 		RepoSource: src,
 	}
 
-	if b.Outputs[carton.PUBLICIPV4] != "" {
-		ip = b.Outputs[carton.PUBLICIPV4]
-	} else if b.Outputs[carton.PRIVATEIPV4] != "" {
-		ip = b.Outputs[carton.PRIVATEIPV4]
+	if b.Outputs[constants.PUBLICIPV4] != "" {
+		ip = b.Outputs[constants.PUBLICIPV4]
+	} else if b.Outputs[constants.PRIVATEIPV4] != "" {
+		ip = b.Outputs[constants.PRIVATEIPV4]
 	}
 	for _, v := range provision.BitnamiAttributes {
 		switch true {

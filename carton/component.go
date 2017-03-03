@@ -32,8 +32,6 @@ import (
 
 const (
 	DOMAIN        = "domain"
-	PUBLICIPV4    = "publicipv4"
-	PRIVATEIPV4   = "privateipv4"
 	COMPBUCKET    = "components"
 	IMAGE_VERSION = "version"
 	ONECLICK      = "oneclick"
@@ -124,6 +122,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Operations:   c.Operations,
 		Commit:       "",
 		Provider:     c.provider(),
+		ImageVersion: c.imageVersion(),
 		PublicIp:     c.publicIp(),
 		Inputs:       c.Inputs.ToMap(),
 		Environments: c.Envs.ToMap(),
@@ -197,11 +196,15 @@ func (c *Component) getInputsMap() map[string]string {
 }
 
 func (c *Component) publicIp() string {
-	return c.Outputs.Match(PUBLICIPV4)
+	return c.Outputs.Match(utils.PUBLICIPV4)
 }
 
 func (c *Component) withOneClick() bool {
 	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
+}
+
+func (c *Component) imageVersion() string {
+	return c.Inputs.Match(IMAGE_VERSION)
 }
 
 //all the variables in the inputs shall be treated as ENV.
