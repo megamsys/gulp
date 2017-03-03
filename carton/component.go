@@ -124,6 +124,7 @@ func (c *Component) mkBox() (provision.Box, error) {
 		Operations:   c.Operations,
 		Commit:       "",
 		Provider:     c.provider(),
+		ImageVersion: c.imageVersion(),
 		PublicIp:     c.publicIp(),
 		Inputs:       c.Inputs.ToMap(),
 		Environments: c.Envs.ToMap(),
@@ -202,6 +203,10 @@ func (c *Component) publicIp() string {
 
 func (c *Component) withOneClick() bool {
 	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
+}
+
+func (c *Component) imageVersion() string {
+	return c.Inputs.Match(IMAGE_VERSION)
 }
 
 //all the variables in the inputs shall be treated as ENV.
