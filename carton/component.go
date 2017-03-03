@@ -19,15 +19,15 @@ import (
 	"strings"
 	"time"
 
+	"encoding/json"
 	"github.com/megamsys/gulp/carton/bind"
 	"github.com/megamsys/gulp/provision"
 	"github.com/megamsys/gulp/repository"
 	"github.com/megamsys/gulp/upgrade"
+	"github.com/megamsys/libgo/api"
 	"github.com/megamsys/libgo/pairs"
 	"github.com/megamsys/libgo/utils"
-	"github.com/megamsys/libgo/api"
 	"gopkg.in/yaml.v2"
-	"encoding/json"
 )
 
 const (
@@ -54,27 +54,26 @@ type Repo struct {
 	Rurl     string `json:"url" cql:"url"`
 }
 
-
 type ApiComponent struct {
-	JsonClaz string    `json:"json_claz"`
+	JsonClaz string      `json:"json_claz"`
 	Results  []Component `json:"results"`
 }
 
 type Component struct {
-	Id                string                `json:"id"`
-	Name              string                `json:"name"`
-	OrgId             string                `json:"org_id"`
-	Tosca             string                `json:"tosca_type"`
-	Inputs            pairs.JsonPairs       `json:"inputs"`
-	Outputs           pairs.JsonPairs       `json:"outputs"`
-	Envs              pairs.JsonPairs       `json:"envs"`
-	Repo              Repo                  `json:"repo"`
-	Artifacts         *Artifacts            `json:"artifacts"`
-	RelatedComponents []string              `json:"related_components"`
+	Id                string               `json:"id"`
+	Name              string               `json:"name"`
+	OrgId             string               `json:"org_id"`
+	Tosca             string               `json:"tosca_type"`
+	Inputs            pairs.JsonPairs      `json:"inputs"`
+	Outputs           pairs.JsonPairs      `json:"outputs"`
+	Envs              pairs.JsonPairs      `json:"envs"`
+	Repo              Repo                 `json:"repo"`
+	Artifacts         *Artifacts           `json:"artifacts"`
+	RelatedComponents []string             `json:"related_components"`
 	Operations        []*upgrade.Operation `json:"operations"`
-	Status            string                `json:"status"`
-	State             string                `json:"state"`
-	CreatedAt         string             `json:"created_at"`
+	Status            string               `json:"status"`
+	State             string               `json:"state"`
+	CreatedAt         string               `json:"created_at"`
 }
 
 func (a *Component) String() string {
@@ -90,7 +89,7 @@ func (a *Component) String() string {
 **/
 
 func NewComponent(id string) (*Component, error) {
-	cl := api.NewClient(apiArgs,  "/components/" + id)
+	cl := api.NewClient(apiArgs, "/components/"+id)
 	response, err := cl.Get()
 	if err != nil {
 		return nil, err
@@ -116,19 +115,20 @@ func (c *Component) updateComponent() error {
 //make a box with the details for a provisioner.
 func (c *Component) mkBox() (provision.Box, error) {
 	bt := provision.Box{
-		Id:         c.Id,
-		Level:      provision.BoxSome,
-		Name:       c.Name,
-		DomainName: c.domain(),
-		Envs:       c.envs(),
-		Tosca:      c.Tosca,
-		Operations: c.Operations,
-		Commit:     "",
-		Provider:   c.provider(),
-		PublicIp:   c.publicIp(),
-		Inputs:     c.Inputs.ToMap(),
+		Id:           c.Id,
+		Level:        provision.BoxSome,
+		Name:         c.Name,
+		DomainName:   c.domain(),
+		Envs:         c.envs(),
+		Tosca:        c.Tosca,
+		Operations:   c.Operations,
+		Commit:       "",
+		Provider:     c.provider(),
+		ImageVersion: c.imageVersion(),
+		PublicIp:     c.publicIp(),
+		Inputs:       c.Inputs.ToMap(),
 		Environments: c.Envs.ToMap(),
-		State:      utils.State(c.State),
+		State:        utils.State(c.State),
 	}
 
 	if c.Outputs != nil {
@@ -156,7 +156,7 @@ func (c *Component) SetStatus(status utils.Status) error {
 	c.Inputs.NukeAndSet(m) //just nuke the matching output key:
 	c.Status = status.String()
 	if err := c.updateComponent(); err != nil {
-	  return err
+		return err
 	}
 	_ = eventNotify(status)
 	return nil
@@ -172,12 +172,12 @@ func (c *Component) UpdateOpsRun(opsRan upgrade.OperationsRan) error {
 	for _, o := range opsRan {
 		mutatedOps = append(mutatedOps, o.Raw)
 	}
-  c.Operations = mutatedOps
+	c.Operations = mutatedOps
 	return c.updateComponent()
 }
 
 func (c *Component) Delete() error {
-	cl := api.NewClient(apiArgs, "/components/" + c.Id)
+	cl := api.NewClient(apiArgs, "/components/"+c.Id)
 	_, err := cl.Delete()
 	if err != nil {
 		return err
@@ -203,6 +203,10 @@ func (c *Component) publicIp() string {
 
 func (c *Component) withOneClick() bool {
 	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
+}
+
+func (c *Component) imageVersion() string {
+	return c.Inputs.Match(IMAGE_VERSION)
 }
 
 //all the variables in the inputs shall be treated as ENV.
