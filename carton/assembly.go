@@ -344,11 +344,11 @@ func (a *Assembly) provider() string {
 }
 
 func (a *Assembly) publicIp() string {
-	return a.Outputs.Match(PUBLICIPV4)
+	return a.Outputs.Match(constants.PUBLICIPV4)
 }
 
 func (a *Assembly) privateIp() string {
-	return a.Outputs.Match(PRIVATEIPV4)
+	return a.Outputs.Match(constants.PRIVATEIPV4)
 }
 
 

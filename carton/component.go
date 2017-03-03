@@ -32,8 +32,6 @@ import (
 
 const (
 	DOMAIN        = "domain"
-	PUBLICIPV4    = "publicipv4"
-	PRIVATEIPV4   = "privateipv4"
 	COMPBUCKET    = "components"
 	IMAGE_VERSION = "version"
 	ONECLICK      = "oneclick"
@@ -198,7 +196,7 @@ func (c *Component) getInputsMap() map[string]string {
 }
 
 func (c *Component) publicIp() string {
-	return c.Outputs.Match(PUBLICIPV4)
+	return c.Outputs.Match(utils.PUBLICIPV4)
 }
 
 func (c *Component) withOneClick() bool {

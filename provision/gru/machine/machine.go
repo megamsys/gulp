@@ -146,8 +146,8 @@ func (m *Machine) findIps() map[string][]string {
 			}
 		}
 	}
-	ips[carton.PUBLICIPV4] = pubipv4s
-	ips[carton.PRIVATEIPV4] = priipv4s
+	ips[utils.PUBLICIPV4] = pubipv4s
+	ips[utils.PRIVATEIPV4] = priipv4s
 	return ips
 }
 
