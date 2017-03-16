@@ -28,7 +28,7 @@ func (s *S) TestConfig_Parse(c *check.C) {
 	var cm Config
 	u, _ := os.Getwd()
 	if _, err := toml.DecodeFile(u+"/gulpd.conf", &cm); err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf(err.Error())
 	}
 
 	c.Assert(cm, check.NotNil)

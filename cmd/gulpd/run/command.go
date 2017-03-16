@@ -73,12 +73,12 @@ func (c *Start) Run(context *cmd.Context) error {
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
-	fmt.Println("Listening for signals")
+	log.Infof("Listening for signals")
 
 	// Block until one of the signals above is received
 	select {
 	case <-signalCh:
-		fmt.Println("Signal received, initializing clean shutdown...")
+		log.Infof("Signal received, initializing clean shutdown...")
 		go func() {
 			cmd.Close()
 		}()
@@ -86,14 +86,14 @@ func (c *Start) Run(context *cmd.Context) error {
 
 	// Block again until another signal is received, a shutdown timeout elapses,
 	// or the Command is gracefully closed
-	fmt.Println("Waiting for clean shutdown...")
+	fmt.Printf("\nWaiting for clean shutdown...")
 	select {
 	case <-signalCh:
-		fmt.Println("second signal received, initializing hard shutdown")
+		log.Infof("second signal received, initializing hard shutdown")
 	case <-time.After(time.Second * 30):
-		fmt.Println("time limit reached, initializing hard shutdown")
+		log.Infof("time limit reached, initializing hard shutdown")
 	case <-cmd.Closed:
-		fmt.Println("server shutdown completed")
+		fmt.Printf("\nserver shutdown completed")
 	}
 	// goodbye.
 	return nil
