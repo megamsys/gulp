@@ -42,10 +42,10 @@ func (m gitHubManager) Clone(r repository.Repository) error {
 	if err := re.Backup(repoName); err != nil {
 		return err
 	}
-  if r.GitBranch() != "" {
-			branch = " -b" + r.GitBranch()
+	if r.GitBranch() != "" {
+		branch = " -b" + r.GitBranch()
 	}
-	if _, err = skia.Clone(r.Gitr() + branch, filepath.Join(basePath, repoName), false); err != nil {
+	if _, err = skia.Clone(r.Gitr()+branch, filepath.Join(basePath, repoName), false); err != nil {
 		re.Revert(repoName)
 		return err
 	}

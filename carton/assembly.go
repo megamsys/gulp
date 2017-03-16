@@ -53,7 +53,7 @@ type Assembly struct {
 	Tosca        string                `json:"tosca_type" cql:"tosca_type"`
 	Status       string                `json:"status" cql:"status"`
 	State        string                `json:"state" cql:"state"`
-	CreatedAt    string		             `json:"created_at" cql:"created_at"`
+	CreatedAt    string                `json:"created_at" cql:"created_at"`
 	Inputs       pairs.JsonPairs       `json:"inputs" cql:"inputs"`
 	Outputs      pairs.JsonPairs       `json:"outputs" cql:"outputs"`
 	Policies     []*Policy             `json:"policies" cql:"policies"`
@@ -77,7 +77,7 @@ func (a *Assembly) String() string {
 }
 
 func get(ay string) (*Assembly, error) {
-	cl := api.NewClient(apiArgs, "/assembly/" + ay)
+	cl := api.NewClient(apiArgs, "/assembly/"+ay)
 	response, err := cl.Get()
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func get(ay string) (*Assembly, error) {
 }
 
 func GetSSHKeys(name string) (*SshKeys, error) {
-	cl := api.NewClient(apiArgs, "/sshkeys/" + name)
+	cl := api.NewClient(apiArgs, "/sshkeys/"+name)
 	response, err := cl.Get()
 	if err != nil {
 		return nil, err
@@ -350,7 +350,6 @@ func (a *Assembly) publicIp() string {
 func (a *Assembly) privateIp() string {
 	return a.Outputs.Match(constants.PRIVATEIPV4)
 }
-
 
 func (a *Assembly) imageVersion() string {
 	return a.Inputs.Match(IMAGE_VERSION)

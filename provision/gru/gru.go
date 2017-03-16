@@ -2,18 +2,18 @@ package gru
 
 import (
 	"fmt"
+	lb "github.com/megamsys/gulp/logbox"
+	"github.com/megamsys/gulp/meta"
+	"github.com/megamsys/gulp/provision"
+	"github.com/megamsys/gulp/repository"
+	_ "github.com/megamsys/gulp/repository/github"
+	constants "github.com/megamsys/libgo/utils"
+	"github.com/mitchellh/ioprogress"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	lb "github.com/megamsys/gulp/logbox"
-	"github.com/megamsys/gulp/meta"
-	"github.com/megamsys/gulp/repository"
-	_ "github.com/megamsys/gulp/repository/github"
-	"github.com/mitchellh/ioprogress"
-	"github.com/megamsys/gulp/provision"
-	constants "github.com/megamsys/libgo/utils"
 )
 
 type Gru struct {
@@ -35,7 +35,7 @@ func NewGruRepo(m map[string]string, w io.Writer) *Gru {
 
 //try downloading tar first, if not, do a clone of the gru
 func (ch *Gru) Download(force bool) error {
- 	_ = provision.EventNotify(constants.StatusCookbookDownloading)
+	_ = provision.EventNotify(constants.StatusCookbookDownloading)
 	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- download (%s)\n", ch.repodir())))
 
 	if !ch.exists() || !ch.isUptodate() {
@@ -43,7 +43,7 @@ func (ch *Gru) Download(force bool) error {
 			return scm().Clone(repository.Repo{URL: ch.git})
 		}
 	}
- fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- download (%s)OK\n", ch.repodir())))
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- download (%s)OK\n", ch.repodir())))
 	return nil
 }
 
@@ -99,13 +99,11 @@ func (ch *Gru) isUptodate() bool {
 	return true
 }
 
-
-
 func (ch *Gru) download(force bool) error {
 	if force {
 		_ = os.RemoveAll(ch.tarfile())
 	}
-fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create tar (%s)\n", ch.tarfile())))
+	fmt.Fprintf(ch.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  create tar (%s)\n", ch.tarfile())))
 	output, err := os.Create(ch.tarfile())
 	if err != nil {
 		return err

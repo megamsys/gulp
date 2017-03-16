@@ -206,7 +206,7 @@ var generateGruParam = action.Action{
 		fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("  generate gru param for box (%s)\n", args.box.GetFullName())))
 		//data := fmt.Sprintf("cookbook_path \"%s\"\n", path.Join(args.provisioner.RootPath, "/chef-repo/cookbooks"))
 		//data += "ssl_verify_mode :verify_peer\n"
-    data := args.provisioner.Attributes
+		data := args.provisioner.Attributes
 		if err := ioutil.WriteFile(path.Join(args.provisioner.RootPath, "gru/gulp/param.lua"), []byte(data), 0644); err != nil {
 			fmt.Fprintf(args.writer, lb.W(lb.VM_DEPLOY, lb.ERROR, fmt.Sprintf("  generate solo config for box failed.\n%s\n", err.Error())))
 			return nil, err

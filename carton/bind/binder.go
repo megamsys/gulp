@@ -93,7 +93,7 @@ func (p *JsonPairs) ToString() []string {
 func (p *JsonPairs) ToMap() map[string]string {
 	m := make(map[string]string, 0)
 	for _, v := range *p {
-    m[v.K] = v.V
+		m[v.K] = v.V
 	}
 	return m
 }

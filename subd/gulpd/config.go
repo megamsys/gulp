@@ -43,8 +43,8 @@ const (
 var MC *Config
 
 type Config struct {
-	Enabled         bool   `toml:"enabled"`
-	Provider        string `toml:"provider"`
+	Enabled    bool   `toml:"enabled"`
+	Provider   string `toml:"provider"`
 	GruGit     string `toml:"gru"`
 	GruTarball string `toml:"gru_tarball"`
 }
@@ -66,8 +66,8 @@ func (c Config) String() string {
 
 func NewConfig() *Config {
 	return &Config{
-		Enabled:         true,
-		Provider:        DefaultProvider,
+		Enabled:    true,
+		Provider:   DefaultProvider,
 		GruGit:     DefaultGruGit,
 		GruTarball: DefaultGruTarball,
 	}
