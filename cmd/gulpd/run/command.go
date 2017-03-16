@@ -17,14 +17,14 @@ package run
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
 	"github.com/megamsys/libgo/cmd"
 	"launchpad.net/gnuflag"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type configFile struct {

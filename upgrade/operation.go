@@ -19,11 +19,11 @@ package upgrade
 import (
 	"errors"
 	"fmt"
+	"github.com/megamsys/gulp/carton/bind"
+	lb "github.com/megamsys/gulp/logbox"
+	"github.com/megamsys/gulp/repository"
 	"io"
 	"strings"
-	lb "github.com/megamsys/gulp/logbox"
-	"github.com/megamsys/gulp/carton/bind"
-	"github.com/megamsys/gulp/repository"
 )
 
 // ErrDuplicateOperation is the error returned by Register when the given name

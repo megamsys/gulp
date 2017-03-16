@@ -41,12 +41,11 @@ const (
 	RAM = "ram"
 	HDD = "hdd"
 
-	BITUSERNAME = "bitnami_username"
-	BITPASSWORD = "bitnami_password"
-	BITNAMI_DB_PASSWORD = "bitnami_database_password"
+	BITUSERNAME           = "bitnami_username"
+	BITPASSWORD           = "bitnami_password"
+	BITNAMI_DB_PASSWORD   = "bitnami_database_password"
 	BITNAMI_PROSTASHOP_IP = "bitnami_prestashop_site"
-	BITNAMI_OWNCLOUD_IP = "bitnami_owncloud_site"
-
+	BITNAMI_OWNCLOUD_IP   = "bitnami_owncloud_site"
 
 	// BoxSome indicates that there is atleast one box to deploy or delete.
 	BoxSome BoxLevel = iota
@@ -55,7 +54,7 @@ const (
 	BoxNone
 )
 
-var BitnamiAttributes = []string{BITUSERNAME, BITPASSWORD,BITNAMI_DB_PASSWORD, BITNAMI_PROSTASHOP_IP, BITNAMI_OWNCLOUD_IP}
+var BitnamiAttributes = []string{BITUSERNAME, BITPASSWORD, BITNAMI_DB_PASSWORD, BITNAMI_PROSTASHOP_IP, BITNAMI_OWNCLOUD_IP}
 var cnameRegexp = regexp.MustCompile(`^(\*\.)?[a-zA-Z0-9][\w-.]+$`)
 
 // Boxlevel represents the deployment level.
@@ -71,8 +70,8 @@ type Boxlog struct {
 }
 
 type BoxSSH struct {
-	User   string
-	Prefix string
+	User     string
+	Prefix   string
 	Password string
 }
 

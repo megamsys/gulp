@@ -19,7 +19,7 @@ package gru
 
 import (
 	"bytes"
-//	"encoding/json"
+	//	"encoding/json"
 	"fmt"
 	"io"
 	"path"
@@ -45,10 +45,10 @@ const (
 	DefaultLogLevel = "info"
 
 	//Do not run commands with sudo (enabled by default)
-	DefaultSudo       = true
-	NAME              = "name"
-	GRU_GIT      = "gru"
-	GRU_TARBALL  = "gru_tarball"
+	DefaultSudo = true
+	NAME        = "name"
+	GRU_GIT     = "gru"
+	GRU_TARBALL = "gru_tarball"
 	GRUCTL_TAR  = "gructl_tar"
 )
 
@@ -64,13 +64,13 @@ type Attributes struct {
 
 // Repos for Bitnami
 type ReposBitnami struct {
-	RunList         []string `json:"run_list,omitempty"`
-	ToscaType       string   `json:"tosca_type,omitempty"`
-	BitnamiURL      string   `json:"bitnami_url,omitempty"`
-	BitnamiUserName string   `json:"bitnami_username,omitempty"`
-	BitnamiPassword string   `json:"bitnami_password,omitempty"`
-	BitnamiEmail    string   `json:"bitnami_email,omitempty"`
-	BitnamiDBPassword string `json:"bitnami_database_password,omitempty"`
+	RunList           []string `json:"run_list,omitempty"`
+	ToscaType         string   `json:"tosca_type,omitempty"`
+	BitnamiURL        string   `json:"bitnami_url,omitempty"`
+	BitnamiUserName   string   `json:"bitnami_username,omitempty"`
+	BitnamiPassword   string   `json:"bitnami_password,omitempty"`
+	BitnamiEmail      string   `json:"bitnami_email,omitempty"`
+	BitnamiDBPassword string   `json:"bitnami_database_password,omitempty"`
 	OwncloudSite      string   `json:"bitnami_owncloud_site,omitempty"`
 	PrestashopSite    string   `json:"bitnami_prestashop_site,omitempty"`
 	RepoSource        string   `json:"provider,omitempty"`
@@ -78,7 +78,7 @@ type ReposBitnami struct {
 
 // Provisioner is a provisioner based on Gructl.
 type gruProvisioner struct {
-//	RunList    []string
+	//	RunList    []string
 	Attributes string
 	Format     string
 	LogLevel   string
@@ -162,12 +162,12 @@ func (p *gruProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 	if err := pipeline.Execute(args); err != nil {
 		return err
 	}
-   switch box.GetShortTosca() {
-	 case "bitnami":
-		 p.StateupBitnami(box,w)
-	 default:
-		 p.Stateup(box, w)
-   }
+	switch box.GetShortTosca() {
+	case "bitnami":
+		p.StateupBitnami(box, w)
+	default:
+		p.Stateup(box, w)
+	}
 
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("--- bootstrap box (%s) OK\n", box.GetFullName())))
 	return nil
@@ -188,9 +188,8 @@ func (p *gruProvisioner) Stateup(b *provision.Box, w io.Writer) error {
 		Version:    b.ImageVersion,
 	}
 
-
-DefaultAttributes := fmt.Sprintf( "tosca_type = \"%s\"\n  scm =  \"%s\"\n ", atr.ToscaType , atr.RepoURL )
-DefaultAttributes +=  fmt.Sprintf("provider = \"%s\"\n version = \"%s\"\n",  atr.RepoSource , atr.Version )
+	DefaultAttributes := fmt.Sprintf("tosca_type = \"%s\"\n  scm =  \"%s\"\n ", atr.ToscaType, atr.RepoURL)
+	DefaultAttributes += fmt.Sprintf("provider = \"%s\"\n version = \"%s\"\n", atr.RepoSource, atr.Version)
 	p.Attributes = DefaultAttributes
 	p.Format = DefaultFormat
 	p.LogLevel = DefaultLogLevel
@@ -222,47 +221,48 @@ func (p *gruProvisioner) setBitnamiAttributes(b *provision.Box) string {
 		RepoSource: src,
 	}
 
-	DefaultAttributes := fmt.Sprintf( "tosca_type =  \"%s\"\n  bitnami_url = \"%s\"\n  provider = \"%s\"\n", bitAtr.ToscaType, bitAtr.BitnamiURL, bitAtr.RepoSource)
+	DefaultAttributes := fmt.Sprintf("tosca_type =  \"%s\"\n  bitnami_url = \"%s\"\n  provider = \"%s\"\n", bitAtr.ToscaType, bitAtr.BitnamiURL, bitAtr.RepoSource)
 
 	if b.Outputs[constants.PUBLICIPV4] != "" {
-    ip = b.Outputs[constants.PUBLICIPV4]
+		ip = b.Outputs[constants.PUBLICIPV4]
 	} else if b.Outputs[constants.PRIVATEIPV4] != "" {
 		ip = b.Outputs[constants.PRIVATEIPV4]
 	}
-	 for _,v := range provision.BitnamiAttributes {
-		 switch true {
-		 case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
-					bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
-				bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
-       	DefaultAttributes += fmt.Sprintf("bitnami_username =  \"%s\"\n  bitnami_email = \"%s\"\n", bitAtr.BitnamiUserName, bitAtr.BitnamiEmail)
+	for _, v := range provision.BitnamiAttributes {
+		switch true {
+		case v == provision.BITUSERNAME && b.Inputs[provision.BITUSERNAME] != "":
+			bitAtr.BitnamiUserName = b.Inputs[provision.BITUSERNAME]
+			bitAtr.BitnamiEmail = b.Inputs[provision.BITUSERNAME]
+			DefaultAttributes += fmt.Sprintf("bitnami_username =  \"%s\"\n  bitnami_email = \"%s\"\n", bitAtr.BitnamiUserName, bitAtr.BitnamiEmail)
 
-		 case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
-					bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
-				DefaultAttributes += fmt.Sprintf("bitnami_password = \"%s\"\n", bitAtr.BitnamiPassword)
-	   case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
-			  	bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
-				DefaultAttributes +=  fmt.Sprintf("bitnami_database_password = \"%s\"\n ", bitAtr.BitnamiDBPassword)
-		 case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
-		    	bitAtr.PrestashopSite = ip
-				DefaultAttributes += fmt.Sprintf("bitnami_prestashop_site = \"%s\"\n", bitAtr.PrestashopSite)
-	  case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
-	    		bitAtr.OwncloudSite = ip
-				DefaultAttributes +=  fmt.Sprintf("bitnami_owncloud_site = \"%s\"\n", bitAtr.OwncloudSite)
-		 }
-	 }
+		case v == provision.BITPASSWORD && b.Inputs[provision.BITPASSWORD] != "":
+			bitAtr.BitnamiPassword = b.Inputs[provision.BITPASSWORD]
+			DefaultAttributes += fmt.Sprintf("bitnami_password = \"%s\"\n", bitAtr.BitnamiPassword)
+		case v == provision.BITNAMI_DB_PASSWORD && b.Environments[provision.BITNAMI_DB_PASSWORD] != "":
+			bitAtr.BitnamiDBPassword = b.Inputs[provision.BITPASSWORD]
+			DefaultAttributes += fmt.Sprintf("bitnami_database_password = \"%s\"\n ", bitAtr.BitnamiDBPassword)
+		case v == provision.BITNAMI_PROSTASHOP_IP && b.Environments[provision.BITNAMI_PROSTASHOP_IP] != "":
+			bitAtr.PrestashopSite = ip
+			DefaultAttributes += fmt.Sprintf("bitnami_prestashop_site = \"%s\"\n", bitAtr.PrestashopSite)
+		case v == provision.BITNAMI_OWNCLOUD_IP && b.Environments[provision.BITNAMI_OWNCLOUD_IP] != "":
+			bitAtr.OwncloudSite = ip
+			DefaultAttributes += fmt.Sprintf("bitnami_owncloud_site = \"%s\"\n", bitAtr.OwncloudSite)
+		}
+	}
 
 	//res, _ := json.Marshal(bitAtr)
-  return DefaultAttributes
+	return DefaultAttributes
 }
+
 //1. &prepareJSON in generate the json file for chefsolo
 //2. &prepareConfig in generate the config file for gru.
 //3. &updateStatus in Riak - Creating..
 func (p *gruProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff gru box (%s)\n", b.GetFullName())))
 	gruAction := make([]*action.Action, 0, 4)
-	gruAction = append(gruAction, &updateStatusInScylla,  &generateGruParam, &updateStatusInScylla, &cloneBox, &updateStatusInScylla)
-	if b.Level != provision.BoxNone {
-		gruAction = append(gruAction, &setGruStatus, &updateStatusInScylla, &gructlRun, &updateStatusInScylla)
+	gruAction = append(gruAction, &updateStatusInScylla)
+	if b.Level != provision.BoxNone && b.Repo != nil && !b.Repo.OneClick {
+		gruAction = append(gruAction, &generateGruParam, &updateStatusInScylla, &cloneBox, &updateStatusInScylla, &setGruStatus, &updateStatusInScylla, &gructlRun, &updateStatusInScylla)
 	}
 	gruAction = append(gruAction, &setFinalState, &changeDoneNotify, &mileStoneUpdate, &updateStatusInScylla)
 	actions := gruAction
@@ -366,14 +366,13 @@ func (p *gruProvisioner) Restart(b *provision.Box, w io.Writer) error {
 func (p gruProvisioner) Command() []string {
 
 	cmd := []string{
-		path.Join(p.RootPath,"gru/gulp/gructl"),
+		path.Join(p.RootPath, "gru/gulp/gructl"),
 		"apply", path.Join(p.RootPath, "gru/site/route/route.lua"),
-	//	"--format", format,
-	//	"--log_level", logLevel,
+		//	"--format", format,
+		//	"--log_level", logLevel,
 	}
 	return cmd
 }
-
 
 func (p *gruProvisioner) ResetPassword(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_UPGRADING, lb.INFO, fmt.Sprintf("\n--- reset machine root password (%s)\n", b.GetFullName())))
