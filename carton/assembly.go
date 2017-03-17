@@ -206,6 +206,7 @@ func (a *Assembly) mkBoxes(aies string) ([]provision.Box, error) {
 				b.Compute = a.newCompute()
 				b.SSH = a.newSSH()
 				b.Status = utils.Status(a.Status)
+				b.Backup = a.backup()
 				b.State = utils.State(a.State)
 				newBoxs = append(newBoxs, b)
 			}
@@ -349,6 +350,10 @@ func (a *Assembly) publicIp() string {
 
 func (a *Assembly) privateIp() string {
 	return a.Outputs.Match(constants.PRIVATEIPV4)
+}
+
+func (a *Assembly) backup() bool {
+	return a.Inputs.Match("backup") == "yes"
 }
 
 func (a *Assembly) imageVersion() string {

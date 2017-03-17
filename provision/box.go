@@ -188,6 +188,7 @@ type Box struct {
 	Repo         *repository.Repo
 	Status       utils.Status
 	State        utils.State
+	Backup       bool
 	Provider     string
 	Commit       string
 	Environments map[string]string
