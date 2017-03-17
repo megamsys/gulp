@@ -266,10 +266,8 @@ func (p *gruProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff gru box (%s)\n", b.GetFullName())))
 	gruAction := make([]*action.Action, 0, 4)
 	gruAction = append(gruAction, &updateStatusInScylla)
-	if b.Backup {
-		p.Attributes += fmt.Sprintf("backup = \"true\"\n")
-	}
-	if b.Level != provision.BoxNone && b.Repo != nil {
+
+	if b.Level != provision.BoxNone && b.Repo != nil && !b.Repo.OneClick {
 		gruAction = append(gruAction, &generateGruParam, &updateStatusInScylla, &cloneBox, &updateStatusInScylla, &setGruStatus, &updateStatusInScylla, &gructlRun, &updateStatusInScylla)
 	}
 	gruAction = append(gruAction, &setFinalState, &changeDoneNotify, &mileStoneUpdate, &updateStatusInScylla)
