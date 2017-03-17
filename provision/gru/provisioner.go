@@ -67,6 +67,7 @@ type ReposBitnami struct {
 	RunList           []string `json:"run_list,omitempty"`
 	ToscaType         string   `json:"tosca_type,omitempty"`
 	BitnamiURL        string   `json:"bitnami_url,omitempty"`
+	BitnamiApp        string   `json:"bitnami_app,omitempty"`
 	BitnamiUserName   string   `json:"bitnami_username,omitempty"`
 	BitnamiPassword   string   `json:"bitnami_password,omitempty"`
 	BitnamiEmail      string   `json:"bitnami_email,omitempty"`
@@ -250,6 +251,10 @@ func (p *gruProvisioner) setBitnamiAttributes(b *provision.Box) string {
 		}
 	}
 
+	tokens := strings.Split(bitAtr.BitnamiURL, "/")
+	fileName := tokens[len(tokens)-1]
+	bitAtr.BitnamiApp = strings.Replace(strings.Replace(fileName, "-linux-x64-installer.run", "", -1), "bitnami-", "", -1)
+	DefaultAttributes += fmt.Sprintf("bitnami_app = \"%s\"\n", bitAtr.BitnamiApp)
 	//res, _ := json.Marshal(bitAtr)
 	return DefaultAttributes
 }
@@ -261,6 +266,7 @@ func (p *gruProvisioner) kickOffSolo(b *provision.Box, w io.Writer) error {
 	fmt.Fprintf(w, lb.W(lb.VM_DEPLOY, lb.INFO, fmt.Sprintf("\n--- kickofff gru box (%s)\n", b.GetFullName())))
 	gruAction := make([]*action.Action, 0, 4)
 	gruAction = append(gruAction, &updateStatusInScylla)
+
 	if b.Level != provision.BoxNone && b.Repo != nil && !b.Repo.OneClick {
 		gruAction = append(gruAction, &generateGruParam, &updateStatusInScylla, &cloneBox, &updateStatusInScylla, &setGruStatus, &updateStatusInScylla, &gructlRun, &updateStatusInScylla)
 	}

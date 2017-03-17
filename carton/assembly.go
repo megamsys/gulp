@@ -351,6 +351,10 @@ func (a *Assembly) privateIp() string {
 	return a.Outputs.Match(constants.PRIVATEIPV4)
 }
 
+func (a *Assembly) backup() bool {
+	return a.Inputs.Match("backup") == "yes"
+}
+
 func (a *Assembly) imageVersion() string {
 	return a.Inputs.Match(IMAGE_VERSION)
 }

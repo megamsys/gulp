@@ -65,7 +65,7 @@ func (c *Start) Run(context *cmd.Context) error {
 		return fmt.Errorf("parse config: %s", err)
 	}
 	cmd := NewCommand()
-	cmd.Version = "1.5-1"
+	cmd.Version = "1.5.1"
 
 	if err := cmd.Gpd(config, cmd.Version); err != nil {
 		return fmt.Errorf("run: %s", err)
