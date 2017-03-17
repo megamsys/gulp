@@ -200,7 +200,7 @@ func (c *Component) publicIp() string {
 }
 
 func (c *Component) withOneClick() bool {
-	return (len(strings.TrimSpace(c.Envs.Match(ONECLICK))) > 0)
+	return (strings.TrimSpace(c.Repo.Oneclick) == utils.TRUE)
 }
 
 func (c *Component) imageVersion() string {

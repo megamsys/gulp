@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	version string = "1.5"
+	version string = "1.5.1"
 	date    string
 	commit  string
 )
