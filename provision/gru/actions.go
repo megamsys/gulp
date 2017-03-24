@@ -110,7 +110,7 @@ var updateIpsInSyclla = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.Status = constants.StatusError
-		c.State = constants.StatePreError
+		c.State = constants.StatePostError
 		_ = provision.EventNotify(constants.StatusIpsFailure)
 	},
 }
@@ -134,7 +134,7 @@ var appendAuthKeys = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.Status = constants.StatusError
-		c.State = constants.StatePreError
+		c.State = constants.StatePostError
 		_ = provision.EventNotify(constants.StatusAuthkeysFailure)
 	},
 }
@@ -154,7 +154,7 @@ var changeStateofMachine = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.SetStatus(constants.StatusError)
-		c.SetState(constants.StatePreError)
+		c.SetState(constants.StatePostError)
 	},
 }
 
@@ -171,7 +171,7 @@ var changeDoneNotify = action.Action{
 	Backward: func(ctx action.BWContext) {
 		c := ctx.FWResult.(machine.Machine)
 		c.SetStatus(constants.StatusError)
-		c.SetState(constants.StatePreError)
+		c.SetState(constants.StatePostError)
 	},
 }
 
