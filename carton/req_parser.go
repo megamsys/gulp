@@ -138,7 +138,7 @@ type Requests struct {
 	Id        string `json:"id"`     //assembly id
 	CatId     string `json:"cat_id"` // assemblies_id
 	Action    string `json:"action"` // start, stop ...
-	AccountId string `json:"email"`
+	AccountId string `json:"account_id"`
 	Category  string `json:"category"` // state, control, policy
 	CreatedAt string `json:"created_at"`
 }
