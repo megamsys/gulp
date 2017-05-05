@@ -63,11 +63,10 @@ func (p *Payload) Convert() (*Requests, error) {
 	log.Infof("get requests %s", p.Id)
 	if p.CatId != "" {
 		r := &Requests{
-			Id:        p.Id,
-			CatId:     p.CatId,
-			Action:    p.Action,
-			Category:  p.Category,
-			CreatedAt: p.CreatedAt,
+			Id:       p.Id,
+			CatId:    p.CatId,
+			Action:   p.Action,
+			Category: p.Category,
 		}
 
 		log.Debugf("Requests %v", r)
