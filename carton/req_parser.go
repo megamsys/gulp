@@ -140,7 +140,6 @@ type Requests struct {
 	Action    string `json:"action"` // start, stop ...
 	AccountId string `json:"account_id"`
 	Category  string `json:"category"` // state, control, policy
-	CreatedAt string `json:"created_at"`
 }
 
 type ApiRequests struct {
