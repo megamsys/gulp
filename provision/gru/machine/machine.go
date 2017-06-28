@@ -119,9 +119,7 @@ func (m *Machine) mergeSameIPtype(mm map[string][]string) map[string][]string {
 // if an iface contains a string "pub", then we consider it a public interface
 func (m *Machine) findIps() map[string][]string {
 	var ips = make(map[string][]string)
-	pubipv4s := []string{}
-	priipv4s := []string{}
-
+	var ipv4s = make(map[string]string, 0)
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return ips
@@ -135,16 +133,17 @@ func (m *Machine) findIps() map[string][]string {
 			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && !ipnet.IP.IsMulticast() {
 				if ip4 := ipnet.IP.To4(); ip4 != nil {
 					if ip4[0] == 192 || ip4[0] == 10 || ip4[0] == 172 {
-						priipv4s = append(priipv4s, ipnet.IP.String())
+						ipv4s[ipnet.IP.String()] = utils.PRIVATEIPV4
 					} else {
-						pubipv4s = append(pubipv4s, ipnet.IP.String())
+						ipv4s[ipnet.IP.String()] = utils.PUBLICIPV4
 					}
 				}
 			}
 		}
 	}
-	ips[utils.PUBLICIPV4] = pubipv4s
-	ips[utils.PRIVATEIPV4] = priipv4s
+	for k, v := range ipv4s {
+		ips[v] = append(ips[v], k)
+	}
 	return ips
 }
 
@@ -178,15 +177,7 @@ func (m *Machine) AppendAuthKeys() error {
 		if err != nil {
 			return err
 		}
-
-		if asm, err := carton.NewAssembly(m.CartonId); err != nil {
-			return err
-		} else if err = asm.NukeKeysInputs(carton.PASSWORD); err != nil {
-			return err
-		}
-
 	}
-
 	return nil
 }
 
@@ -197,14 +188,14 @@ func (m *Machine) ChangeState(state string) error {
 	if err := pons.Connect(meta.MC.NSQd[0]); err != nil {
 		return err
 	}
-	bytes, err := json.Marshal(
-		carton.Requests{
-			CatId:     m.CartonsId,
-			Action:    m.Status.String(),
-			AccountId: meta.MC.AccountId,
-			Category:  state,
-		})
+	r := carton.Requests{
+		CatId:     m.CartonsId,
+		Action:    m.Status.String(),
+		AccountId: meta.MC.AccountId,
+		Category:  state,
+	}
 
+	bytes, err := json.Marshal(r)
 	if err != nil {
 		return err
 	}

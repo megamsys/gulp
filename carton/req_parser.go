@@ -17,6 +17,7 @@ package carton
 
 import (
 	"fmt"
+	"github.com/megamsys/libgo/pairs"
 	"gopkg.in/yaml.v2"
 	"strings"
 )
@@ -135,11 +136,12 @@ func (e *ParseError) Error() string {
 }
 
 type Requests struct {
-	Id        string `json:"id"`     //assembly id
-	CatId     string `json:"cat_id"` // assemblies_id
-	Action    string `json:"action"` // start, stop ...
-	AccountId string `json:"account_id"`
-	Category  string `json:"category"` // state, control, policy
+	Id        string          `json:"id"`     //assembly id
+	CatId     string          `json:"cat_id"` // assemblies_id
+	Action    string          `json:"action"` // start, stop ...
+	AccountId string          `json:"account_id"`
+	Inputs    pairs.JsonPairs `json:"inputs"`
+	Category  string          `json:"category"` // state, control, policy
 }
 
 type ApiRequests struct {
