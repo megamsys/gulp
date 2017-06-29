@@ -1,13 +1,27 @@
-====================
 Gulpd
 =================
 
 Gulpd is an agent for Megam vertis
 
+
+# Roadmap for 2.0
+
+Read the [Deployment design]https://github.com/megamsys/verticedev/blob/master/proposals/01.deployments.md).
+
+## Where is the code for 2.0
+
+We have moved the development to private gitlab as it will have enterprise features.
+
+## When can i get it in my anxious hands
+
+`2.0` will be released on `Sep 30 2017` or less.
+
+`2.0` developed with private enterprise features and is moved to gitlab.
+
 ### Requirements
 
->
-[Golang 1.5 > +](http://www.golang.org/dl)
+
+- [Golang 1.8 > +](http://www.golang.org/dl)
 
 
 ## Usage
@@ -52,7 +66,7 @@ We are glad to help if you have questions, or request for new features..
 |:---------------------|:-----------------------------------------|
 | **Author:**          | Rajthilak (<rajthilak@megam.io>)
 | 	                   | KishorekumarNeelamegam (<nkishore@megam.io>)
-|                      | Yeshwanth kumar (<getyesh@megam.io)   
+|                      | Vijaykanth M (<mvijaykanth@@megam.io)   
 | **Copyright:**       | Copyright (c) 2013-2016 Megam Systems.
 | **License:**         | Apache License, Version 2.0
 
