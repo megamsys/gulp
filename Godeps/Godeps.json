@@ -92,55 +92,55 @@
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/action",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/api",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/cmd",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/db",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/addons",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/alerts",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/events/bills",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/exec",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/os",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/pairs",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/utils",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/libgo/utils/obc",
-			"Rev": "423a0a6ae8587349f024fffc2b270fcdce89a016"
+			"Rev": "fa1aa43be81abb71d62ea4aa1d943d88336cfc69"
 		},
 		{
 			"ImportPath": "github.com/megamsys/whmcs_go/whmcs",

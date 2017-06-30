@@ -34,7 +34,6 @@ import (
 const (
 	ASSEMBLYBUCKET = "assembly"
 	SSHKEY         = "sshkey"
-	PASSWORD       = "root_password"
 	USERNAME       = "root_username"
 )
 
@@ -313,14 +312,9 @@ func (a *Assembly) NukeKeysInputs(m string) error {
 	if len(m) > 0 {
 		log.Debugf("nuke keys from inputs in cassandra [%s]", m)
 		a.Inputs.NukeKeys(m) //just nuke the matching output key:
-		err := a.updateAsm()
-		if err != nil {
-			return err
-		}
-	} else {
-		return provision.ErrNoOutputsFound
+		return a.updateAsm()
 	}
-	return nil
+	return provision.ErrNoOutputsFound
 }
 
 func (a *Assembly) sshkey() string {
@@ -328,7 +322,7 @@ func (a *Assembly) sshkey() string {
 }
 
 func (a *Assembly) password() string {
-	return a.Inputs.Match(PASSWORD)
+	return a.Inputs.Match(constants.ROOT_PASSWORD)
 }
 
 func (a *Assembly) user() string {

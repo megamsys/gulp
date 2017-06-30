@@ -145,7 +145,6 @@ func (p *gruProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		&appendAuthKeys,
 		&updateStatusInScylla,
 		&changeStateofMachine,
-		&mileStoneUpdate,
 		&updateStatusInScylla,
 	}
 
@@ -155,7 +154,6 @@ func (p *gruProvisioner) Bootstrap(box *provision.Box, w io.Writer) error {
 		box:           box,
 		writer:        w,
 		machineStatus: constants.StatusBootstrapping,
-		machineState:  constants.StateBootstrapped,
 		provisioner:   p,
 		state:         carton.STATE,
 	}
