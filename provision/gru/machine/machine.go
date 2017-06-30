@@ -218,7 +218,7 @@ func (m *Machine) ResetPassword() error {
 
 	if asm, err := carton.NewAssembly(m.CartonId); err != nil {
 		return err
-	} else if err = asm.NukeKeysInputs(carton.PASSWORD); err != nil {
+	} else if err = asm.NukeKeysInputs(utils.ROOT_PASSWORD); err != nil {
 		return err
 	}
 
